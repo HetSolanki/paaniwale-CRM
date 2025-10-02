@@ -8,6 +8,7 @@ import { Button } from "../UI/shadcn-UI/button";
 import { useToast } from "../UI/shadcn-UI/use-toast";
 import { ToastAction } from "../UI/shadcn-UI/toast";
 import { useTheme } from "@/Context/ThemeProviderContext ";
+import { config } from "@/Data/meta";
 export const InvoiceX = ({ cid }) => {
   const user = useUser();
   const [click, setClick] = useState(false);
@@ -76,8 +77,7 @@ export const InvoiceX = ({ cid }) => {
     pdf.text(`${user?.user?.shop_address}`, 38, 25);
 
     const logo = new Image();
-    logo.src =
-      "https://res.cloudinary.com/dikxaelvp/image/upload/v1722239069/Dhandha-Assests/paniwala-1300x1300_xks3or.png";
+    logo.src = `https://res.cloudinary.com/${config.cloud.name}/image/upload/v1722239069/Dhandha-Assests/paniwala-1300x1300_xks3or.png`;
     pdf.addImage(logo, "png", 180, 10, 20, 20);
 
     // Invoice details
@@ -247,13 +247,11 @@ export const InvoiceX = ({ cid }) => {
         try {
           const formData = new FormData();
           formData.append("file", `data:application/pdf;base64,${base64data}`);
-          // formData.append("upload_preset", process.env.CLOUD_UPLOAD_PRESET);
-          formData.append("upload_preset", "wnjb2gh7");
-          formData.append("folder", "Dhandha");
+          formData.append("upload_preset", config.cloud.uploadPreset);
+          formData.append("folder", "Paaniwale-Invoices");
 
           const response = await fetch(
-            // `https://api.cloudinary.com/v1_1/${process.env.CLOUD_NAME}/image/upload`,
-            `https://api.cloudinary.com/v1_1/dikxaelvp/image/upload`,
+            `https://api.cloudinary.com/v1_1/${config.cloud.name}/image/upload`,
             { method: "POST", body: formData }
           );
 
@@ -272,15 +270,13 @@ export const InvoiceX = ({ cid }) => {
           console.log(responseData.secure_url);
           const res =
             (await fetch(
-              // `https://graph.facebook.com/${process.env.WHATSAPP_API_VERSION}/${process.env.WHASTAPP_PHONE_NUMBER_ID}/messages`,
-              `https://graph.facebook.com/v20.0/414743431715403/messages`,
-              
+              `https://graph.facebook.com/${config.whatsapp.version}/${config.whatsapp.phoneNumberId}/messages`,
+
               {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
-                  Authorization: `Bearer EAAMfDZCmvZCH4BOxtgRTAoh6R2KtPcYtE4wS2w1CXkWuZBZC0uY5KrOxmgVgbsv40WyO8JTqMMJxvxuML49tfYCRxhxm7lrb9ZCveUcDH3L4Qb48Yu84rlUqeVZBhqXNSZAmkeeMEROJf5T86vZAF5B5QCuTPLKPLtSYTLx21TySuq2KslR3UHeI0B9Tb7eZAIxcsIwZDZD`, // Use your access token
-                  // Authorization: `Bearer ${process.env.WHASTAPP_USER_ACCESS_TOKEN}`, // Use your access token
+                  Authorization: config.whatsapp.authoritzation, // Use your access token
                 },
                 body: JSON.stringify({
                   messaging_product: "whatsapp",
@@ -310,14 +306,6 @@ export const InvoiceX = ({ cid }) => {
                       },
                       {
                         type: "body",
-                        // parameters: [
-                        //   { type: "text", text: "total_amount" },
-                        //   {
-                        //     type: "text",
-                        //     text: "customerInvoice[0]?.customerDetails?.caddress",
-                        //   },
-                        //   { type: "text", text: "Invoice" },
-                        // ],
                         parameters: [
                           { type: "text", text: total_amount + "" },
                           {
@@ -326,16 +314,6 @@ export const InvoiceX = ({ cid }) => {
                           },
                           { type: "text", text: "Invoice" },
                         ],
-                        // parameters: [
-                        //   {
-                        //     type: "text",
-                        //     text: customerInvoice[0]?.customerDetails?.cname,
-                        //   },
-                        //   {
-                        //     type: "text",
-                        //     text: user?.user?.shop_name,
-                        //   },
-                        // ],
                       },
                     ],
                   },
