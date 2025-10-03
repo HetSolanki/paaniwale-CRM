@@ -15,7 +15,7 @@ pipeline {
 
        stage('Clone Repository') {
           steps {
-                git credentialsId: 'het-github-auth', url: 'https://github.com/HetSolanki/Dhandha.git', branch: 'main'
+                git credentialsId: 'het-github-ssh', url: 'git@github.com:HetSolanki/Dhandha.git', branch: 'main'
               }
         }       
 
