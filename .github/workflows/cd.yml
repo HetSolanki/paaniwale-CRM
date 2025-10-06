@@ -21,7 +21,7 @@ jobs:
 
       - name: Build Docker image (Backend)
         run: |
-          cd server/api
+          cd server/API
           docker build -t ${{ secrets.DOCKER_HOST }}/paaniwale-backend:latest .
 
       - name: Log in to Docker Hub
