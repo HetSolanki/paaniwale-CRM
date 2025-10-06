@@ -2,8 +2,7 @@ node_modules/
 .git
 server/
 build
-Dockerfile
-docker-compose.yml
+
 .env
 .env.production
 .env.development
