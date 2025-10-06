@@ -12,6 +12,9 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            docker-compose.yml
 
       - name: Build Docker image (Frontend)
         run: |
