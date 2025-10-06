@@ -1,0 +1,50 @@
+name: Deployment
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  Deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image (Frontend)
+        run: |
+          docker build \
+          --build-arg VITE_API_BASE_URL=${{secrets.VITE_API_BASE_URL}} \
+          -t ${{ secrets.DOCKER_HOST }}/paaniwale-frontend:latest .
+
+      - name: Build Docker image (Backend)
+        run: |
+          cd server/api
+          docker build -t ${{ secrets.DOCKER_HOST }}/paaniwale-backend:latest .
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HOST }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Push Docker images
+        run: |
+          docker push ${{secrets.DOCKER_HOST}}/paaniwale-frontend:latest
+          docker push ${{secrets.DOCKER_HOST}}/paaniwale-backend:latest
+
+      - name: Deploy to droplet
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          script: |
+            cd /home/deploy
+            docker compose pull paaniwale-frontend
+            docker compose pull paaniwale-backend
+            docker compose up -d paaniwale-frontend
+            docker compose up -d paaniwale-backend
+            docker compose ps
