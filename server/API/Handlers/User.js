@@ -4,7 +4,6 @@ import { comparePassword } from "../Module/auth.js";
 import customer from "../Schema/customer.js";
 import PaymentDetail from "../Schema/PaymentDetail.js";
 import customerEntry from "../Schema/customerEntry.js";
-import mongoose from "mongoose";
 
 export const getAllUser = async (req, res) => {
   try {
@@ -100,7 +99,7 @@ export const signIn = async (req, res) => {
     const user = await User.findOne({ phone_number: req.body.phone_number });
 
     if (user) {
-      if (await comparePassword(req.body.password, user.password)) {        
+      if (await comparePassword(req.body.password, user.password)) {
         const token = createJWT(user);
         res.json({
           token,
@@ -132,8 +131,9 @@ export const getAdmindashboardData = async (req, res) => {
         },
       },
     ]);
-    const totalRevenue =totalrevenue.length > 0 ? totalrevenue[0].totalRevenue : 0;
-    
+    const totalRevenue =
+      totalrevenue.length > 0 ? totalrevenue[0].totalRevenue : 0;
+
     const topCustomers = await customer.aggregate([
       {
         $lookup: {
@@ -166,62 +166,70 @@ export const getAdmindashboardData = async (req, res) => {
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
     const usersLastMonth = await User.countDocuments({
-      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth }
+      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth },
     });
     const usersThisMonth = await User.countDocuments({
-      createdAt: { $gte: startOfThisMonth }
+      createdAt: { $gte: startOfThisMonth },
     });
     const customersLastMonth = await customer.countDocuments({
-      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth }
+      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth },
     });
     const customersThisMonth = await customer.countDocuments({
-      createdAt: { $gte: startOfThisMonth }
+      createdAt: { $gte: startOfThisMonth },
     });
 
     const calcPercentChange = (current, previous) => {
       if (previous === 0) return current > 0 ? 100 : 0;
       return ((current - previous) / previous) * 100;
-    }
+    };
 
     const userGrowthPercent = calcPercentChange(usersThisMonth, usersLastMonth);
-    const customerGrowthPercent = calcPercentChange(customersThisMonth, customersLastMonth);
+    const customerGrowthPercent = calcPercentChange(
+      customersThisMonth,
+      customersLastMonth
+    );
 
     const revenueLastMonthAgg = await PaymentDetail.aggregate([
       {
         $match: {
-          createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth }
-        }
+          createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth },
+        },
       },
       {
         $group: {
           _id: null,
-          total: { $sum: "$amount" }
-        }
-      }
+          total: { $sum: "$amount" },
+        },
+      },
     ]);
     const revenueThisMonthAgg = await PaymentDetail.aggregate([
       {
         $match: {
-          createdAt: { $gte: startOfThisMonth }
-        }
+          createdAt: { $gte: startOfThisMonth },
+        },
       },
       {
         $group: {
           _id: null,
-          total: { $sum: "$amount" }
-        }
-      }
+          total: { $sum: "$amount" },
+        },
+      },
     ]);
-    const revenueLastMonth = revenueLastMonthAgg.length > 0 ? revenueLastMonthAgg[0].total : 0;
-    const revenueThisMonth = revenueThisMonthAgg.length > 0 ? revenueThisMonthAgg[0].total : 0;
-    const revenueGrowthPercent = calcPercentChange(revenueThisMonth, revenueLastMonth);
+    const revenueLastMonth =
+      revenueLastMonthAgg.length > 0 ? revenueLastMonthAgg[0].total : 0;
+    const revenueThisMonth =
+      revenueThisMonthAgg.length > 0 ? revenueThisMonthAgg[0].total : 0;
+    const revenueGrowthPercent = calcPercentChange(
+      revenueThisMonth,
+      revenueLastMonth
+    );
 
     res.json({
       totalUsers,
       totalCustomers,
       totalRevenue,
       topCustomers,
-      revenueGrowthPercent,   
+      revenueGrowthPercent,
       userGrowthPercent,
       customerGrowthPercent,
       usersThisMonth,
@@ -229,7 +237,7 @@ export const getAdmindashboardData = async (req, res) => {
       customersThisMonth,
       customersLastMonth,
       revenueThisMonth,
-      revenueLastMonth,               
+      revenueLastMonth,
     });
   } catch (error) {
     res.json({ error });

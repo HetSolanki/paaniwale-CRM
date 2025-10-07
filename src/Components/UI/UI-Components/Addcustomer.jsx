@@ -29,7 +29,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { Toaster } from "../shadcn-UI/toaster";
 import { useToast } from "../shadcn-UI/use-toast";
 import { useState } from "react";
-import { sendOtp, verifyOtp } from "@/Handlers/OtpHandler";
+import { config } from "@/Data/meta";
 
 const formSchema = z.object({
   cname: z
@@ -105,19 +105,18 @@ export function Addcustomer() {
       // console.log(otpgenerated);
       const res =
         (await fetch(
-          `https://graph.facebook.com/v20.0/414743431715403/messages`,
+          `https://graph.facebook.com/${config.whatsapp.version}/${config.whatsapp.phoneNumberId}/messages`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               Authorization:
-                "Bearer EAAMfDZCmvZCH4BOxtgRTAoh6R2KtPcYtE4wS2w1CXkWuZBZC0uY5KrOxmgVgbsv40WyO8JTqMMJxvxuML49tfYCRxhxm7lrb9ZCveUcDH3L4Qb48Yu84rlUqeVZBhqXNSZAmkeeMEROJf5T86vZAF5B5QCuTPLKPLtSYTLx21TySuq2KslR3UHeI0B9Tb7eZAIxcsIwZDZD", // Use your access token
+                config.whatsapp.authoritzation, // Use your access token
             },
             body: JSON.stringify({
               messaging_product: "whatsapp",
               // recipient_type: "individual",
               to: `91${phone}`,
-              // to: "918849698524",
               type: "template",
               template: {
                 name: "otp_verification",

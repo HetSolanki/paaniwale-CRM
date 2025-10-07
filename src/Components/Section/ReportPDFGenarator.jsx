@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
 
 const ReportPDFGenarator = ({ data, columns, table_name, shop_name,logo }) => {
   const today = new Date().toLocaleDateString();
-  const website_name = "https://paaniwale.com/";
+  const website_name = "http://128.199.19.208:3000/";
   return (
     <Document>
       <Page size="A4" style={styles.page}>

@@ -1,9 +1,5 @@
-  
-
-export const signinuser = async (data) => {  
-
+export const signinuser = async (data) => {
   try {
-    console.log("VITE_API_BASE_URL:", import.meta.env.VITE_API_BASE_URL);
     const API = import.meta.env.VITE_API_BASE_URL;
     const response = await fetch(`${API}/api/auth/signin`, {
       method: "POST",

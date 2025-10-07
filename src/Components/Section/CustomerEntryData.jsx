@@ -204,13 +204,6 @@ const CustomerEntryData = () => {
                       <CardContent className="">
                         <DataTable data={customers} columns={columns1} />
                       </CardContent>
-                      {/* <CardFooter>
->>>>>>> 06d6ec857a781f35541053c981951c641862994f
-                        <div className="text-xs text-muted-foreground">
-                          Showing <strong>1-10</strong> of <strong>32</strong>{" "}
-                          customers
-                        </div>
-                      </CardFooter> */}
                     </Card>
                   </TabsContent>
                 </Tabs>

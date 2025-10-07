@@ -25,8 +25,8 @@ import {
 } from "@/Components/UI/shadcn-UI/popover";
 import { useContext } from "react";
 import CustomerEntryContext from "@/Context/CustomerEntryContext";
+import process from "process";
 
-const DOMAIN_NAME = import.meta.env.VITE_API_BASE_URL;
 
 const FormSchema = z.object({
   delivery_date: z.date({
@@ -35,6 +35,7 @@ const FormSchema = z.object({
 });
 
 export function DatePickerForm() {
+  const DOMAIN_NAME = process.env.VITE_API_BASE_URL;
   const { customers, setCustomers } = useContext(CustomerEntryContext);
 
   const token = localStorage.getItem("token");
