@@ -28,7 +28,7 @@ import { useUser } from "@/Context/UserContext";
 import "react-toastify/dist/ReactToastify.css";
 import { Toaster } from "../shadcn-UI/toaster";
 import { useToast } from "../shadcn-UI/use-toast";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { config } from "@/Data/meta";
 
 const formSchema = z.object({
@@ -97,12 +97,11 @@ export function Addcustomer() {
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
   const [verifying, setVerifying] = useState(false);
-  let otpgenerated = Math.floor(100000 + Math.random() * 900000);
+  let otpgenerated = useRef(null);
 
   const handleSendOtp = async (phone) => {
     try {
-      // console.log(otpSent);
-      // console.log(otpgenerated);
+      otpgenerated.current = Math.floor(100000 + Math.random() * 900000);
       const res =
         (await fetch(
           `https://graph.facebook.com/${config.whatsapp.version}/${config.whatsapp.phoneNumberId}/messages`,
@@ -114,7 +113,6 @@ export function Addcustomer() {
             },
             body: JSON.stringify({
               messaging_product: "whatsapp",
-              // recipient_type: "individual",
               to: `91${phone}`,
               type: "template",
               template: {
@@ -128,7 +126,7 @@ export function Addcustomer() {
                     parameters: [
                       {
                         type: "text",
-                        text: `${otpgenerated}`,
+                        text: `${otpgenerated.current}`,
                       },
                     ],
                   },
@@ -139,7 +137,7 @@ export function Addcustomer() {
                     parameters: [
                       {
                         type: "text",
-                        text: `${otpgenerated}`,
+                        text: `${otpgenerated.current}`,
                       },
                     ],
                   },
@@ -150,7 +148,6 @@ export function Addcustomer() {
         )) ?? {};
 
       const data = await res.json();
-      console.log(data);
       if (!res.ok) {
         toast({
           variant: "destructive",
@@ -159,7 +156,6 @@ export function Addcustomer() {
         });
         throw new Error(`Error: ${data.error.message}`);
       } else {
-        // console.log("Message sent successfully!", data);
         toast({
           title: "Success",
           description: "OTP sent successfully!",
@@ -181,8 +177,7 @@ export function Addcustomer() {
   const handleVerifyOtp = async () => {
     setVerifying(true);
     try {
-      // console.log(otp);
-      if (otp.length !== 6 || isNaN(otp) || otp !== otpgenerated.toString()) {
+      if (otp.length === 6 && Number(otp) === Number(otpgenerated.current)) {
         setIsVerified(true);
         toast({
           title: "Success",

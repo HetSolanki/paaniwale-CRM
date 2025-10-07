@@ -30,8 +30,9 @@ import { fetchCustomer } from "@/Hooks/fetchCustomer";
 import "react-toastify/dist/ReactToastify.css";
 import { useToast } from "../shadcn-UI/use-toast";
 import { Toaster } from "../shadcn-UI/toaster";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { config } from "@/Data/meta";
 
 const formSchema = z.object({
   cname: z.string().min(1, {
@@ -107,6 +108,114 @@ export function Editcustomer({ id }) {
     form.reset();
   };
 
+  const [isVerified, setIsVerified] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  let otpgenerated = useRef(null);
+
+  const handleSendOtp = async (phone) => {
+    try {
+      otpgenerated.current = Math.floor(100000 + Math.random() * 900000);
+      const res =
+        (await fetch(
+          `https://graph.facebook.com/${config.whatsapp.version}/${config.whatsapp.phoneNumberId}/messages`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: config.whatsapp.authorization, // Use your access token
+            },
+            body: JSON.stringify({
+              messaging_product: "whatsapp",
+              to: `91${phone}`,
+              type: "template",
+              template: {
+                name: "otp_verification",
+                language: {
+                  code: "en_US",
+                },
+                components: [
+                  {
+                    type: "body",
+                    parameters: [
+                      {
+                        type: "text",
+                        text: `${otpgenerated.current}`,
+                      },
+                    ],
+                  },
+                  {
+                    type: "button",
+                    sub_type: "url",
+                    index: "0",
+                    parameters: [
+                      {
+                        type: "text",
+                        text: `${otpgenerated.current}`,
+                      },
+                    ],
+                  },
+                ],
+              },
+            }),
+          }
+        )) ?? {};
+
+      const data = await res.json();
+      if (!res.ok) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to send message!",
+        });
+        throw new Error(`Error: ${data.error.message}`);
+      } else {
+        toast({
+          title: "Success",
+          description: "OTP sent successfully!",
+        });
+      }
+      setOtpSent(true);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to send OTP. Please try again.",
+      });
+      return;
+    }
+
+    toast({ title: "OTP Sent", description: `OTP sent to ${phone}` });
+  };
+
+  const handleVerifyOtp = async () => {
+    setVerifying(true);
+    try {
+      if (otp.length === 6 && Number(otp) === Number(otpgenerated.current)) {
+        setIsVerified(true);
+        toast({
+          title: "Success",
+          description: "Phone number verified successfully.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Invalid OTP. Please try again.",
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to verify OTP. Please try again.",
+      });
+    } finally {
+      setVerifying(false);
+    }
+  };
+
   return (
     <>
       <Dialog
@@ -152,11 +261,11 @@ export function Editcustomer({ id }) {
                     )}
                   />
                 </div>
-                <div className="grid gap-2 items-center ">
+                <div className="grid gap-2 items-center">
                   <FormField
                     control={form.control}
                     name="cphone_number"
-                    defaultValue={cphone_number?.toString()}
+                    defaultValue={String(cphone_number)}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel
@@ -166,17 +275,72 @@ export function Editcustomer({ id }) {
                           Customer Phone Number
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            id="cphone_number"
-                            type="text"
-                            placeholder="Customer Phone Number"
-                            {...field}
-                          />
+                          <div className="flex gap-2">
+                            <Input
+                              id="cphone_number"
+                              type="text"
+                              placeholder="Customer Phone Number"
+                              {...field}
+                            />
+                            {!otpSent && (
+                              <Button
+                                type="button"
+                                size="sm"
+                                onClick={async () => {
+                                  const valid = await form.trigger(
+                                    "cphone_number"
+                                  );
+                                  if (valid) {
+                                    handleSendOtp(
+                                      form.getValues("cphone_number")
+                                    );
+                                  } else {
+                                    toast({
+                                      variant: "destructive",
+                                      title: "Invalid Phone",
+                                      description:
+                                        "Enter valid phone number first.",
+                                    });
+                                  }
+                                }}
+                              >
+                                Send OTP
+                              </Button>
+                            )}
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+                  {otpSent && !isVerified && (
+                    <div className="flex gap-2 mt-2">
+                      <Input
+                        type="text"
+                        placeholder="Enter OTP"
+                        value={otp}
+                        maxLength={6}
+                        onChange={(e) => setOtp(e.target.value)}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleVerifyOtp}
+                        disabled={verifying || otp.length !== 6}
+                      >
+                        {verifying ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          "Verify OTP"
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                  {isVerified && (
+                    <div className="text-green-600 text-xs mt-1">
+                      Phone number verified
+                    </div>
+                  )}
                 </div>
                 <div className="grid gap-2 items-center ">
                   <FormField
@@ -256,7 +420,11 @@ export function Editcustomer({ id }) {
               </div>
               <DialogFooter className="flex-row flex justify-between gap-y-2 sm:gap-y-0">
                 {!click ? (
-                  <Button type="submit" className="font-semibold">
+                  <Button
+                    type="submit"
+                    className="font-semibold"
+                    disabled={otpSent && !isVerified}
+                  >
                     Update Customer
                   </Button>
                 ) : (
