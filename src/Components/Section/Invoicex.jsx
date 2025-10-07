@@ -277,7 +277,7 @@ export const InvoiceX = ({ cid }) => {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
-                  Authorization: config.whatsapp.authoritzation, // Use your access token
+                  Authorization: config.whatsapp.authorization, // Use your access token
                 },
                 body: JSON.stringify({
                   messaging_product: "whatsapp",
