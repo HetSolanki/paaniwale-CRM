@@ -19,6 +19,14 @@ COPY . .
 
 # Build with production env
 ARG VITE_API_BASE_URL
+ARG VITE_CLOUD_NAME
+ARG VITE_CLOUD_API_KEY
+ARG VITE_CLOUD_API_SECRET
+ARG VITE_CLOUD_UPLOAD_PRESET
+ARG VITE_WHASTAPP_BUSSINESS_ID
+ARG VITE_WHASTAPP_PHONE_NUMBER_ID
+ARG VITE_WHASTAPP_USER_ACCESS_TOKEN
+ARG VITE_WHATSAPP_API_VERSION
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 # Build the application using Vite
@@ -36,4 +44,4 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=node_builder /build/dist /usr/share/nginx/html
 
 # Healthcheck (optional)
-HEALTHCHECK CMD wget --spider -q localhost || exit 1
+HEALTHCHECK CMD wget --spider -q localhost:3001 || exit 1
