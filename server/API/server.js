@@ -6,6 +6,8 @@ import shop_api from "./routes/shop_route.js";
 import payment_link_api from "./routes/payment_link_route.js";
 import paymentdetails_api from "./routes/paymentdetails_route.js";
 import otpRoutes from "./routes/otpRoutes.js";
+import stats_api from "./routes/stats_route.js";
+import inquiry_api from "./routes/inquiry_route.js";
 import cors from "cors";
 
 const app = express();
@@ -38,6 +40,8 @@ app.use("/api/shop", shop_api);
 app.use("/api/paymentlink", payment_link_api);
 app.use("/api/paymentdetails", paymentdetails_api);
 app.use("/api/otp", otpRoutes);
+app.use("/api/stats", stats_api);
+app.use("/api/inquiry", inquiry_api);
 
 app.use((err, req, res, next) => {
   if (res.headersSent) {

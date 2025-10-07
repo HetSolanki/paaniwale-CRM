@@ -25,6 +25,7 @@ import { SkeletonTheme } from "react-loading-skeleton";
 import AdminDashboard from "./Components/Admin/Admindashboard";
 import AdminLayout from "./Components/Admin/AdminLayout";
 import UserManagement from "./Components/Admin/UserManagement";
+import InquiryDashboard from "./Components/Admin/InquiryDashboard";
 
 function App() {
   const [defaultRoute, setDefaultRoute] = useState("/mainpage");
@@ -64,16 +65,16 @@ function App() {
               <Route path="/paymentsdata" element={<PaymentsEntryData />} />
               <Route path="/invoice" element={<Invoice />} />
               <Route path="/invoicex" element={<Invoicex />} />
-
+              <Route path="/inquirydashboard" element={<InquiryDashboard />} />
               {/* Admin Routes */}
-              <Route
-                path="/admin/"
-                element={<AdminLayout />}
-              >
+              <Route path="/admin/" element={<AdminLayout />}>
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="users" element={<UserManagement />} />
                 <Route path="customers" element={<Customers />} />
-                <Route path="customerentrydata" element={<CustomerEntryData />} />
+                <Route
+                  path="customerentrydata"
+                  element={<CustomerEntryData />}
+                />
                 <Route path="paymentdetails" element={<PaymentDetails />} />
                 <Route path="paymentsdata" element={<PaymentsEntryData />} />
                 <Route path="*" element={<UnderConstructionPage />} />

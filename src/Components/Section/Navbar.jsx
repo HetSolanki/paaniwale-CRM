@@ -119,7 +119,7 @@ const Navbar = () => {
                     localStorage.removeItem("token");
                     localStorage.removeItem("cid");
                   }
-                  navigate("/signin");
+                  navigate("/");
                 }}
               >
                 Logout
