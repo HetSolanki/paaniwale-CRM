@@ -1764,8 +1764,8 @@ const LandingPage = () => {
           <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
             <div className="text-gray-400 text-sm mb-4 md:mb-0">
               <p>
-                &copy; 2024 Paani Wale™. All Rights Reserved. | Built with ❤️
-                for Water Suppliers
+                &copy; {new Date().getFullYear()} Paani Wale™. All Rights
+                Reserved. | Built with ❤️ for Water Suppliers
               </p>
             </div>
             <div className="flex space-x-6 text-sm">
