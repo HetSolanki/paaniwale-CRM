@@ -9,6 +9,7 @@ import { useToast } from "../UI/shadcn-UI/use-toast";
 import { ToastAction } from "../UI/shadcn-UI/toast";
 import { useTheme } from "@/Context/ThemeProviderContext ";
 import { config } from "@/Data/meta";
+
 export const InvoiceX = ({ cid }) => {
   const user = useUser();
   const [click, setClick] = useState(false);
@@ -276,7 +277,7 @@ export const InvoiceX = ({ cid }) => {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
-                  Authorization: config.whatsapp.authoritzation, // Use your access token
+                  Authorization: config.whatsapp.authorization, // Use your access token
                 },
                 body: JSON.stringify({
                   messaging_product: "whatsapp",

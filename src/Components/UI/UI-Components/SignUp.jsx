@@ -32,11 +32,7 @@ import { useState } from "react";
 import { createShop } from "@/Handlers/AddShop";
 import { Stack } from "@mui/material";
 
-const steps = [
-  "Sign Up",
-  "Create Display Name",
-  "Complate Sign Up",
-];
+const steps = ["Sign Up", "Create Display Name", "Complate Sign Up"];
 
 const formSchema = z.object({
   fname: z.string({
@@ -164,7 +160,6 @@ export default function SignUp() {
   //   }
   // };
 
-  
   const formSubmit = async (data) => {
     if (!checkValidation(data)) {
       return;
@@ -413,12 +408,12 @@ export default function SignUp() {
                       <Button type="submit" className="w-full font-semibold">
                         Create an account
                       </Button>
-                      <Button
+                      {/* <Button
                         variant="outline"
                         className="w-full font-semibold"
                       >
                         Sign up with GitHub
-                      </Button>
+                      </Button> */}
                     </div>
                     <div className="mt-4 text-center text-sm font-medium">
                       Already have an account?{" "}
@@ -436,8 +431,8 @@ export default function SignUp() {
               currentpage === 1 ? "" : "hidden"
             } flex justify-center items-center p-10`}
           > */}
-            {/* <div className="h-screen flex justify-center items-center "> */}
-            {/* <Form {...form1}>
+          {/* <div className="h-screen flex justify-center items-center "> */}
+          {/* <Form {...form1}>
               <form1 onSubmit={form1.handleSubmit(verifyotp)}>
                 <Card className="mx-auto max-w-sm">
                   <CardHeader>

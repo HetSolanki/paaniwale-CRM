@@ -222,9 +222,9 @@ export default function SignIn() {
                       Please wait
                     </Button>
                   )}
-                  <Button variant="outline" className="w-full font-semibold">
+                  {/* <Button variant="outline" className="w-full font-semibold">
                     Signin with Google
-                  </Button>
+                  </Button> */}
                 </div>
               </CardContent>
             </Card>

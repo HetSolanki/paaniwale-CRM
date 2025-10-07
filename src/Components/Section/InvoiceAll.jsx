@@ -6,6 +6,7 @@ import { GetAllCustomerInvoice } from "@/Handlers/GetAllCustomerInvoice";
 import { Button } from "../UI/shadcn-UI/button";
 import { Loader2, Send } from "lucide-react";
 import { useToast } from "../UI/shadcn-UI/use-toast";
+import { config } from "@/Data/meta";
 
 export const InvoiceAll = () => {
   const user = useUser();
@@ -78,8 +79,7 @@ export const InvoiceAll = () => {
         pdf.text(`${user?.user?.shop_address}`, 38, 25);
 
         const logo = new Image();
-        logo.src =
-          "https://res.cloudinary.com/fdgj4xhhgq/image/upload/v1722239069/Dhandha-Assests/paniwala-1300x1300_xks3or.png";
+        logo.src = `https://res.cloudinary.com/${config.cloud.name}/image/upload/v1722239069/Dhandha-Assests/paniwala-1300x1300_xks3or.png`;
         pdf.addImage(logo, "png", 180, 10, 20, 20);
 
         // Invoice details
@@ -250,7 +250,7 @@ export const InvoiceAll = () => {
 
         pdf.setTextColor(0, 0, 0, 0.5);
         pdf.setFont("helvetica", "italic");
-        pdf.text("https://paaniwale.com", 15, yOffset);
+        pdf.text("http://128.199.19.208:3000/", 15, yOffset);
 
         const pdfBlob = pdf.output("blob");
         const reader = new FileReader();
@@ -264,15 +264,23 @@ export const InvoiceAll = () => {
               "file",
               `data:application/pdf;base64,${base64data}`
             );
-            formData.append("upload_preset", "wnjb2gh7");
-            formData.append("folder", "Dhandha");
+            formData.append("upload_preset", config.cloud.uploadPreset);
+            formData.append("folder", "Paaniwale-Invoices");
 
             const response = await fetch(
-              "https://api.cloudinary.com/v1_1/fdgj4xhhgq/image/upload",
+              `https://api.cloudinary.com/v1_1/${config.cloud.name}/image/upload`,
               { method: "POST", body: formData }
             );
 
             if (!response.ok) {
+              console.error("Failed to upload PDF");
+              setClick(false);
+              toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Failed to upload PDF!",
+              });
+              console.log("Response not ok:", await response.json());
               throw new Error("Network response was not ok");
             }
 
@@ -280,12 +288,12 @@ export const InvoiceAll = () => {
 
             const date = new Date();
             const res = await fetch(
-              `https://graph.facebook.com/${process.env.WHATSAPP_API_VERSION}/${process.env.WHASTAPP_PHONE_NUMBER_ID}/messages`,
+              `https://graph.facebook.com/${config.whatsapp.version}/${config.whatsapp.phoneNumberId}/messages`,
               {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
-                  Authorization: `Bearer EAAMfDZCmvZCH4BOZCtP1QWHjVZBZBBqQZAJqr1aWLFanasj5GWsxxpXPtcDZAPVyLnSDCbXQ2T9yQm8BP89yWNx5isMZC7sKCX3awqjZAhZBKtXvnzTq99UKh9tfL6T182ZCpzH0YtVWMUtE9uNZAvelLX1PjtPW5JOqXcrnSGVBw9VUAxi6FqxPQAIW9vnnl3odfoPGPwZDZD`, // Use your access token
+                  Authorization: config.whatsapp.authorization, // Use your access token
                 },
                 body: JSON.stringify({
                   messaging_product: "whatsapp",

@@ -5,7 +5,7 @@ export const config = {
   },
   whatsapp: {
     version: import.meta.env.VITE_WHATSAPP_API_VERSION,
-    phoneNumberId: import.meta.env.VITE_WHASTAPP_PHONE_NUMBER_ID,
-    authoritzation: `Bearer ${import.meta.env.VITE_WHASTAPP_USER_ACCESS_TOKEN}`,    
+    phoneNumberId: import.meta.env.VITE_WHATSAPP_PHONE_NUMBER_ID,
+    authorization: `Bearer ${import.meta.env.VITE_WHATSAPP_USER_ACCESS_TOKEN}`,
   },
 };

@@ -1,17 +1,15 @@
 import Razorpay from "razorpay";
-
-
-const razorpay = new Razorpay({
-  key_id: "rzp_test_5n8FafogJcMq5Q",
-  key_secret: "wIVSrlvxmgCl17Oyt36Aaali",
-});
-
-const DOMAIN_NAME = process.env.VITE_API_BASE_URL;
-
-
-// Create a new payment link
+import process from "process";
 
 export const createPaymentLinkAll = async (req, res) => {
+  // Initialize Razorpay inside the function to ensure env vars are loaded
+  const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_API_KEY,
+    key_secret: process.env.RAZORPAY_API_SECRET_KEY,
+  });
+
+  const DOMAIN_NAME = process.env.VITE_API_BASE_URL;
+
   const allCustomers = await fetch(
     `${DOMAIN_NAME}/api/customerentry/customersforpayment`,
     {
@@ -97,13 +95,14 @@ export const createPaymentLinkAll = async (req, res) => {
     if (responses) {
       res.json({ data: responses, status: "success" });
     } else {
-      res.json({ data: "Payment Link creation failed........", status: "error" });
+      res.json({
+        data: "Payment Link creation failed........",
+        status: "error",
+      });
     }
 
     res.json({ data: responses, status: "success" });
   } catch (error) {
     res.json({ data: error.message, status: "error", error: error });
-    // console.log(error);
-    // console.log(error.message);
   }
 };

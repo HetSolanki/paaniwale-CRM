@@ -18,7 +18,6 @@ export async function uploadPDF() {
     const uploadResponse = await cloudinary.uploader.upload(pdfFilePath, {
       resource_type: "raw", // Use 'raw' for non-image files like PDFs
     });
-    // console.log(uploadResponse.secure_url);
 
     const res = await fetch(
       "https://graph.facebook.com/v19.0/366116843258872/messages",
@@ -43,8 +42,10 @@ export async function uploadPDF() {
       }
     );
 
-    // console.log(res);
-    // console.log("Upload successful:", uploadResponse);
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
     return uploadResponse.public_id; // Return the public ID of the uploaded file
   } catch (error) {
     console.error("Error uploading PDF:", error);
@@ -62,7 +63,10 @@ export async function deletePDF(publicId) {
         resource_type: "raw",
       }
     );
-    // console.log("Delete successful:", deleteResponse);
+
+    if (!deleteResponse.ok) {
+      throw new Error(`HTTP error! status: ${deleteResponse.status}`);
+    }
   } catch (error) {
     console.error("Error deleting PDF:", error);
     throw error;

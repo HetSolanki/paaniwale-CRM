@@ -7,11 +7,15 @@ import { Button } from "../UI/shadcn-UI/button";
 import { useEffect } from "react";
 
 const LandingPage = () => {
-  useEffect(() => {
-    document.title = "Paani Wale";    
-  }, []);
-
   const navigate = useNavigate();
+  useEffect(() => {
+    document.title = "Paani Wale";
+
+    if (localStorage.getItem("token")) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
+
   return (
     <>
       <header>
@@ -28,28 +32,26 @@ const LandingPage = () => {
               </span>
             </a>
             <div className="flex items-center lg:order-2">
-              {
-                localStorage.getItem("token") ? (
-                  <Button
-                    className="mr-2 text-white bg-blue-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-700 dark:hover:bg-blue-700 dark:focus:ring-primary-800"
-                    onClick={() => {
-                      localStorage.removeItem("token");
-                      navigate("/signin");
-                    }}
-                  >
-                    logout
-                  </Button>
-                ) : (
-                  <Button
-                className="mr-2 text-white bg-blue-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-700 dark:hover:bg-blue-700 dark:focus:ring-primary-800"
-                onClick={() => {
-                  navigate("/signin");
-                }}
-              >
-                Log in
-              </Button>
-                )
-              }
+              {localStorage.getItem("token") ? (
+                <Button
+                  className="mr-2 text-white bg-blue-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-700 dark:hover:bg-blue-700 dark:focus:ring-primary-800"
+                  onClick={() => {
+                    localStorage.removeItem("token");
+                    navigate("/signin");
+                  }}
+                >
+                  logout
+                </Button>
+              ) : (
+                <Button
+                  className="mr-2 text-white bg-blue-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-700 dark:hover:bg-blue-700 dark:focus:ring-primary-800"
+                  onClick={() => {
+                    navigate("/signin");
+                  }}
+                >
+                  Log in
+                </Button>
+              )}
               {/* <Button
                 className="mr-2 text-white bg-blue-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-700 dark:hover:bg-blue-700 dark:focus:ring-primary-800"
                 onClick={() => {
@@ -116,47 +118,45 @@ const LandingPage = () => {
               From customer management to monthly billing, Paani Wale simplifies
               your water bottle supply billing system.
             </p>
-            {
-              localStorage.getItem("token") ? (
-                <a
-                  href="/dashboard"
-                  className="inline-flex justify-center items-center py-3 px-5 mr-3 text-base font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:focus:ring-primary-900"
-                >
-                  Go to Dashboard
-                  <svg
-                    className="ml-2 -mr-1 w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                      clipRule="evenodd"
-                    ></path>
-                  </svg>
-                </a>
-              ) : (
-                <a
-              href="/signin"
-              className="inline-flex justify-center items-center py-3 px-5 mr-3 text-base font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:focus:ring-primary-900"
-            >
-              Login Now
-              <svg
-                className="ml-2 -mr-1 w-5 h-5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
+            {localStorage.getItem("token") ? (
+              <a
+                href="/dashboard"
+                className="inline-flex justify-center items-center py-3 px-5 mr-3 text-base font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:focus:ring-primary-900"
               >
-                <path
-                  fillRule="evenodd"
-                  d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-            </a>
-              )
-            }
+                Go to Dashboard
+                <svg
+                  className="ml-2 -mr-1 w-5 h-5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              </a>
+            ) : (
+              <a
+                href="/signin"
+                className="inline-flex justify-center items-center py-3 px-5 mr-3 text-base font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:focus:ring-primary-900"
+              >
+                Login Now
+                <svg
+                  className="ml-2 -mr-1 w-5 h-5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              </a>
+            )}
             {/* <a
               href="/signin"
               className="inline-flex justify-center items-center py-3 px-5 mr-3 text-base font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:focus:ring-primary-900"
