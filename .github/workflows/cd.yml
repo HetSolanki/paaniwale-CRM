@@ -21,9 +21,9 @@ jobs:
           --build-arg VITE_CLOUD_API_KEY=${{secrets.VITE_CLOUD_API_KEY}} \
           --build-arg VITE_CLOUD_API_SECRET=${{secrets.VITE_CLOUD_API_SECRET}} \
           --build-arg VITE_CLOUD_UPLOAD_PRESET=${{secrets.VITE_CLOUD_UPLOAD_PRESET}} \
-          --build-arg VITE_WHASTAPP_BUSSINESS_ID=${{secrets.VITE_WHASTAPP_BUSSINESS_ID}} \
-          --build-arg VITE_WHASTAPP_PHONE_NUMBER_ID=${{secrets.VITE_WHASTAPP_PHONE_NUMBER_ID}} \
-          --build-arg VITE_WHASTAPP_USER_ACCESS_TOKEN=${{secrets.VITE_WHASTAPP_USER_ACCESS_TOKEN}} \
+          --build-arg VITE_WHATSAPP_BUSSINESS_ID=${{secrets.VITE_WHATSAPP_BUSSINESS_ID}} \
+          --build-arg VITE_WHATSAPP_PHONE_NUMBER_ID=${{secrets.VITE_WHATSAPP_PHONE_NUMBER_ID}} \
+          --build-arg VITE_WHATSAPP_USER_ACCESS_TOKEN=${{secrets.VITE_WHATSAPP_USER_ACCESS_TOKEN}} \
           --build-arg VITE_WHATSAPP_API_VERSION=${{secrets.VITE_WHATSAPP_API_VERSION}} \
           -t ${{ secrets.DOCKER_HOST }}/paaniwale-frontend:latest .
 
