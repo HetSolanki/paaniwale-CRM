@@ -261,11 +261,11 @@ export function Editcustomer({ id }) {
                     )}
                   />
                 </div>
-                <div className="grid gap-2 items-center ">
+                <div className="grid gap-2 items-center">
                   <FormField
                     control={form.control}
                     name="cphone_number"
-                    defaultValue={cphone_number}
+                    defaultValue={String(cphone_number)}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel
@@ -420,7 +420,11 @@ export function Editcustomer({ id }) {
               </div>
               <DialogFooter className="flex-row flex justify-between gap-y-2 sm:gap-y-0">
                 {!click ? (
-                  <Button type="submit" className="font-semibold">
+                  <Button
+                    type="submit"
+                    className="font-semibold"
+                    disabled={otpSent && !isVerified}
+                  >
                     Update Customer
                   </Button>
                 ) : (
