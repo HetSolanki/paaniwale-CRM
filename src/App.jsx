@@ -26,6 +26,7 @@ import AdminDashboard from "./Components/Admin/Admindashboard";
 import AdminLayout from "./Components/Admin/AdminLayout";
 import UserManagement from "./Components/Admin/UserManagement";
 import InquiryDashboard from "./Components/Admin/InquiryDashboard";
+import PartyOrders from "./Components/Section/PartyOrders";
 
 function App() {
   const [defaultRoute, setDefaultRoute] = useState("/mainpage");
@@ -66,6 +67,7 @@ function App() {
               <Route path="/invoice" element={<Invoice />} />
               <Route path="/invoicex" element={<Invoicex />} />
               <Route path="/inquirydashboard" element={<InquiryDashboard />} />
+              <Route path="/partyorders" element={<PartyOrders />} />
               {/* Admin Routes */}
               <Route path="/admin/" element={<AdminLayout />}>
                 <Route path="dashboard" element={<AdminDashboard />} />
@@ -77,6 +79,7 @@ function App() {
                 />
                 <Route path="paymentdetails" element={<PaymentDetails />} />
                 <Route path="paymentsdata" element={<PaymentsEntryData />} />
+
                 <Route path="*" element={<UnderConstructionPage />} />
               </Route>
               {/* <Route path="/admindashboard" element={<AdminDashboard />} />

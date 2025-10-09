@@ -8,6 +8,7 @@ import paymentdetails_api from "./routes/paymentdetails_route.js";
 import otpRoutes from "./routes/otpRoutes.js";
 import stats_api from "./routes/stats_route.js";
 import inquiry_api from "./routes/inquiry_route.js";
+import partyorder_api from "./routes/partyOrder_route.js";
 import cors from "cors";
 import process from "process";
 
@@ -96,6 +97,7 @@ app.use("/api/paymentdetails", paymentdetails_api);
 app.use("/api/otp", otpRoutes);
 app.use("/api/stats", stats_api);
 app.use("/api/inquiry", inquiry_api);
+app.use("/api/partyorder", partyorder_api);
 
 app.use((err, req, res, next) => {
   if (res.headersSent) {

@@ -59,7 +59,7 @@ const records: { title: string; href: string; description: string }[] = [
 export function NavbarItems() {
     return (
         <>
-        <NavigationMenu>
+            <NavigationMenu>
                 <NavigationMenuList>
                     <NavigationMenuItem>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()} asChild>
@@ -86,6 +86,13 @@ export function NavbarItems() {
                         <NavigationMenuLink className={navigationMenuTriggerStyle()} asChild>
                             <Link to="/paymentdetails" >
                                 Payment Details
+                            </Link>
+                        </NavigationMenuLink>
+                    </NavigationMenuItem>
+                    <NavigationMenuItem>
+                        <NavigationMenuLink className={navigationMenuTriggerStyle()} asChild>
+                            <Link to="/partyorders" >
+                                Party Orders
                             </Link>
                         </NavigationMenuLink>
                     </NavigationMenuItem>
@@ -137,9 +144,9 @@ export function NavbarItems() {
                             ))}
                         </ul>
                     </NavigationMenuContent>
-                </NavigationMenuItem> */}        
-        </NavigationMenu >
-    </>
+                </NavigationMenuItem> */}
+            </NavigationMenu >
+        </>
     );
 }
 
