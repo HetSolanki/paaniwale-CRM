@@ -1,3 +1,5 @@
+import { handleFetchResponse } from "@/lib/errorHandler";
+
 export const signinuser = async (data) => {
   try {
     const API = import.meta.env.VITE_API_BASE_URL;
@@ -12,12 +14,7 @@ export const signinuser = async (data) => {
       }),
     });
 
-    if (!response.ok) {
-      console.log("SignIn Error:", response.status, response.statusText);
-    }
-
-    const result = await response.json();
-    return result;
+    return await handleFetchResponse(response);
   } catch (error) {
     console.error("Error signing in user:", error);
     throw error;

@@ -68,24 +68,41 @@ export function Addcustomer() {
   const { user } = useUser();
   const { toast } = useToast();
   const formSubmit = async (data) => {
-    setClick(true);
-    const newcustomer = await addcustomer(data, user.uid._id);
+    try {
+      setClick(true);
+      const newcustomer = await addcustomer(data, user.uid._id);
 
-    if (newcustomer.error) {
+      if (newcustomer.error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: newcustomer.error || "This number is already in use.",
+        });
+        setClick(false);
+        return;
+      }
+
+      if (newcustomer.status === "success") {
+        toast({
+          title: "Success",
+          description: "Customer added successfully.",
+        });
+        setClick(false);
+        updateCustomerContext();
+        form.reset();
+        setIsVerified(false);
+        setOtpSent(false);
+        setOtp("");
+      }
+    } catch (error) {
+      console.error("Error adding customer:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "This number is already in use.",
-      });
-    }
-    if (newcustomer.status === "success") {
-      toast({
-        title: "Success",
-        description: "Customer added successfully.",
+        description:
+          error.message || "Failed to add customer. Please try again.",
       });
       setClick(false);
-      updateCustomerContext();
-      form.reset();
     }
   };
 

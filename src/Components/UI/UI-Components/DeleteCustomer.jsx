@@ -26,28 +26,45 @@ export default function DeleteCustomer({ cid }) {
   const [click, setClick] = useState(false);
 
   const { toast } = useToast();
+
   const deleteRecord = async (cid) => {
-    setClick(true);
-    const deletedCustomer = await fetch(
-      `${DOMAIN_NAME}/api/customers/customer/${cid}`,
-      {
-        method: "DELETE",
+    try {
+      setClick(true);
+      const deletedCustomer = await fetch(
+        `${DOMAIN_NAME}/api/customers/customer/${cid}`,
+        {
+          method: "DELETE",
+          headers: {
+            authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (!deletedCustomer.ok) {
+        throw new Error(`HTTP error! status: ${deletedCustomer.status}`);
       }
-    );
-    const res = await deletedCustomer.json();
-    if (res.status === "success") {
-      toast({
-        title: "Success",
-        description: "Customer Deleted",
-      });
-      updateCustomerContext();
-      setClick(false);
-    } else {
+
+      const res = await deletedCustomer.json();
+
+      if (res.status === "success") {
+        toast({
+          title: "Success",
+          description: "Customer deleted successfully.",
+        });
+        updateCustomerContext();
+      } else {
+        throw new Error(res.message || "Failed to delete customer");
+      }
+    } catch (error) {
+      console.error("Error deleting customer:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Something Went Wrong",
+        description:
+          error.message || "Failed to delete customer. Please try again.",
       });
+    } finally {
+      setClick(false);
     }
   };
 

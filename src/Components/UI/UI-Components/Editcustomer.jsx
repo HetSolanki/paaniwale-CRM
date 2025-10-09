@@ -31,7 +31,6 @@ import "react-toastify/dist/ReactToastify.css";
 import { useToast } from "../shadcn-UI/use-toast";
 import { Toaster } from "../shadcn-UI/toaster";
 import { useRef, useState } from "react";
-import { cn } from "@/lib/utils";
 import { config } from "@/Data/meta";
 
 const formSchema = z.object({
@@ -83,25 +82,38 @@ export function Editcustomer({ id }) {
   const { toast } = useToast();
 
   const formSubmit = async (data) => {
-    setClick(true);
-    const newcustomer = await editcustomer(data, id);
-    if (newcustomer.status === "success") {
-      updateCustomerContext();
+    try {
+      setClick(true);
+      const newcustomer = await editcustomer(data, id);
+
+      if (newcustomer.status === "success") {
+        updateCustomerContext();
+        toast({
+          title: "Success",
+          description: "Customer details updated successfully.",
+        });
+        form.reset();
+        setIsVerified(false);
+        setOtpSent(false);
+        setOtp("");
+        setPhoneChanged(false);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description:
+            newcustomer.message || "Failed to update customer details.",
+        });
+      }
+    } catch (error) {
+      console.error("Error updating customer:", error);
       toast({
-        title: "Success",
-        description: "Customer details updated successfully.",
-      });
-      setClick(false);
-      form.reset();
-    } else {
-      toast({
-        className: cn(
-          "top-0 right-0 flex fixed md:max-w-[420px] md:top-4 md:right-4"
-        ),
         variant: "destructive",
         title: "Error",
-        description: "Something Went Wrong.",
+        description: error.message || "Something went wrong. Please try again.",
       });
+    } finally {
+      setClick(false);
     }
   };
   const clearfield = () => {

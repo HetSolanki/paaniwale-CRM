@@ -3,15 +3,26 @@ import { useEffect, useState } from "react";
 import { jsPDF } from "jspdf";
 import { useUser } from "@/Context/UserContext";
 import { GetAllCustomerInvoice } from "@/Handlers/GetAllCustomerInvoice";
+import { createPaymentLink } from "@/Handlers/CreatepaymentLinkHandler";
 import { Button } from "../UI/shadcn-UI/button";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { useToast } from "../UI/shadcn-UI/use-toast";
 import { config } from "@/Data/meta";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "../UI/shadcn-UI/dialog";
+import { ScrollArea } from "../UI/shadcn-UI/scroll-area";
 
 export const InvoiceAll = () => {
   const user = useUser();
   const [customerInvoice, setCustomerInvoice] = useState(null);
   const [click, setClick] = useState(false);
+  const [showStatusDialog, setShowStatusDialog] = useState(false);
+  const [sendingStatus, setSendingStatus] = useState([]);
 
   const { toast } = useToast();
   const months = [
@@ -46,24 +57,78 @@ export const InvoiceAll = () => {
 
     if (!confirmation) {
       return;
-    } else {
-      alert("Send Invoice to All Customers");
-      setClick(true);
+    }
 
-      customerInvoice.map((customer, index) => {
-        const partitionSize = Math.ceil(
-          customerInvoice[index].customerEntry.length / 3
+    // Check if there are customers with entries for current month
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+
+    const customersWithoutEntries = [];
+
+    customerInvoice.forEach((customer) => {
+      const hasCurrentMonthEntry = customer.customerEntry.some((entry) => {
+        const entryDate = new Date(entry.delivery_date);
+        return (
+          entryDate.getMonth() === currentMonth &&
+          entryDate.getFullYear() === currentYear
         );
+      });
 
-        const firstPartCustomers = customerInvoice[index].customerEntry.slice(
+      if (!hasCurrentMonthEntry) {
+        customersWithoutEntries.push(
+          customer.customerDetails?.cname || "Unknown"
+        );
+      }
+    });
+
+    if (customersWithoutEntries.length > 0) {
+      toast({
+        variant: "destructive",
+        title: "No Entries Found",
+        description: `${customersWithoutEntries.length} customer(s) have no entries for ${months[currentMonth]} ${currentYear}. Please add entries before sending invoices.`,
+      });
+      return;
+    }
+
+    setClick(true);
+    setShowStatusDialog(true);
+
+    // Initialize status for all customers
+    const initialStatus = customerInvoice.map((customer) => ({
+      name: customer.customerDetails?.cname || "Unknown",
+      phone: customer.customerDetails?.cphone_number || "N/A",
+      status: "pending", // pending, processing, success, failed
+      message: "Waiting...",
+      paymentLink: null, // Store payment link URL
+    }));
+    setSendingStatus(initialStatus);
+
+    // Process each customer sequentially
+    for (let index = 0; index < customerInvoice.length; index++) {
+      const customer = customerInvoice[index];
+
+      // Update status to processing
+      setSendingStatus((prev) =>
+        prev.map((item, i) =>
+          i === index
+            ? { ...item, status: "processing", message: "Generating PDF..." }
+            : item
+        )
+      );
+
+      try {
+        const partitionSize = Math.ceil(customer.customerEntry.length / 3);
+
+        const firstPartCustomers = customer.customerEntry.slice(
           0,
           partitionSize
         );
-        const secondPartCustomers = customerInvoice[index].customerEntry.slice(
+        const secondPartCustomers = customer.customerEntry.slice(
           partitionSize,
           partitionSize * 2
         );
-        const thirdPartCustomers = customerInvoice[index].customerEntry.slice(
+        const thirdPartCustomers = customer.customerEntry.slice(
           partitionSize * 2
         );
         const pdf = new jsPDF();
@@ -96,17 +161,9 @@ export const InvoiceAll = () => {
         pdf.text("Bill to:", 15, 45);
         pdf.setFontSize(14);
         pdf.setFont("helvetica", "normal");
-        pdf.text(`${customerInvoice?.[index]?.customerDetails?.cname}`, 15, 52);
-        pdf.text(
-          `${customerInvoice?.[index]?.customerDetails?.caddress}`,
-          15,
-          59
-        );
-        pdf.text(
-          `${customerInvoice?.[index]?.customerDetails?.cphone_number}`,
-          15,
-          66
-        );
+        pdf.text(`${customer?.customerDetails?.cname}`, 15, 52);
+        pdf.text(`${customer?.customerDetails?.caddress}`, 15, 59);
+        pdf.text(`${customer?.customerDetails?.cphone_number}`, 15, 66);
 
         const date = new Date();
 
@@ -181,22 +238,17 @@ export const InvoiceAll = () => {
         pdf.setFont("helvetica", "bold");
         pdf.text("Bottle Price:", 15, yOffset);
         pdf.setFont("helvetica", "normal");
-        pdf.text(
-          `${customerInvoice?.[index]?.customerDetails?.bottle_price}`,
-          95,
-          yOffset
-        );
+        pdf.text(`${customer?.customerDetails?.bottle_price}`, 95, yOffset);
         yOffset += 10;
 
         pdf.setFont("helvetica", "bold");
         pdf.text("Total Delivered Bottle:", 15, yOffset);
         pdf.setFont("helvetica", "normal");
-        pdf.text(`${customerInvoice?.[index]?.totalBottle}`, 95, yOffset);
+        pdf.text(`${customer?.totalBottle}`, 95, yOffset);
         yOffset += 10;
 
         const total_amount =
-          customerInvoice?.[index]?.totalBottle *
-          customerInvoice?.[index]?.customerDetails?.bottle_price;
+          customer?.totalBottle * customer?.customerDetails?.bottle_price;
 
         pdf.setFont("helvetica", "bold");
         pdf.text("Subtotal:", 15, yOffset);
@@ -250,145 +302,385 @@ export const InvoiceAll = () => {
 
         pdf.setTextColor(0, 0, 0, 0.5);
         pdf.setFont("helvetica", "italic");
-        pdf.text("http://128.199.19.208:3000/", 15, yOffset);
+        pdf.text("https://paaniwale.dhruvprajapati.tech/", 15, yOffset);
 
         const pdfBlob = pdf.output("blob");
-        const reader = new FileReader();
 
-        reader.onloadend = async () => {
-          const base64data = reader.result.split(",")[1];
+        // Update status to uploading
+        setSendingStatus((prev) =>
+          prev.map((item, i) =>
+            i === index ? { ...item, message: "Uploading PDF..." } : item
+          )
+        );
 
-          try {
-            const formData = new FormData();
-            formData.append(
-              "file",
-              `data:application/pdf;base64,${base64data}`
+        // Convert blob to base64
+        const base64data = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            resolve(reader.result.split(",")[1]);
+          };
+          reader.readAsDataURL(pdfBlob);
+        });
+
+        // Upload PDF to Cloudinary
+        const formData = new FormData();
+        formData.append("file", `data:application/pdf;base64,${base64data}`);
+        formData.append("upload_preset", config.cloud.uploadPreset);
+        formData.append("folder", "Paaniwale-Invoices");
+
+        const uploadResponse = await fetch(
+          `https://api.cloudinary.com/v1_1/${config.cloud.name}/image/upload`,
+          { method: "POST", body: formData }
+        );
+
+        if (!uploadResponse.ok) {
+          throw new Error("Failed to upload PDF to Cloudinary");
+        }
+
+        const uploadData = await uploadResponse.json();
+
+        // Update status to creating payment link
+        setSendingStatus((prev) =>
+          prev.map((item, i) =>
+            i === index
+              ? { ...item, message: "Creating payment link..." }
+              : item
+          )
+        );
+
+        // Create payment link
+        let paymentLinkUrl = "";
+        try {
+          const paymentLinkData = await createPaymentLink({
+            amount: total_amount,
+            description: `Invoice for ${
+              months[new Date().getMonth()]
+            } ${new Date().getFullYear()}`,
+            customer_email: customer?.customerDetails?.cemail || "",
+            customer_name: customer?.customerDetails?.cname || "",
+            customer_phone: customer?.customerDetails?.cphone_number || "",
+            smsnotify: true,
+            emailnotify: false,
+            reminder_enable: true,
+            account_number: user?.user?.account_number || "",
+          });
+
+          if (paymentLinkData?.data?.short_url) {
+            paymentLinkUrl = paymentLinkData.data.short_url;
+
+            // Update status with payment link
+            setSendingStatus((prev) =>
+              prev.map((item, i) =>
+                i === index
+                  ? {
+                      ...item,
+                      paymentLink: paymentLinkUrl,
+                      message: "Payment link created, sending WhatsApp...",
+                    }
+                  : item
+              )
             );
-            formData.append("upload_preset", config.cloud.uploadPreset);
-            formData.append("folder", "Paaniwale-Invoices");
+          }
+        } catch (paymentError) {
+          console.error("Payment link creation failed:", paymentError);
 
-            const response = await fetch(
-              `https://api.cloudinary.com/v1_1/${config.cloud.name}/image/upload`,
-              { method: "POST", body: formData }
-            );
+          // Update status to show payment link failed but continuing
+          setSendingStatus((prev) =>
+            prev.map((item, i) =>
+              i === index
+                ? {
+                    ...item,
+                    message: "Payment link failed, sending invoice only...",
+                  }
+                : item
+            )
+          );
+        }
 
-            if (!response.ok) {
-              console.error("Failed to upload PDF");
-              setClick(false);
-              toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Failed to upload PDF!",
-              });
-              console.log("Response not ok:", await response.json());
-              throw new Error("Network response was not ok");
-            }
+        // Update status to sending
+        setSendingStatus((prev) =>
+          prev.map((item, i) =>
+            i === index
+              ? { ...item, message: "Sending WhatsApp message..." }
+              : item
+          )
+        );
 
-            const responseData = await response.json();
+        // Send WhatsApp message
+        const whatsappDate = new Date();
 
-            const date = new Date();
-            const res = await fetch(
-              `https://graph.facebook.com/${config.whatsapp.version}/${config.whatsapp.phoneNumberId}/messages`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: config.whatsapp.authorization, // Use your access token
+        // Send template message with invoice
+        const whatsappResponse = await fetch(
+          `https://graph.facebook.com/${config.whatsapp.version}/${config.whatsapp.phoneNumberId}/messages`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: config.whatsapp.authorization,
+            },
+            body: JSON.stringify({
+              messaging_product: "whatsapp",
+              recipient_type: "individual",
+              to: `91${customer?.customerDetails?.cphone_number}`,
+              type: "template",
+              template: {
+                name: "purchase_receipt_1",
+                language: {
+                  code: "en_US",
                 },
-                body: JSON.stringify({
-                  messaging_product: "whatsapp",
-                  recipient_type: "individual",
-                  to: `91${customer?.customerDetails?.cphone_number}`,
-                  type: "template",
-                  template: {
-                    name: "purchase_receipt_1",
-                    language: {
-                      code: "en_US",
-                    },
-                    components: [
+                components: [
+                  {
+                    type: "header",
+                    parameters: [
                       {
-                        type: "header",
-                        parameters: [
-                          {
-                            type: "document",
-                            document: {
-                              link: responseData.secure_url,
-                              filename: `${
-                                months[date.getMonth()]
-                              } - ${date.getFullYear()}`,
-                            },
-                          },
-                        ],
-                      },
-                      {
-                        type: "body",
-                        parameters: [
-                          { type: "text", text: total_amount },
-                          {
-                            type: "text",
-                            text: "Paaniwale",
-                          },
-                          { type: "text", text: "Invoice" },
-                        ],
+                        type: "document",
+                        document: {
+                          link: uploadData.secure_url,
+                          filename: `${
+                            months[whatsappDate.getMonth()]
+                          } - ${whatsappDate.getFullYear()}`,
+                        },
                       },
                     ],
                   },
-                }),
-              }
-            );
-
-            const data = await res.json();
-            if (!res.ok) {
-              toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Failed to send message!",
-              });
-              setClick(false);
-              throw new Error(`Error: ${data.error.message}`);
-            } else {
-              toast({
-                title: "Success",
-                description: "Message sent successfully!",
-              });
-              setClick(false);
-            }
-          } catch (error) {
-            toast({
-              variant: "destructive",
-              title: "Error",
-              description: "Failed to send message!",
-            });
-            setClick(false);
-            console.error("Failed to upload PDF:", error);
-            alert("Failed to upload PDF.");
+                  {
+                    type: "body",
+                    parameters: [
+                      { type: "text", text: total_amount.toString() },
+                      {
+                        type: "text",
+                        text: "Paaniwale",
+                      },
+                      { type: "text", text: "Invoice" },
+                    ],
+                  },
+                ],
+              },
+            }),
           }
-        };
+        );
 
-        reader.readAsDataURL(pdfBlob);
-      });
+        const whatsappData = await whatsappResponse.json();
+
+        if (!whatsappResponse.ok) {
+          throw new Error(
+            whatsappData?.error?.message || "Failed to send WhatsApp message"
+          );
+        }
+
+        // Send payment link as separate text message if available
+        if (paymentLinkUrl) {
+          await new Promise((resolve) => setTimeout(resolve, 1000)); // Small delay
+
+          const paymentMessageResponse = await fetch(
+            `https://graph.facebook.com/${config.whatsapp.version}/${config.whatsapp.phoneNumberId}/messages`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: config.whatsapp.authorization,
+              },
+              body: JSON.stringify({
+                messaging_product: "whatsapp",
+                recipient_type: "individual",
+                to: `91${customer?.customerDetails?.cphone_number}`,
+                type: "text",
+                text: {
+                  body: `💳 *Payment Link*\n\nPay online: ${paymentLinkUrl}\n\nAmount: ₹${total_amount}\n\nThank you for your business! 🙏`,
+                },
+              }),
+            }
+          );
+
+          if (!paymentMessageResponse.ok) {
+            console.error("Failed to send payment link message");
+          }
+        }
+
+        // Update status to success
+        setSendingStatus((prev) =>
+          prev.map((item, i) =>
+            i === index
+              ? {
+                  ...item,
+                  status: "success",
+                  message: paymentLinkUrl
+                    ? "Invoice & payment link sent!"
+                    : "Invoice sent successfully!",
+                }
+              : item
+          )
+        );
+      } catch (error) {
+        console.error(
+          `Failed to send invoice to ${customer?.customerDetails?.cname}:`,
+          error
+        );
+
+        // Update status to failed
+        setSendingStatus((prev) =>
+          prev.map((item, i) =>
+            i === index
+              ? {
+                  ...item,
+                  status: "failed",
+                  message: error.message || "Failed to send invoice",
+                }
+              : item
+          )
+        );
+      }
+
+      // Add a small delay between customers to avoid rate limiting
+      if (index < customerInvoice.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
     }
+
+    setClick(false);
+
+    // Get final status and show summary toast
+    setSendingStatus((finalStatus) => {
+      const successCount = finalStatus.filter(
+        (s) => s.status === "success"
+      ).length;
+      const failedCount = finalStatus.filter(
+        (s) => s.status === "failed"
+      ).length;
+
+      if (failedCount === 0) {
+        toast({
+          title: "Success",
+          description: `All ${customerInvoice.length} invoices sent successfully!`,
+        });
+      } else if (successCount === 0) {
+        toast({
+          variant: "destructive",
+          title: "Failed",
+          description: `All ${failedCount} invoices failed to send`,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Completed with issues",
+          description: `${successCount} succeeded, ${failedCount} failed`,
+        });
+      }
+
+      return finalStatus;
+    });
   };
 
   return (
-    <div>
-      {click ? (
-        <Button disabled>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Please wait
-        </Button>
-      ) : (
-        <Button
-          onClick={handleClick}
-          variant="default"
-          size="sm"
-          className="h-8 gap-1"
-        >
-          <Send className="h-3.5 w-3.5" />
-          Send Invoice
-        </Button>
-      )}
-    </div>
+    <>
+      <div>
+        {click ? (
+          <Button disabled>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Sending...
+          </Button>
+        ) : (
+          <Button
+            onClick={handleClick}
+            variant="default"
+            size="sm"
+            className="h-8 gap-1"
+          >
+            <Send className="h-3.5 w-3.5" />
+            Send Invoice to All
+          </Button>
+        )}
+      </div>
+
+      {/* Status Dialog */}
+      <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Sending Invoices</DialogTitle>
+            <DialogDescription>
+              Progress:{" "}
+              {
+                sendingStatus.filter(
+                  (s) => s.status === "success" || s.status === "failed"
+                ).length
+              }{" "}
+              / {sendingStatus.length} customers
+            </DialogDescription>
+          </DialogHeader>
+
+          <ScrollArea className="h-[400px] w-full pr-4">
+            <div className="space-y-3">
+              {sendingStatus.map((status, index) => (
+                <div
+                  key={index}
+                  className="flex items-start gap-3 p-3 rounded-lg border bg-card"
+                >
+                  <div className="mt-0.5">
+                    {status.status === "pending" && (
+                      <Clock className="h-5 w-5 text-muted-foreground" />
+                    )}
+                    {status.status === "processing" && (
+                      <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />
+                    )}
+                    {status.status === "success" && (
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    )}
+                    {status.status === "failed" && (
+                      <XCircle className="h-5 w-5 text-red-500" />
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-medium truncate">{status.name}</p>
+                      <span className="text-xs text-muted-foreground shrink-0">
+                        {status.phone}
+                      </span>
+                    </div>
+                    <p
+                      className={`text-sm mt-1 ${
+                        status.status === "failed"
+                          ? "text-red-500"
+                          : status.status === "success"
+                          ? "text-green-600"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {status.message}
+                    </p>
+                    {status.paymentLink && (
+                      <div className="mt-2 p-2 bg-muted rounded text-xs">
+                        <p className="font-medium text-primary mb-1">
+                          Payment Link:
+                        </p>
+                        <a
+                          href={status.paymentLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline break-all"
+                        >
+                          {status.paymentLink}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+
+          <div className="flex justify-end pt-4">
+            <Button
+              onClick={() => setShowStatusDialog(false)}
+              disabled={click}
+              variant="outline"
+            >
+              {click ? "Processing..." : "Close"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
