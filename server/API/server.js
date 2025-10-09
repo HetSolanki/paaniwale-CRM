@@ -9,6 +9,10 @@ import otpRoutes from "./routes/otpRoutes.js";
 import stats_api from "./routes/stats_route.js";
 import inquiry_api from "./routes/inquiry_route.js";
 import partyorder_api from "./routes/partyOrder_route.js";
+import activitylog_api from "./routes/activityLog_route.js";
+import adminStats_api from "./routes/adminStats_route.js";
+import settings_api from "./routes/settings_route.js";
+import reports_api from "./routes/reports_route.js";
 import cors from "cors";
 import process from "process";
 
@@ -90,14 +94,20 @@ app.get("/health", (req, res) => {
 
 app.use("/api/auth", user_api);
 app.use("/api/customers", customer_api);
+app.use("/api/customer", customer_api);
 app.use("/api/customerentry", customerentry_api);
 app.use("/api/shop", shop_api);
 app.use("/api/paymentlink", payment_link_api);
+app.use("/api/payment", paymentdetails_api);
 app.use("/api/paymentdetails", paymentdetails_api);
 app.use("/api/otp", otpRoutes);
 app.use("/api/stats", stats_api);
 app.use("/api/inquiry", inquiry_api);
 app.use("/api/partyorder", partyorder_api);
+app.use("/api/activity-log", activitylog_api);
+app.use("/api/admin/stats", adminStats_api);
+app.use("/api/settings", settings_api);
+app.use("/api/reports", reports_api);
 
 app.use((err, req, res, next) => {
   if (res.headersSent) {
