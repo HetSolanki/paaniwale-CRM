@@ -5,10 +5,67 @@ const CustomerContext = createContext();
 
 export default function CustomerProvider({ children }) {
   const [customer, setCustomer] = useState(null);
-  const token = localStorage.getItem("token");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+
     const fetchCustomerData = async () => {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        const customerDetails = await fetch(
+          `${DOMAIN_NAME}/api/customers/customerall`,
+          {
+            method: "GET",
+            headers: {
+              authorization: "Bearer " + token,
+            },
+          }
+        );
+
+        if (!customerDetails.ok) {
+          throw new Error(`HTTP error! status: ${customerDetails.status}`);
+        }
+
+        const customerRes = await customerDetails.json();
+
+        if (customerRes.status === "success" && customerRes.data) {
+          setCustomer(customerRes.data);
+        } else {
+          throw new Error(customerRes.message || "Failed to fetch customers");
+        }
+      } catch (err) {
+        console.error("Error fetching customers:", err);
+        setError(err.message);
+        setCustomer(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCustomerData();
+  }, []); // Empty dependency array - only run once on mount
+
+  const updateCustomerContext = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      console.warn("No token found, cannot update customer context");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
       const customerDetails = await fetch(
         `${DOMAIN_NAME}/api/customers/customerall`,
         {
@@ -18,31 +75,27 @@ export default function CustomerProvider({ children }) {
           },
         }
       );
-      const customerRes = await customerDetails.json();
-      setCustomer(customerRes.data);
-     
-    };
-    if (token)
-      fetchCustomerData();
-      
-  }, []);
 
-  const updateCustomerContext = async () => {
-    const customerDetails = await fetch(
-      `${DOMAIN_NAME}/api/customers/customerall`,
-      {
-        method: "GET",
-        headers: {
-          authorization: "Bearer " + token,
-        },
+      if (!customerDetails.ok) {
+        throw new Error(`HTTP error! status: ${customerDetails.status}`);
       }
-    );
 
-    const customerRes = await customerDetails.json();
-    setCustomer(customerRes.data);
+      const customerRes = await customerDetails.json();
+
+      if (customerRes.status === "success" && customerRes.data) {
+        setCustomer(customerRes.data);
+      } else {
+        throw new Error(customerRes.message || "Failed to update customers");
+      }
+    } catch (err) {
+      console.error("Error updating customers:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const value = { customer, updateCustomerContext };
+  const value = { customer, loading, error, updateCustomerContext };
   return (
     <CustomerContext.Provider value={value}>
       {children}

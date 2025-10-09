@@ -25,7 +25,6 @@ import {
 } from "@/Components/UI/shadcn-UI/popover";
 import { useContext } from "react";
 import CustomerEntryContext from "@/Context/CustomerEntryContext";
-import process from "process";
 
 
 const FormSchema = z.object({
@@ -35,7 +34,7 @@ const FormSchema = z.object({
 });
 
 export function DatePickerForm() {
-  const DOMAIN_NAME = process.env.VITE_API_BASE_URL;
+  const DOMAIN_NAME = import.meta.env.VITE_API_BASE_URL;
   const { customers, setCustomers } = useContext(CustomerEntryContext);
 
   const token = localStorage.getItem("token");
@@ -53,9 +52,10 @@ export function DatePickerForm() {
     const res = await customers.json();
     if (res.status === "success") {
       const selectedcustomers = res.data.filter((customer) => {
-        return customer.delivery_date === date;
+        // Filter by date AND ensure customer has valid cid
+        return customer && customer.cid && customer.delivery_date === date;
       });
-      setCustomers(selectedcustomers)
+      setCustomers(selectedcustomers);
     }
   };
   const getdeliverydateData = (date) => {

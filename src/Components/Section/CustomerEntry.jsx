@@ -20,7 +20,7 @@ const DOMAIN_NAME = import.meta.env.VITE_API_BASE_URL;
 
 export default function CustomerEntry() {
   const navigate = useNavigate();
-  const { customer } = useCustomer();
+  const { customer, loading, error } = useCustomer();
 
   const { theme } = useTheme();
   useEffect(() => {
@@ -50,8 +50,10 @@ export default function CustomerEntry() {
     if (res.status === "success") {
       const todayscustomer = res.data.filter((customer) => {
         return (
+          customer &&
+          customer.cid &&
           customer.delivery_date ===
-          new Date(Date.now()).toISOString().split("T")[0]
+            new Date(Date.now()).toISOString().split("T")[0]
         );
       });
       return todayscustomer;
@@ -64,12 +66,27 @@ export default function CustomerEntry() {
     <SkeletonTheme
       baseColor={`${theme === "dark" ? "#1c1c1c" : ""}`}
       highlightColor={`${theme === "dark" ? "#525252" : ""}`}
-    >   
+    >
       <div>
         <Navbar />
         <div className="p-2 py-4 sm:p-8">
           <Card className="xl:col-span-2" x-chunk="dashboard-01-chunk-4">
-            {customer ? (
+            {loading ? (
+              <div className="mt-4 py-3 px-4">
+                <Skeleton className="h-[90px]" enableAnimation={true} />
+              </div>
+            ) : error ? (
+              <CardHeader className="flex flex-row items-center px-4 sm:p-6">
+                <div className="grid gap-2">
+                  <CardTitle className="text-xl sm:text-2xl text-red-500">
+                    Error Loading Data
+                  </CardTitle>
+                  <CardDescription className="text-red-400">
+                    {error}. Please try refreshing the page.
+                  </CardDescription>
+                </div>
+              </CardHeader>
+            ) : customer ? (
               <CardHeader className="flex flex-row items-center px-4 sm:p-6">
                 <div className="grid gap-2">
                   <CardTitle className="text-xl sm:text-2xl">
@@ -88,20 +105,23 @@ export default function CustomerEntry() {
                   <ArrowUpRight className="h-4 w-4" />
                 </Button>
               </CardHeader>
-            ) : (
-              <div className="mt-4 py-3 px-4">
-                <Skeleton className="h-[90px]" enableAnimation={true} />
-              </div>
-            )}
-            {customer ? (
-              <CardContent className="px-3 sm:p-6">
-                {customer && <DataTable data={customer} columns={columns} />}
-              </CardContent>
-            ) : (
+            ) : null}
+
+            {loading ? (
               <div className="py-3 px-4 mb-4">
                 <Skeleton className="h-[300px]" enableAnimation={true} />
               </div>
-            )}
+            ) : error ? (
+              <CardContent className="px-3 sm:p-6">
+                <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                  Failed to load customer entries
+                </div>
+              </CardContent>
+            ) : customer ? (
+              <CardContent className="px-3 sm:p-6">
+                <DataTable data={customer} columns={columns} />
+              </CardContent>
+            ) : null}
           </Card>
         </div>
       </div>

@@ -106,13 +106,41 @@ export function Editcustomer({ id }) {
   };
   const clearfield = () => {
     form.reset();
+    setIsVerified(false);
+    setOtpSent(false);
+    setOtp("");
+    setPhoneChanged(false);
   };
 
   const [isVerified, setIsVerified] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
   const [verifying, setVerifying] = useState(false);
+  const [originalPhone, setOriginalPhone] = useState("");
+  const [phoneChanged, setPhoneChanged] = useState(false);
   let otpgenerated = useRef(null);
+
+  // Set original phone number when customer data loads
+  if (!customerDetails.isLoading && originalPhone === "") {
+    setOriginalPhone(String(cphone_number));
+  }
+
+  // Check if phone number has changed
+  const checkPhoneChange = (newPhone) => {
+    const hasChanged = newPhone !== originalPhone;
+    setPhoneChanged(hasChanged);
+    if (!hasChanged) {
+      // If phone number is reverted to original, no need for verification
+      setIsVerified(true);
+      setOtpSent(false);
+      setOtp("");
+    } else {
+      // If phone number changed, require verification
+      setIsVerified(false);
+      setOtpSent(false);
+      setOtp("");
+    }
+  };
 
   const handleSendOtp = async (phone) => {
     try {
@@ -219,8 +247,10 @@ export function Editcustomer({ id }) {
   return (
     <>
       <Dialog
-        onOpenChange={() => {
-          clearfield;
+        onOpenChange={(open) => {
+          if (!open) {
+            clearfield();
+          }
         }}
       >
         <DialogTrigger asChild>
@@ -281,8 +311,12 @@ export function Editcustomer({ id }) {
                               type="text"
                               placeholder="Customer Phone Number"
                               {...field}
+                              onChange={(e) => {
+                                field.onChange(e);
+                                checkPhoneChange(e.target.value);
+                              }}
                             />
-                            {!otpSent && (
+                            {phoneChanged && !isVerified && !otpSent && (
                               <Button
                                 type="button"
                                 size="sm"
@@ -313,7 +347,7 @@ export function Editcustomer({ id }) {
                       </FormItem>
                     )}
                   />
-                  {otpSent && !isVerified && (
+                  {otpSent && !isVerified && phoneChanged && (
                     <div className="flex gap-2 mt-2">
                       <Input
                         type="text"
@@ -336,9 +370,9 @@ export function Editcustomer({ id }) {
                       </Button>
                     </div>
                   )}
-                  {isVerified && (
+                  {isVerified && phoneChanged && (
                     <div className="text-green-600 text-xs mt-1">
-                      Phone number verified
+                      ✓ Phone number verified
                     </div>
                   )}
                 </div>
@@ -423,7 +457,7 @@ export function Editcustomer({ id }) {
                   <Button
                     type="submit"
                     className="font-semibold"
-                    disabled={otpSent && !isVerified}
+                    disabled={phoneChanged && !isVerified}
                   >
                     Update Customer
                   </Button>
