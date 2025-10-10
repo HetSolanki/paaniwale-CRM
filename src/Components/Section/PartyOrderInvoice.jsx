@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from "@/Components/UI/shadcn-UI/dialog";
 import { Loader2, FileText, Send } from "lucide-react";
-import { config } from "@/Data/meta";
+import { config } from "@/Data/config";
 
 export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
   const { user } = useUser();
