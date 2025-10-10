@@ -25,7 +25,6 @@ import {
 } from "@/Components/UI/shadcn-UI/popover";
 import { useContext } from "react";
 import CustomerEntryContext from "@/Context/CustomerEntryContext";
-import process from "process";
 
 
 const FormSchema = z.object({
@@ -35,27 +34,41 @@ const FormSchema = z.object({
 });
 
 export function DatePickerForm() {
-  const DOMAIN_NAME = process.env.VITE_API_BASE_URL;
+  const DOMAIN_NAME = import.meta.env.VITE_API_BASE_URL;
   const { customers, setCustomers } = useContext(CustomerEntryContext);
 
   const token = localStorage.getItem("token");
   const getData = async (date) => {
-    const customers = await fetch(
-      `${DOMAIN_NAME}/api/customerentry/getallcustomerentrys/`,
-      {
-        method: "GET",
-        headers: {
-          authorization: "Bearer " + token,
-        },
-      }
-    );
+    try {
+      const customers = await fetch(
+        `${DOMAIN_NAME}/api/customerentry/getallcustomerentrys/`,
+        {
+          method: "GET",
+          headers: {
+            authorization: "Bearer " + token,
+          },
+        }
+      );
 
-    const res = await customers.json();
-    if (res.status === "success") {
-      const selectedcustomers = res.data.filter((customer) => {
-        return customer.delivery_date === date;
-      });
-      setCustomers(selectedcustomers)
+      if (!customers.ok) {
+        throw new Error(`HTTP error! status: ${customers.status}`);
+      }
+
+      const res = await customers.json();
+
+      if (res.status === "success") {
+        const selectedcustomers = res.data.filter((customer) => {
+          // Filter by date AND ensure customer has valid cid
+          return customer && customer.cid && customer.delivery_date === date;
+        });
+        setCustomers(selectedcustomers);
+      } else {
+        throw new Error(res.message || "Failed to fetch customer entries");
+      }
+    } catch (error) {
+      console.error("Error fetching customer entries:", error);
+      // You could add a toast here if you import it
+      setCustomers([]);
     }
   };
   const getdeliverydateData = (date) => {

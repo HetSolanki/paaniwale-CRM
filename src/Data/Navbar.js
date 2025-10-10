@@ -3,4 +3,5 @@ export const NAVBAR = [
   { name: "Customers", link: "/customers" },
   { name: "Customer-Entry", link: "/customerentry" },
   { name: "Payment Details", link: "/paymentdetails" },
+  { name: "Party Orders", link: "/partyorders" },
 ];

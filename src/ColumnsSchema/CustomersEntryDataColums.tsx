@@ -20,26 +20,27 @@ export type Customer = {
   cid: string;
 };
 
-export const columns1: ColumnDef<Customer>[] = [  
-  {  
-    accessorKey: "cid",    
+export const columns1: ColumnDef<Customer>[] = [
+  {
+    accessorKey: "cid",
     header: () => <div className="text-center sm:text-left">Customer Name</div>,
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("cid").cname}</div>
-    ),
+    cell: ({ row }) => {
+      const cid = row.getValue("cid") as any;
+      return <div className="capitalize">{cid?.cname || "N/A"}</div>;
+    },
   },
   {
     accessorKey: "delivery_date",
     header: () => <div className="text-center sm:text-left">Delivery Date</div>,
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("delivery_date")}</div>
+      <div className="capitalize">{row.getValue("delivery_date") || "N/A"}</div>
     ),
   },
   {
     accessorKey: "bottle_count",
     header: () => <div className="text-center sm:text-left">Bottle Count</div>,
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("bottle_count")}</div>
+      <div className="capitalize">{row.getValue("bottle_count") || 0}</div>
     ),
   },
   {
@@ -52,7 +53,7 @@ export const columns1: ColumnDef<Customer>[] = [
         {row.getValue("delivery_status") === "Present" ? (
           <Badge variant="default">Present</Badge>
         ) : (
-          <Badge variant="destructive">Abset</Badge>
+          <Badge variant="destructive">Absent</Badge>
         )}
       </>
     ),

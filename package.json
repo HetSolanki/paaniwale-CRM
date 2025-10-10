@@ -94,7 +94,7 @@
     "react-to-print": "^2.15.1",
     "react-toastify": "^10.0.5",
     "reactstrap": "^9.2.2",
-    "recharts": "^2.12.7",
+    "recharts": "^2.15.4",
     "sonner": "^1.4.41",
     "styled-components": "^6.1.12",
     "tailwind-merge": "^2.3.0",

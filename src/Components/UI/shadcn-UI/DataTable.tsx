@@ -36,7 +36,7 @@ import {
   TableRow,
 } from "../shadcn-UI/table";
 
-export function DataTable({ data, columns }) {
+export function DataTable({ data, columns, meta, filterColumn = "cname", filterPlaceholder = "Filter..." }) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -48,6 +48,7 @@ export function DataTable({ data, columns }) {
   const table = useReactTable({
     data,
     columns,
+    meta,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -68,10 +69,10 @@ export function DataTable({ data, columns }) {
     <div className="w-full">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter Customers..."
-          value={(table.getColumn("cname")?.getFilterValue() as string) ?? ""}
+          placeholder={filterPlaceholder}
+          value={(table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("cname")?.setFilterValue(event.target.value)
+            table.getColumn(filterColumn)?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -113,9 +114,9 @@ export function DataTable({ data, columns }) {
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   );
                 })}

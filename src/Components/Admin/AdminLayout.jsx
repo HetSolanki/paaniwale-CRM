@@ -3,7 +3,6 @@ import { Outlet, useNavigate } from "react-router-dom";
 import {
   Users,
   Settings,
-  Package,
   FileText,
   Home,
   LogOut,
@@ -12,6 +11,9 @@ import {
   Menu,
   UserCog,
   BarChart4,
+  Activity,
+  HelpCircle,
+  CreditCard,
 } from "lucide-react";
 import "react-loading-skeleton/dist/skeleton.css";
 
@@ -73,9 +75,24 @@ export default function AdminLayout() {
             onClick={() => handlePageChange("customers")}
           >
             <Users className="mr-2 h-5 w-5" />
-            Customers
+            Customers Management
           </Button>
-
+          <Button
+            variant={activePage === "payments" ? "secondary" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => handlePageChange("payments")}
+          >
+            <CreditCard className="mr-2 h-5 w-5" />
+            Payment Review
+          </Button>
+          <Button
+            variant={activePage === "inquiries" ? "secondary" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => handlePageChange("inquiries")}
+          >
+            <HelpCircle className="mr-2 h-5 w-5" />
+            Inquiries
+          </Button>
           <Button
             variant={activePage === "reports" ? "secondary" : "ghost"}
             className="w-full justify-start"
@@ -83,6 +100,14 @@ export default function AdminLayout() {
           >
             <BarChart4 className="mr-2 h-5 w-5" />
             Reports
+          </Button>
+          <Button
+            variant={activePage === "activity-logs" ? "secondary" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => handlePageChange("activity-logs")}
+          >
+            <Activity className="mr-2 h-5 w-5" />
+            Activity Logs
           </Button>
           <Button
             variant={activePage === "settings" ? "secondary" : "ghost"}
@@ -100,9 +125,9 @@ export default function AdminLayout() {
             className="w-full justify-start"
             onClick={() => {
               localStorage.removeItem("token");
-              navigate("/signin");
+              navigate("/");
             }}
-          > 
+          >
             <LogOut className="mr-2 h-5 w-5" />
             Logout
           </Button>

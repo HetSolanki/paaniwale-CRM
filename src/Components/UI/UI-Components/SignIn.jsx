@@ -25,7 +25,7 @@ import { useUser } from "@/Context/UserContext";
 import { Loader2 } from "lucide-react";
 import { useToast } from "../shadcn-UI/use-toast";
 import { Toaster } from "../shadcn-UI/toaster";
-import { signinuser } from '@/Handlers/SignInHandler';
+import { signinuser } from "@/Handlers/SignInHandler";
 
 const formSchema = z.object({
   phone_number: z
@@ -65,16 +65,13 @@ const formSchema = z.object({
     }),
 });
 
-
- 
 export default function SignIn() {
-
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       phone_number: localStorage.getItem("phone_number") || "",
       password: localStorage.getItem("password") || "",
-    },    
+    },
   });
 
   const navigate = useNavigate();
@@ -83,55 +80,69 @@ export default function SignIn() {
   const { toast } = useToast();
 
   const formSubmit = async (data) => {
-    setClick(true);
-    const signin = await signinuser(data);
+    try {
+      setClick(true);
+      const signin = await signinuser(data);
 
-    console.log("SignIn Response:", signin);
+      if (signin.success === true) {
+        localStorage.setItem("token", signin.token);
 
-    if (signin.success === true) {
-      localStorage.setItem("token", signin.token);
-      
-        updateUserContext();                   
+        updateUserContext();
 
+        toast({
+          title: "Success",
+          description: "Logged in successfully!",
+        });
 
-      if (signin.is_admin === true) {
-        localStorage.setItem("is_admin", signin.is_admin);
-        setTimeout(() => {
-          navigate("/admin/dashboard");
-        }, 800);
+        if (signin.is_admin === true) {
+          localStorage.setItem("is_admin", signin.is_admin);
+          setTimeout(() => {
+            navigate("/admin/dashboard");
+          }, 800);
+        } else {
+          localStorage.setItem("is_admin", signin.is_admin);
+          setTimeout(() => {
+            navigate("/dashboard");
+          }, 800);
+        }
+      } else if (signin.data === "Invalid Credentials") {
+        toast({
+          variant: "destructive",
+          title: "Login Error",
+          description:
+            "Invalid Credentials. Please check your phone number and password.",
+        });
+      } else if (signin.data === "Invalid Phone Number") {
+        toast({
+          variant: "destructive",
+          title: "Login Error",
+          description: "Invalid Phone Number. Please check and try again.",
+        });
       } else {
-        localStorage.setItem("is_admin", signin.is_admin);
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 800);
+        toast({
+          variant: "destructive",
+          title: "Login Error",
+          description:
+            signin.message || signin.data || "An unexpected error occurred",
+        });
       }
-    } else if (signin.data === "Invalid Credentials") {  
+    } catch (error) {
+      console.error("Sign in error:", error);
       toast({
         variant: "destructive",
         title: "Login Error",
-        description: "Invalid Credentials",
+        description: error.message || "Failed to sign in. Please try again.",
       });
-    } else if ( signin.data  === "Invalid Phone Number") {
-      toast({
-        variant: "destructive",
-        title: "Login Error",
-        description: "Invalid Phone Number",
-      });
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Login Error",
-        description: "An unexpected error occurred",
-      });
+    } finally {
+      setClick(false);
     }
-    setClick(false);
   };
 
   const [rmCheck, setRmCheck] = useState("true");
 
   const handlecheckchange = (e) => {
-    setRmCheck(e.target.checked);    
-  }
+    setRmCheck(e.target.checked);
+  };
 
   return (
     <>

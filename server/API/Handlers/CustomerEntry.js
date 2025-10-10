@@ -2,6 +2,26 @@ import mongoose from "mongoose";
 import CustomerEntry from "../Schema/customerEntry.js";
 import PaymentEntry from "../Schema/PaymentDetail.js";
 
+// for admin
+
+export const getAllCustomerEntryAdmin = async (req, res) => {
+  try {
+    const allCustomerEntry = await CustomerEntry.find({
+      cid: req.params.id,
+    }).populate("cid");
+    if (!allCustomerEntry) {
+      return res.json({
+        message: "No Customer's Entry Found",
+        status: "error",
+      });
+    }
+    // console.log(allCustomerEntry);
+    res.json({ data: allCustomerEntry, status: "success" });
+  } catch (error) {
+    res.json({ message: error });
+  }
+};
+
 export const getAllCustomerEntry = async (req, res) => {
   try {
     const allCustomerEntry = await CustomerEntry.find({

@@ -22,10 +22,17 @@ import PaymentDetails from "./Components/Section/PaymentDetails";
 import PaymentsEntryData from "./Components/Section/PaymentsEntryData";
 import LandingPage from "./Components/Section/LandingPage";
 import { SkeletonTheme } from "react-loading-skeleton";
-import AdminDashboard from "./Components/Admin/Admindashboard";
 import AdminLayout from "./Components/Admin/AdminLayout";
-import UserManagement from "./Components/Admin/UserManagement";
 import InquiryDashboard from "./Components/Admin/InquiryDashboard";
+import EnhancedAdminDashboard from "./Components/Admin/EnhancedAdminDashboard";
+import EnhancedUserManagement from "./Components/Admin/EnhancedUserManagement";
+import ActivityLogs from "./Components/Admin/ActivityLogs";
+import SystemSettings from "./Components/Admin/SystemSettings";
+import ReportsGeneration from "./Components/Admin/ReportsGeneration";
+import AdminPaymentReview from "./Components/Admin/AdminPaymentReview";
+import PartyOrders from "./Components/Section/PartyOrders";
+import UserProvider from "./Context/UserContext";
+import AdminCustomerManagement from "./Components/Admin/AdminCustomerManagement";
 
 function App() {
   const [defaultRoute, setDefaultRoute] = useState("/mainpage");
@@ -39,105 +46,122 @@ function App() {
 
   return (
     <>
-      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-        <SkeletonTheme
-          baseColor={`${mediaQuery.matches ? "#1c1c1c" : ""}`}
-          highlightColor={`${mediaQuery.matches ? "#525252" : ""}`}
-        >
-          <BrowserRouter>
-            <Routes>
-              <Route
-                path="/"
-                element={<Navigate to={defaultRoute} replace />}
-              />
-
-              {/* User Routes */}
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/signin" element={<SignIn />} />
-              <Route path="/signupdp" element={<SignUp />} />
-              <Route path="/customers" element={<Customers />} />
-              <Route path="/customerentry" element={<CustomerEntry />} />
-              <Route
-                path="/customerentrydata"
-                element={<CustomerEntryData />}
-              />
-              <Route path="/paymentdetails" element={<PaymentDetails />} />
-              <Route path="/paymentsdata" element={<PaymentsEntryData />} />
-              <Route path="/invoice" element={<Invoice />} />
-              <Route path="/invoicex" element={<Invoicex />} />
-              <Route path="/inquirydashboard" element={<InquiryDashboard />} />
-              {/* Admin Routes */}
-              <Route path="/admin/" element={<AdminLayout />}>
-                <Route path="dashboard" element={<AdminDashboard />} />
-                <Route path="users" element={<UserManagement />} />
-                <Route path="customers" element={<Customers />} />
+      <UserProvider>
+        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+          <SkeletonTheme
+            baseColor={`${mediaQuery.matches ? "#1c1c1c" : ""}`}
+            highlightColor={`${mediaQuery.matches ? "#525252" : ""}`}
+          >
+            <BrowserRouter>
+              <Routes>
                 <Route
-                  path="customerentrydata"
+                  path="/"
+                  element={<Navigate to={defaultRoute} replace />}
+                />
+
+                {/* User Routes */}
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/signin" element={<SignIn />} />
+                <Route path="/signupdp" element={<SignUp />} />
+                <Route path="/customers" element={<Customers />} />
+                <Route path="/customerentry" element={<CustomerEntry />} />
+                <Route
+                  path="/customerentrydata"
                   element={<CustomerEntryData />}
                 />
-                <Route path="paymentdetails" element={<PaymentDetails />} />
-                <Route path="paymentsdata" element={<PaymentsEntryData />} />
-                <Route path="*" element={<UnderConstructionPage />} />
-              </Route>
-              {/* <Route path="/admindashboard" element={<AdminDashboard />} />
+                <Route path="/paymentdetails" element={<PaymentDetails />} />
+                <Route path="/paymentsdata" element={<PaymentsEntryData />} />
+                <Route path="/invoice" element={<Invoice />} />
+                <Route path="/invoicex" element={<Invoicex />} />
+                <Route
+                  path="/inquirydashboard"
+                  element={<InquiryDashboard />}
+                />
+                <Route path="/partyorders" element={<PartyOrders />} />
+                {/* Admin Routes */}
+                <Route path="/admin/" element={<AdminLayout />}>
+                  <Route
+                    path="dashboard"
+                    element={<EnhancedAdminDashboard />}
+                  />
+                  <Route path="users" element={<EnhancedUserManagement />} />
+                  <Route
+                    path="customers"
+                    element={<AdminCustomerManagement />}
+                  />
+                  <Route path="payments" element={<AdminPaymentReview />} />
+                  <Route path="inquiries" element={<InquiryDashboard />} />
+                  <Route path="reports" element={<ReportsGeneration />} />
+                  <Route path="activity-logs" element={<ActivityLogs />} />
+                  <Route path="settings" element={<SystemSettings />} />
+
+                  <Route path="*" element={<UnderConstructionPage />} />
+                </Route>
+                {/* <Route path="/admindashboard" element={<AdminDashboard />} />
               <Route path="/admincustomers" element={<Customers />} />
               <Route path="/admincustomerentry" element={<CustomerEntry />} /> */}
-              <Route
-                path="/admincustomerentrydata"
-                element={<CustomerEntryData />}
-              />
-              <Route path="/adminpaymentdetails" element={<PaymentDetails />} />
-              <Route
-                path="/adminpaymentsdata"
-                element={<PaymentsEntryData />}
-              />
+                <Route
+                  path="/admincustomerentrydata"
+                  element={<CustomerEntryData />}
+                />
+                <Route
+                  path="/adminpaymentdetails"
+                  element={<PaymentDetails />}
+                />
+                <Route
+                  path="/adminpaymentsdata"
+                  element={<PaymentsEntryData />}
+                />
 
-              {/* Common Routes */}
-              <Route path="/mainpage" element={<LandingPage />} />
-              <Route
-                path="/profile"
-                element={<SettingsLayout children={<SettingsProfilePage />} />}
-              />
-              <Route
-                path="/notifications-settings"
-                element={
-                  <SettingsLayout children={<SettingsNotificationsPage />} />
-                }
-              />
-              {/* <Route
+                {/* Common Routes */}
+                <Route path="/mainpage" element={<LandingPage />} />
+                <Route
+                  path="/profile"
+                  element={
+                    <SettingsLayout children={<SettingsProfilePage />} />
+                  }
+                />
+                <Route
+                  path="/notifications-settings"
+                  element={
+                    <SettingsLayout children={<SettingsNotificationsPage />} />
+                  }
+                />
+                {/* <Route
               path="/bankdetails"
               element={<SettingsLayout children={<SettingsBankDetailsPage />} />}
             /> */}
-              <Route
-                path="/shopdetails"
-                element={
-                  <SettingsLayout children={<SettingsShopDetailsPage />} />
-                }
-              />
-              <Route
-                path="/displaydetails"
-                element={
-                  <SettingsLayout
-                    children={
-                      <SettingsSettingsDisplayPage
-                        setDefaultRoute={setDefaultRoute}
-                      />
-                    }
-                  />
-                }
-              />
-              <Route path="/404" element={<Error />} />
-              <Route path="/comming-soon" element={<ComingSoonPage />} />
-              <Route
-                path="/under-construction"
-                element={<UnderConstructionPage />}
-              />
+                <Route
+                  path="/shopdetails"
+                  element={
+                    <SettingsLayout children={<SettingsShopDetailsPage />} />
+                  }
+                />
+                <Route
+                  path="/displaydetails"
+                  element={
+                    <SettingsLayout
+                      children={
+                        <SettingsSettingsDisplayPage
+                          setDefaultRoute={setDefaultRoute}
+                        />
+                      }
+                    />
+                  }
+                />
+                <Route path="/404" element={<Error />} />
+                <Route path="/comming-soon" element={<ComingSoonPage />} />
+                <Route
+                  path="/under-construction"
+                  element={<UnderConstructionPage />}
+                />
 
-              <Route path="*" element={<Navigate to="/404" />} />
-            </Routes>
-          </BrowserRouter>
-        </SkeletonTheme>
-      </ThemeProvider>
+                <Route path="*" element={<Navigate to="/404" />} />
+              </Routes>
+            </BrowserRouter>
+          </SkeletonTheme>
+        </ThemeProvider>
+      </UserProvider>
     </>
   );
 }
