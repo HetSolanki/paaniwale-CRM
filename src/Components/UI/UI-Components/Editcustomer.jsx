@@ -31,7 +31,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useToast } from "../shadcn-UI/use-toast";
 import { Toaster } from "../shadcn-UI/toaster";
 import { useRef, useState } from "react";
-import { config } from "@/Data/meta";
+import { config } from "@/Data/config";
 
 const formSchema = z.object({
   cname: z.string().min(1, {
