@@ -29,7 +29,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { Toaster } from "../shadcn-UI/toaster";
 import { useToast } from "../shadcn-UI/use-toast";
 import { useRef, useState } from "react";
-import { config } from "@/Data/meta";
+import { config } from "@/Data/config";
 
 const formSchema = z.object({
   cname: z

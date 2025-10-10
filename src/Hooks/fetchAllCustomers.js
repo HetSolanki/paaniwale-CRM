@@ -1,7 +1,7 @@
-const DOMAIN_NAME = import.meta.env.VITE_API_BASE_URL;
+import { config } from "@/Data/config";
 
 export const fetchCustomers = async () => {
-  const res = await fetch(`${DOMAIN_NAME}/api/customers/customerall`, {
+  const res = await fetch(`${config.baseUrl}/api/customers/customerall`, {
     method: "GET",
     headers: {
       authorization: "Bearer " + localStorage.getItem("token"),

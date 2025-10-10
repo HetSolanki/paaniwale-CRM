@@ -32,7 +32,7 @@ import { useToast } from "../shadcn-UI/use-toast";
 import { Toaster } from "../shadcn-UI/toaster";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { config } from "@/Data/meta";
+import { config } from "@/Data/config";
 
 const formSchema = z.object({
   cname: z.string().min(1, {

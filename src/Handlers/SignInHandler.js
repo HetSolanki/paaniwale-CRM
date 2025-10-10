@@ -1,7 +1,8 @@
+import { config } from "@/Data/config";
+
 export const signinuser = async (data) => {
   try {
-    const API = import.meta.env.VITE_API_BASE_URL;
-    const response = await fetch(`${API}/api/auth/signin`, {
+    const response = await fetch(`${config.baseUrl}/api/auth/signin`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

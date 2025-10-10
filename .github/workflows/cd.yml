@@ -13,24 +13,15 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Build Docker image (Frontend)
+      - name: pull images
         run: |
-          docker build \
-          --build-arg VITE_API_BASE_URL=${{secrets.VITE_API_BASE_URL}} \
-          --build-arg VITE_CLOUD_NAME=${{secrets.VITE_CLOUD_NAME}} \
-          --build-arg VITE_CLOUD_API_KEY=${{secrets.VITE_CLOUD_API_KEY}} \
-          --build-arg VITE_CLOUD_API_SECRET=${{secrets.VITE_CLOUD_API_SECRET}} \
-          --build-arg VITE_CLOUD_UPLOAD_PRESET=${{secrets.VITE_CLOUD_UPLOAD_PRESET}} \
-          --build-arg VITE_WHATSAPP_BUSSINESS_ID=${{secrets.VITE_WHATSAPP_BUSSINESS_ID}} \
-          --build-arg VITE_WHATSAPP_PHONE_NUMBER_ID=${{secrets.VITE_WHATSAPP_PHONE_NUMBER_ID}} \
-          --build-arg VITE_WHATSAPP_USER_ACCESS_TOKEN=${{secrets.VITE_WHATSAPP_USER_ACCESS_TOKEN}} \
-          --build-arg VITE_WHATSAPP_API_VERSION=${{secrets.VITE_WHATSAPP_API_VERSION}} \
-          -t ${{ secrets.DOCKER_HOST }}/paaniwale-frontend:latest .
+          docker pull thehetsolanki/paaniwale-frontend:preview
+          docker pull thehetsolanki/paaniwale-backend:preview
 
-      - name: Build Docker image (Backend)
+      - name: updating the tag from preview to latest
         run: |
-          cd server/API
-          docker build -t ${{ secrets.DOCKER_HOST }}/paaniwale-backend:latest .
+          docker tag thehetsolanki/paaniwale-frontend:preview thehetsolanki/paaniwale-frontend:latest
+          docker tag thehetsolanki/paaniwale-backend:preview thehetsolanki/paaniwale-backend:latest
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2

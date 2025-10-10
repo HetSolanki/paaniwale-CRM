@@ -1,7 +1,7 @@
-const DOMAIN_NAME = import.meta.env.VITE_API_BASE_URL;
+import { config } from "@/Data/config";
 
 export const addcustomer = async (data, uid) => {
-  const customer = await fetch(`${DOMAIN_NAME}/api/customers/customer`, {
+  const customer = await fetch(`${config.baseUrl}/api/customers/customer`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

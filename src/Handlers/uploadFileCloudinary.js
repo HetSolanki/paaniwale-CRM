@@ -1,4 +1,4 @@
-import { config } from "@/Data/meta";
+import { config } from "@/Data/config";
 
 export const uploadFileCloudinary = async (file) => {
   const formData = new FormData();
@@ -7,7 +7,7 @@ export const uploadFileCloudinary = async (file) => {
   formData.append("folder", "Dhandha-QR");
 
   const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${config.cloud.name}/image/upload`,
+    `https://api.cloudinary.com/${config.cloud.version}/${config.cloud.name}/image/upload`,
     {
       method: "POST",
       body: formData,

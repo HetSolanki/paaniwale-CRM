@@ -7,18 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/Components/UI/shadcn-UI/card";
-import {
-  Tabs,
-  TabsContent,
-  // TabsList,
-  // TabsTrigger,
-} from "@/Components/UI/shadcn-UI/tabs";
-import {
-  // Tooltip,
-  // TooltipContent,
-  // TooltipTrigger,
-  TooltipProvider,
-} from "@/Components/UI/shadcn-UI/tooltip";
+import { Tabs, TabsContent } from "@/Components/UI/shadcn-UI/tabs";
+import { TooltipProvider } from "@/Components/UI/shadcn-UI/tooltip";
 import Navbar from "./Navbar";
 import { Addcustomer } from "../UI/UI-Components/Addcustomer";
 import { DataTable } from "@/Components/DataTables/CustomerDataTable";
@@ -47,27 +37,25 @@ const Customers = () => {
   const { user } = useUser();
   const { theme } = useTheme();
 
-  // Authentication check
   useEffect(() => {
     if (!localStorage.getItem("token")) {
       navigate("/login");
     }
   }, [navigate]);
 
-  // Fetch customers data
   const { data: customersData, isLoading } = useQuery({
     queryKey: ["customers", customer],
     queryFn: fetchCustomers,
   });
 
-  // Prepare data for PDF export
-  const pdfData = customersData?.data?.map((customer) => ({
-    delivery_sequence_number: customer.delivery_sequence_number,
-    cname: customer.cname,
-    cphone_number: customer.cphone_number,
-    caddress: customer.caddress,
-    bottle_price: customer.bottle_price,
-  })) || [];
+  const pdfData =
+    customersData?.data?.map((customer) => ({
+      delivery_sequence_number: customer.delivery_sequence_number,
+      cname: customer.cname,
+      cphone_number: customer.cphone_number,
+      caddress: customer.caddress,
+      bottle_price: customer.bottle_price,
+    })) || [];
 
   const pdfColumns = [
     {
@@ -75,12 +63,12 @@ const Customers = () => {
       accessorKey: "delivery_sequence_number",
     },
     {
-      header: "Customer Name", 
+      header: "Customer Name",
       accessorKey: "cname",
     },
     {
       header: "Phone Number",
-      accessorKey: "cphone_number", 
+      accessorKey: "cphone_number",
     },
     {
       header: "Address",
@@ -146,12 +134,16 @@ const Customers = () => {
                             </div>
                           </CardTitle>
                           <CardDescription className="hidden sm:block px-2">
-                            Manage your customers and view their sales performance.
+                            Manage your customers and view their sales
+                            performance.
                           </CardDescription>
                         </CardHeader>
                       ) : (
                         <div className="mt-4 py-3 px-4">
-                          <Skeleton className="h-[90px]" enableAnimation={true} />
+                          <Skeleton
+                            className="h-[90px]"
+                            enableAnimation={true}
+                          />
                         </div>
                       )}
 
@@ -163,7 +155,10 @@ const Customers = () => {
                           />
                         ) : (
                           <div className="mb-4">
-                            <Skeleton className="h-[300px]" enableAnimation={true} />
+                            <Skeleton
+                              className="h-[300px]"
+                              enableAnimation={true}
+                            />
                           </div>
                         )}
                       </CardContent>

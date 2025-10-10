@@ -6,7 +6,7 @@ import { GetAllCustomerInvoice } from "@/Handlers/GetAllCustomerInvoice";
 import { Button } from "../UI/shadcn-UI/button";
 import { Loader2, Send } from "lucide-react";
 import { useToast } from "../UI/shadcn-UI/use-toast";
-import { config } from "@/Data/meta";
+import { config } from "@/Data/config";
 
 export const InvoiceAll = () => {
   const user = useUser();

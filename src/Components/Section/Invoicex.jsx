@@ -8,7 +8,7 @@ import { Button } from "../UI/shadcn-UI/button";
 import { useToast } from "../UI/shadcn-UI/use-toast";
 import { ToastAction } from "../UI/shadcn-UI/toast";
 import { useTheme } from "@/Context/ThemeProviderContext ";
-import { config } from "@/Data/meta";
+import { config } from "@/Data/config";
 
 export const InvoiceX = ({ cid }) => {
   const user = useUser();
@@ -252,7 +252,7 @@ export const InvoiceX = ({ cid }) => {
           formData.append("folder", "Paaniwale-Invoices");
 
           const response = await fetch(
-            `https://api.cloudinary.com/v1_1/${config.cloud.name}/image/upload`,
+            `https://api.cloudinary.com/${config.cloud.version}/${config.cloud.name}/image/upload`,
             { method: "POST", body: formData }
           );
 
@@ -268,7 +268,6 @@ export const InvoiceX = ({ cid }) => {
             customerInvoice?.[0]?.totalBottle *
             customerInvoice?.[0]?.customerDetails?.bottle_price;
 
-          console.log(responseData.secure_url);
           const res =
             (await fetch(
               `https://graph.facebook.com/${config.whatsapp.version}/${config.whatsapp.phoneNumberId}/messages`,
@@ -323,7 +322,6 @@ export const InvoiceX = ({ cid }) => {
             )) ?? {};
 
           const data = await res.json();
-          // console.log(data);
           if (!res.ok) {
             toast({
               variant: "destructive",
