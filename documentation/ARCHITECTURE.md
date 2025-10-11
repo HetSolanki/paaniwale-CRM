@@ -1,6 +1,7 @@
 # Dhandha - System Architecture Documentation
 
 ## Table of Contents
+
 1. [System Overview](#system-overview)
 2. [Architecture Layers](#architecture-layers)
 3. [Component Diagram](#component-diagram)
@@ -15,9 +16,11 @@
 ## 1. System Overview
 
 ### Business Context
+
 **Dhandha** is a comprehensive business management platform designed specifically for water bottle delivery businesses operating in India. The system automates the entire order-to-payment cycle including customer management, delivery tracking, invoice generation, payment collection, and customer communication via WhatsApp.
 
 ### High-Level Architecture Diagram
+
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                            CLIENT LAYER                                  │
@@ -69,6 +72,7 @@
 ### 2.1 Presentation Layer (Frontend)
 
 #### Technology Stack
+
 - **React 18**: Core UI library with hooks and functional components
 - **Vite**: Next-generation frontend build tool (faster than Webpack)
 - **React Router DOM v6**: Client-side routing with nested routes
@@ -78,17 +82,21 @@
 - **Lucide React**: Icon library
 
 #### Layer Responsibilities
+
 1. **User Interface Rendering**
+
    - Responsive layouts for desktop, tablet, mobile
    - Dark/light theme support
    - Accessibility (ARIA labels, keyboard navigation)
 
 2. **State Management**
+
    - Local state: React useState, useReducer
    - Server state: React Query (cache, refetch, optimistic updates)
-   - Global state: Context API (UserContext, ThemeContext, CustomerContext)
+   - Global state: Context API (UserContext, ThemeContext)
 
 3. **Client-side Routing**
+
    - Protected routes (authentication required)
    - Public routes (landing page, login)
    - Nested routes (dashboard sections)
@@ -100,6 +108,7 @@
    - Optimistic UI updates
 
 #### Component Architecture
+
 ```
 src/
 ├── Components/
@@ -125,7 +134,6 @@ src/
 │
 ├── Context/                  # React Context providers
 │   ├── UserContext.jsx       # Authentication & user data
-│   ├── CustomerContext.jsx   # Customer-specific state
 │   ├── ThemeProviderContext.tsx # Theme management
 │   └── ...
 │
@@ -155,6 +163,7 @@ src/
 ### 2.2 Application Layer (Backend)
 
 #### Technology Stack
+
 - **Node.js v18+**: JavaScript runtime
 - **Express.js v4**: Web application framework
 - **Mongoose v7**: MongoDB ODM with schema validation
@@ -165,19 +174,23 @@ src/
 - **Cloudinary SDK**: File upload management
 
 #### Layer Responsibilities
+
 1. **API Gateway**
+
    - RESTful endpoint exposure
    - Request routing
    - Response formatting
    - Error handling
 
 2. **Business Logic**
+
    - Order processing
    - Invoice generation coordination
    - Payment link creation
    - User authentication & authorization
 
 3. **Data Access**
+
    - CRUD operations via Mongoose
    - Query optimization
    - Transaction management
@@ -189,6 +202,7 @@ src/
    - Cloudinary file uploads
 
 #### Backend Architecture
+
 ```
 server/API/
 ├── server.js                 # Express app configuration
@@ -239,6 +253,7 @@ server/API/
 #### Database: MongoDB (NoSQL Document Database)
 
 **Why MongoDB?**
+
 - Flexible schema for evolving business requirements
 - Excellent performance for read-heavy operations (customer lookups, order lists)
 - Native JSON support matches JavaScript/Node.js ecosystem
@@ -248,6 +263,7 @@ server/API/
 #### Data Model Design
 
 ##### 1. Users Collection
+
 ```javascript
 {
   _id: ObjectId,
@@ -262,11 +278,13 @@ server/API/
 ```
 
 **Relationships:**
+
 - One-to-Many with Customers (user owns multiple customers)
 - One-to-Many with Shops (user can manage multiple shops)
 - One-to-Many with Party Orders
 
 ##### 2. Customers Collection
+
 ```javascript
 {
   _id: ObjectId,
@@ -282,11 +300,13 @@ server/API/
 ```
 
 **Indexes:**
+
 - uid (for user-specific queries)
 - cphone_number (unique, for lookup)
 - delivery_sequence_number (for sorting routes)
 
 ##### 3. Customer Entries Collection
+
 ```javascript
 {
   _id: ObjectId,
@@ -302,11 +322,13 @@ server/API/
 ```
 
 **Aggregation Queries:**
+
 - Daily revenue calculation
 - Customer delivery history
 - Monthly bottle count
 
 ##### 4. Party Orders Collection
+
 ```javascript
 {
   _id: ObjectId,
@@ -332,16 +354,20 @@ server/API/
 ```
 
 **Pre-save Hook:**
+
 ```javascript
 partyOrderSchema.pre("save", function (next) {
-  const coldTotal = (this.cold_bottle_quantity || 0) * (this.cold_bottle_price || 0);
-  const normalTotal = (this.normal_bottle_quantity || 0) * (this.normal_bottle_price || 0);
+  const coldTotal =
+    (this.cold_bottle_quantity || 0) * (this.cold_bottle_price || 0);
+  const normalTotal =
+    (this.normal_bottle_quantity || 0) * (this.normal_bottle_price || 0);
   this.total_amount = coldTotal + normalTotal;
   next();
 });
 ```
 
 ##### 5. Payment Details Collection
+
 ```javascript
 {
   _id: ObjectId,
@@ -360,6 +386,7 @@ partyOrderSchema.pre("save", function (next) {
 ```
 
 ##### 6. Shops Collection
+
 ```javascript
 {
   _id: ObjectId,
@@ -378,6 +405,7 @@ partyOrderSchema.pre("save", function (next) {
 ## 3. Component Diagram
 
 ### Frontend Component Hierarchy
+
 ```
 App (Root)
 │
@@ -449,11 +477,13 @@ App (Root)
 ### 4.1 Frontend Technologies
 
 #### React Query (TanStack Query)
+
 **Purpose:** Server state management and data synchronization
 
 React Query is configured with intelligent caching strategies that keep data fresh while minimizing unnecessary network requests. The system uses a 3-minute stale time, meaning data is considered fresh for 3 minutes before requiring a refetch. After 10 minutes of inactivity, unused cached data is garbage collected to free memory.
 
 **Key Features Utilized:**
+
 - **Automatic Caching:** Every API response is cached with a unique query key (like "partyOrders", "customers"). When the same data is requested again, React Query serves it from cache instantly.
 - **Background Refetching:** When users switch back to the browser tab, React Query automatically refetches data in the background to ensure freshness.
 - **Smart Retries:** Failed requests are automatically retried twice with exponential backoff, improving resilience against network issues.
@@ -464,17 +494,20 @@ React Query is configured with intelligent caching strategies that keep data fre
 The application feels fast and responsive because data appears instantly from cache. Users can work offline briefly, and when connectivity returns, data syncs automatically. The dashboard shows real-time updates without manual refresh buttons.
 
 #### shadcn/ui Component System
+
 **Philosophy:** Copy-paste component architecture instead of traditional npm package dependency
 
 Unlike traditional component libraries that you install as a dependency, shadcn/ui provides pre-built components that you copy directly into your project. This gives you full ownership and control over the component code. You can modify any component to fit your exact needs without fighting against library constraints.
 
 **Architecture Benefits:**
+
 - **Full Customization:** Since components live in your codebase, you can modify any aspect - styling, behavior, accessibility features, or structure.
 - **No Breaking Updates:** Unlike npm packages that can break your app with updates, these components are stable because they're frozen in your codebase.
 - **TypeScript Native:** All components are written in TypeScript with full type safety and IntelliSense support.
 - **Built on Radix UI Primitives:** The foundation uses Radix UI, which provides unstyled, accessible components following WAI-ARIA standards.
 
 **Components Used in Dhandha:**
+
 - **Form Components:** Button, Input, Select, Textarea enable all user interactions for creating customers, orders, and payments.
 - **Overlay Components:** Dialog, Sheet, Popover handle modal windows for adding/editing data without page navigation.
 - **Data Display:** Table with built-in sorting and pagination displays customer lists, orders, and payment records.
@@ -486,10 +519,12 @@ Unlike traditional component libraries that you install as a dependency, shadcn/
 The entire UI supports light and dark modes through CSS custom properties (variables). Every color is defined as an HSL variable that changes based on the theme. This means switching themes is instant and smooth, with no component re-rendering required. The system uses semantic color names (background, foreground, primary, destructive) that automatically adapt to the current theme.
 
 #### jsPDF for Invoice Generation
+
 **Purpose:** Client-side PDF generation without server dependency
 
 **Why Client-Side Generation?**
 Generating PDFs in the browser rather than on the server provides several critical advantages:
+
 - **Zero Server Load:** The server doesn't waste CPU cycles rendering PDFs, keeping it responsive for API requests.
 - **Instant Preview:** Users see PDF previews immediately without waiting for server round-trips.
 - **Offline Capability:** PDFs can be generated even with intermittent connectivity.
@@ -508,6 +543,7 @@ Every party order invoice follows a professional business format with distinct s
 4. **Date Information:** Both order date (when placed) and delivery date (when scheduled) help with logistics planning.
 
 5. **Itemized Breakdown:** A detailed table showing:
+
    - Cold water bottles: quantity × price per bottle = subtotal
    - Normal (room temperature) bottles: quantity × price per bottle = subtotal
    - Clear calculation transparency builds customer trust
@@ -525,6 +561,7 @@ The PDF generation happens in milliseconds, creating a binary blob that can be p
 ### 4.2 Backend Technologies
 
 #### Express.js Middleware Stack
+
 **Purpose:** Request processing pipeline that transforms raw HTTP requests into structured data
 
 Express.js uses a middleware pattern where each request passes through a series of functions before reaching the final route handler. Think of it as a factory assembly line where each station adds something or checks something.
@@ -536,12 +573,13 @@ Express.js uses a middleware pattern where each request passes through a series 
 2. **URL-Encoded Parser:** Handles form submissions sent with traditional HTML forms. This supports both simple and complex nested data structures.
 
 3. **CORS (Cross-Origin Resource Sharing):** Controls which websites can access the API. The system allows requests from:
+
    - `http://localhost:5173` - Local development frontend
    - `http://localhost:5000` - Local production build
    - `https://paaniwale.hetsolanki.tech` - Production frontend
    - `https://dhandha.vercel.app` - Alternative production domain
    - Plus other configured origins
-   
+
    Without CORS configuration, browsers would block API requests from the frontend due to security policies.
 
 4. **Request Timeout (30 seconds):** Every request gets a 30-second deadline. If processing takes longer, the request is terminated with a timeout error. This prevents hung connections from consuming server resources indefinitely.
@@ -552,21 +590,25 @@ Express.js uses a middleware pattern where each request passes through a series 
 When a user submits a party order form, the request flows through: JSON parser → CORS check → timeout timer starts → route handler executes → JWT validation (protect middleware) → business logic → database operation → response sent back. If any middleware fails, the request never reaches the route handler.
 
 #### JWT Authentication System
+
 **Purpose:** Stateless authentication that doesn't require server-side session storage
 
 **Why JWT Over Sessions?**
 Traditional session-based authentication stores session data on the server, requiring database lookups for every request. JWT embeds user information directly in the token, enabling stateless authentication. This means:
+
 - **Scalability:** Multiple servers can validate tokens without shared session storage.
 - **Mobile-Friendly:** Mobile apps can store tokens easily and include them in requests.
 - **Microservice-Ready:** Different services can validate the same token independently.
 
 **Token Structure:**
 Every JWT contains three parts separated by dots:
+
 1. **Header:** Specifies the algorithm (HS256) and token type (JWT).
 2. **Payload:** Contains user data (id, username, is_admin) and metadata (issued at, expiration).
 3. **Signature:** Cryptographic signature proving the token wasn't tampered with.
 
 **Authentication Flow:**
+
 1. User enters credentials (phone number/email + password) on login page.
 2. Backend validates credentials against database, comparing bcrypt-hashed passwords.
 3. If valid, server generates a JWT containing user ID, username, and admin status.
@@ -582,12 +624,14 @@ Every JWT contains three parts separated by dots:
 8. Route handlers access user info from req.user.id, req.user.username, etc.
 
 **Security Features:**
+
 - Tokens expire after 24 hours, forcing periodic re-authentication.
 - Secret key is stored in environment variables, never in code.
 - Tokens are signed, so any modification invalidates the signature.
 - HTTPS encryption protects tokens during transmission.
 
 #### Mongoose Schema Validation
+
 **Purpose:** Enforce data integrity at the database model level
 
 Mongoose acts as a protective layer between your application code and MongoDB. While MongoDB itself is schema-less (allowing any document structure), Mongoose enforces strict schemas with validation rules.
@@ -609,6 +653,7 @@ Mongoose acts as a protective layer between your application code and MongoDB. W
 7. **Pre/Post Hooks:** Middleware functions that run before or after database operations. For example, the party order schema has a pre-save hook that automatically calculates total_amount by multiplying quantities by prices before saving to database.
 
 **Benefits:**
+
 - **Data Integrity:** Invalid data never reaches the database.
 - **Clear Error Messages:** Validation failures return descriptive messages like "Phone number must be 10 digits" instead of cryptic database errors.
 - **Centralized Rules:** All validation logic lives in schema files, not scattered across route handlers.
@@ -619,6 +664,7 @@ Mongoose acts as a protective layer between your application code and MongoDB. W
 ## 5. Data Flow Architecture
 
 ### 5.1 Party Order Creation Flow
+
 ```
 ┌─────────────┐
 │   User      │
@@ -676,6 +722,7 @@ Mongoose acts as a protective layer between your application code and MongoDB. W
 ---
 
 ### 5.2 Invoice Generation & Sending Flow
+
 ```
 ┌─────────────┐
 │   User      │
@@ -757,6 +804,7 @@ Mongoose acts as a protective layer between your application code and MongoDB. W
 ### 6.1 Authentication & Authorization
 
 #### JWT Token Structure
+
 ```json
 {
   "header": {
@@ -775,14 +823,15 @@ Mongoose acts as a protective layer between your application code and MongoDB. W
 ```
 
 #### Protected Route Flow
+
 ```javascript
 // Frontend
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useUser();
-  
+
   if (loading) return <Skeleton />;
   if (!user) return <Navigate to="/login" />;
-  
+
   return children;
 };
 
@@ -798,17 +847,19 @@ const protect = (req, res, next) => {
 ### 6.2 Data Validation
 
 #### Frontend Validation (React Hook Form + Zod)
+
 ```javascript
 const schema = z.object({
-  party_phone: z.string()
+  party_phone: z
+    .string()
     .length(10, "Phone must be 10 digits")
     .regex(/^\d+$/, "Phone must be numeric"),
-  total_amount: z.number()
-    .min(1, "Amount must be greater than 0"),
+  total_amount: z.number().min(1, "Amount must be greater than 0"),
 });
 ```
 
 #### Backend Validation (Mongoose)
+
 ```javascript
 const partyOrderSchema = new mongoose.Schema({
   party_phone: {
@@ -816,33 +867,38 @@ const partyOrderSchema = new mongoose.Schema({
     required: [true, "Phone is required"],
     validate: {
       validator: (v) => /^\d{10}$/.test(v),
-      message: "Invalid phone number"
-    }
-  }
+      message: "Invalid phone number",
+    },
+  },
 });
 ```
 
 ### 6.3 Security Best Practices
 
 1. **Password Security**
+
    - bcrypt hashing (10 rounds)
    - Never log passwords
    - Password strength requirements
 
 2. **SQL Injection Prevention**
+
    - Mongoose parameterized queries
    - No string concatenation in queries
 
 3. **XSS Prevention**
+
    - React auto-escapes JSX
    - DOMPurify for user-generated content
    - Content Security Policy headers
 
 4. **CSRF Protection**
+
    - JWT in Authorization header (not cookies)
    - SameSite cookie policy
 
 5. **Rate Limiting**
+
    - 100 requests per 15 minutes per IP
    - Slower login attempts after failures
 
@@ -858,6 +914,7 @@ const partyOrderSchema = new mongoose.Schema({
 ### 7.1 WhatsApp Business API Integration
 
 #### Configuration & Architecture
+
 The system integrates with Meta's WhatsApp Business Platform, which provides official APIs for automated business communication. Unlike the consumer WhatsApp app, the Business API allows programmatic message sending, template management, and webhook integrations.
 
 **Authentication:**
@@ -873,6 +930,7 @@ WhatsApp requires pre-approved message templates for business-initiated conversa
 
 **Template Structure for Invoice Delivery:**
 The system uses the "purchase_receipt_1" template which contains:
+
 - **Header Component:** A document attachment (the PDF invoice). The system provides the Cloudinary URL and filename.
 - **Body Component:** Pre-approved text with variable placeholders for dynamic data like total amount, shop name, and invoice description.
 - **Button Component (optional):** Quick reply buttons or call-to-action buttons.
@@ -881,6 +939,7 @@ The system uses the "purchase_receipt_1" template which contains:
 WhatsApp fights spam by requiring businesses to get message templates approved. This ensures customers only receive legitimate business communications, not marketing spam. Templates can include variables but the structure is fixed.
 
 **Invoice Sending Process:**
+
 1. System generates PDF invoice using jsPDF (in browser).
 2. PDF is converted to base64 and uploaded to Cloudinary.
 3. Cloudinary returns a permanent HTTPS URL for the PDF.
@@ -896,6 +955,7 @@ After the template message initiates a conversation, the business can send free-
 
 **Payment Link Delivery:**
 Immediately after sending the invoice template, the system sends a follow-up text message containing:
+
 - Payment link emoji (💳) for visual attention
 - Formatted heading "Payment Link"
 - The Razorpay short URL (e.g., https://rzp.io/l/ABC123)
@@ -908,6 +968,7 @@ This two-message approach (invoice + payment link) provides complete transaction
 
 **Retry Logic:**
 Network failures are common in API integrations. The system implements exponential backoff retry logic:
+
 - First attempt fails → wait 1 second → retry
 - Second attempt fails → wait 2 seconds → retry
 - Third attempt fails → wait 4 seconds → final retry
@@ -915,6 +976,7 @@ Network failures are common in API integrations. The system implements exponenti
 
 **Fallback Mechanisms:**
 If WhatsApp sending fails after all retries:
+
 1. Error is logged to database with timestamp and error message.
 2. User receives notification: "WhatsApp delivery failed - please send manually."
 3. PDF remains accessible in Cloudinary for manual sending.
@@ -922,6 +984,7 @@ If WhatsApp sending fails after all retries:
 
 **Status Tracking:**
 Every WhatsApp message gets a unique message ID from Meta's API. The system stores:
+
 - Message ID for tracking delivery status
 - Timestamp of sending
 - Recipient phone number
@@ -936,9 +999,11 @@ This audit trail enables support teams to troubleshoot delivery issues and verif
 ### 7.2 Razorpay Payment Integration
 
 #### Payment Link Architecture
+
 Razorpay is India's leading payment gateway that handles UPI, cards, net banking, and wallets. Instead of building a custom payment page, the system uses Razorpay's Payment Links feature which provides hosted payment pages.
 
 **Why Payment Links?**
+
 - **No PCI Compliance Required:** Razorpay handles all sensitive card data, so the application never touches payment information.
 - **All Payment Methods:** Customers can pay via UPI (Google Pay, PhonePe, Paytm), credit/debit cards, net banking, or wallets.
 - **Mobile Optimized:** Payment pages work seamlessly on all devices without custom mobile development.
@@ -949,6 +1014,7 @@ Razorpay is India's leading payment gateway that handles UPI, cards, net banking
 
 **Step 1: Collect Payment Information**
 When creating a party order or sending an invoice, the system collects:
+
 - Total amount (automatically calculated from order items)
 - Customer name (from party details)
 - Customer phone number (for UPI and notifications)
@@ -957,12 +1023,14 @@ When creating a party order or sending an invoice, the system collects:
 
 **Step 2: API Authentication**
 Razorpay uses HTTP Basic Authentication where:
+
 - Username: Your Razorpay Key ID (public identifier)
 - Password: Your Razorpay Key Secret (private secret, stored in environment variables)
 - These are combined and base64 encoded for the Authorization header
 
 **Step 3: Amount Conversion**
 Razorpay expects amounts in the smallest currency unit. For Indian Rupees, that's paise:
+
 - User sees: ₹5,000
 - System calculates: 5000 × 100 = 500,000 paise
 - API receives: 500000
@@ -971,6 +1039,7 @@ This prevents floating-point arithmetic errors that could cause payment mismatch
 
 **Step 4: Link Configuration**
 The API request specifies:
+
 - **Amount & Currency:** Total in paise, currency code "INR"
 - **Description:** Clear description of what the payment is for
 - **Customer Details:** Name, phone (+91 country code), email
@@ -983,6 +1052,7 @@ The API request specifies:
 
 **Step 5: Response Handling**
 Razorpay returns:
+
 - **Payment Link ID:** Unique identifier for tracking (e.g., plink_ABC123XYZ)
 - **Short URL:** Customer-facing link (e.g., https://rzp.io/l/ABC123)
 - **Status:** Initially "created"
@@ -994,6 +1064,7 @@ The short URL is stored in the database and sent to the customer via WhatsApp.
 
 **Webhook Integration:**
 When a customer completes payment, Razorpay sends a webhook to your server with:
+
 - Payment ID
 - Order ID
 - Amount paid
@@ -1003,6 +1074,7 @@ When a customer completes payment, Razorpay sends a webhook to your server with:
 
 **Signature Verification:**
 Every webhook includes a cryptographic signature to prevent fraud. The system:
+
 1. Receives webhook payload and signature header
 2. Generates expected signature using webhook secret + payload
 3. Compares expected vs received signature
@@ -1011,6 +1083,7 @@ Every webhook includes a cryptographic signature to prevent fraud. The system:
 This prevents attackers from sending fake "payment successful" webhooks.
 
 **Payment Status Flow:**
+
 - **Created:** Link generated, waiting for customer action
 - **Pending:** Customer opened link, payment in progress
 - **Captured:** Payment successful, money received
@@ -1021,6 +1094,7 @@ This prevents attackers from sending fake "payment successful" webhooks.
 
 **Database Storage:**
 Every payment link and transaction is stored in the PaymentDetail collection:
+
 - Link ID and short URL for reference
 - Associated customer ID and order ID
 - Amount and payment method
@@ -1028,6 +1102,7 @@ Every payment link and transaction is stored in the PaymentDetail collection:
 - Razorpay response data
 
 **Reconciliation Process:**
+
 1. Daily export of all payments from Razorpay dashboard
 2. Compare against PaymentDetail records in database
 3. Match using payment_link_id or razorpay_payment_id
@@ -1036,6 +1111,7 @@ Every payment link and transaction is stored in the PaymentDetail collection:
 
 **Refund Handling:**
 If an order is cancelled after payment:
+
 1. Initiate refund via Razorpay API using payment ID
 2. Razorpay processes refund within 5-7 business days
 3. Update PaymentDetail status to "refunded"
@@ -1044,6 +1120,7 @@ If an order is cancelled after payment:
 #### Customer Experience
 
 **Payment Flow:**
+
 1. Customer receives WhatsApp message with payment link
 2. Clicks link → Opens Razorpay hosted payment page
 3. Sees order details and amount prominently displayed
@@ -1055,6 +1132,7 @@ If an order is cancelled after payment:
 9. Business receives instant payment notification webhook
 
 **Security & Trust:**
+
 - Razorpay shows trust badges (PCI DSS compliant, SSL encrypted)
 - Payment page shows business name from Razorpay account
 - Multi-layer fraud detection in background
@@ -1065,6 +1143,7 @@ If an order is cancelled after payment:
 ### 7.3 Cloudinary Integration
 
 #### Cloud Storage Architecture
+
 Cloudinary is a cloud-based media management platform that provides image and document storage, transformation, and delivery via a global CDN (Content Delivery Network). The system uses it exclusively for PDF invoice storage.
 
 **Why Cloudinary for PDFs?**
@@ -1088,6 +1167,7 @@ jsPDF creates the invoice PDF as a binary Blob object in the user's browser. Thi
 
 **Step 2: Base64 Encoding**
 The Blob must be converted to base64 (text representation of binary data) because:
+
 - HTTP POST requests work better with text data
 - Base64 can be embedded in JSON
 - Cloudinary accepts base64 in the request body
@@ -1096,6 +1176,7 @@ The FileReader API reads the Blob and outputs base64 string starting with "data:
 
 **Step 3: Form Data Preparation**
 Cloudinary expects multipart/form-data format with specific fields:
+
 - **file:** The base64 string with data URI prefix
 - **upload_preset:** Pre-configured upload settings (unsigned upload for public access)
 - **folder:** Organizes uploads into folders (e.g., "Paaniwale-Party-Invoices")
@@ -1108,6 +1189,7 @@ The cloud_name is your Cloudinary account identifier. No authentication required
 
 **Step 5: Response Processing**
 Cloudinary responds with rich metadata:
+
 - **secure_url:** HTTPS URL to access the PDF (https://res.cloudinary.com/...)
 - **public_id:** Unique identifier for the file
 - **bytes:** File size in bytes
@@ -1121,6 +1203,7 @@ The secure_url is stored in the database and used for WhatsApp delivery and web 
 
 **Upload Presets:**
 Presets are pre-configured upload settings that include:
+
 - Access control (public vs private)
 - Folder structure
 - Auto-tagging
@@ -1132,12 +1215,14 @@ Using presets eliminates the need to specify these settings in every upload requ
 
 **Folder Organization:**
 Invoices are organized hierarchically:
+
 - Paaniwale-Party-Invoices/ (main folder)
   - 2025/ (year folder)
     - October/ (month folder)
       - PO-20251009-123.pdf (individual invoices)
 
 This structure makes it easy to:
+
 - Find specific invoices
 - Analyze storage by time period
 - Implement retention policies (delete old invoices)
@@ -1145,12 +1230,14 @@ This structure makes it easy to:
 
 **Error Handling:**
 Upload failures can occur due to:
+
 - Network connectivity issues
 - File size exceeded (Cloudinary limits)
 - Invalid file format
 - Quota exceeded (free tier limits)
 
 The system handles these by:
+
 1. Catching upload errors
 2. Logging error details
 3. Showing user-friendly message
@@ -1158,6 +1245,7 @@ The system handles these by:
 5. Allowing manual retry via UI
 
 **Performance Optimization:**
+
 - **Lazy Upload:** PDFs are only uploaded when user clicks "Send Invoice", not on preview
 - **Progress Indication:** Upload progress shown to user with percentage complete
 - **Concurrent Uploads:** When sending bulk invoices, up to 3 PDFs upload in parallel
@@ -1167,12 +1255,14 @@ The system handles these by:
 
 **Public Access:**
 Party order invoices use public URLs because:
+
 - WhatsApp requires publicly accessible document URLs
 - Customers need permanent access to their invoices
 - No sensitive information beyond what's already shared
 
 **Security Considerations:**
 Even though URLs are public, they're hard to guess because:
+
 - Cloudinary generates random public_id values
 - URLs include version numbers
 - No directory listing (can't browse all files)
@@ -1180,6 +1270,7 @@ Even though URLs are public, they're hard to guess because:
 
 **Delivery Optimization:**
 When a customer opens the WhatsApp invoice:
+
 1. WhatsApp fetches PDF from Cloudinary CDN
 2. Cloudinary serves from nearest edge location
 3. Subsequent opens load from WhatsApp's cache
@@ -1194,9 +1285,11 @@ This architecture means your server never handles PDF downloads, saving bandwidt
 ### 8.1 Docker Containerization
 
 #### Why Docker?
+
 Docker solves the "works on my machine" problem by packaging the application with all its dependencies into a standardized container. This ensures identical behavior across development, staging, and production environments.
 
 **Key Benefits:**
+
 - **Consistency:** Same container runs on developer laptop, CI server, and production
 - **Isolation:** Application dependencies don't conflict with system packages
 - **Portability:** Deploy to any cloud provider that supports Docker
@@ -1208,6 +1301,7 @@ Docker solves the "works on my machine" problem by packaging the application wit
 The Dockerfile uses a multi-stage build that separates frontend building from the final runtime image. This optimization reduces final image size by 70%+.
 
 **Stage 1: Frontend Build (Temporary Container)**
+
 - Uses Node.js 18 Alpine Linux (minimal base image, ~50MB vs ~300MB for standard Node)
 - Copies only package.json first to leverage Docker layer caching
 - Runs `npm ci` (clean install - faster and more reliable than `npm install`)
@@ -1221,6 +1315,7 @@ The Dockerfile uses a multi-stage build that separates frontend building from th
 - This entire stage is discarded after build completes
 
 **Stage 2: Runtime Container (Final Image)**
+
 - Starts fresh with clean Node.js 18 Alpine image
 - Copies only the backend package.json
 - Runs `npm ci --production` to install only production dependencies (excludes devDependencies like testing tools)
@@ -1230,6 +1325,7 @@ The Dockerfile uses a multi-stage build that separates frontend building from th
 
 **Why Multi-Stage?**
 Single-stage builds include build tools in the final image:
+
 - Build tools (Vite, Webpack, TypeScript compiler): ~200MB
 - Development dependencies: ~150MB
 - Source code that's not needed at runtime: ~50MB
@@ -1241,6 +1337,7 @@ Multi-stage builds exclude all this, resulting in a lean ~150MB final image inst
 Docker Compose defines and runs multiple containers as a single application stack. The system uses three containers:
 
 **Container 1: MongoDB Database**
+
 - **Image:** Official MongoDB 7 image from Docker Hub
 - **Port Mapping:** 27017 (standard MongoDB port) exposed to host
 - **Volume:** mongo-data volume persists database even if container restarts
@@ -1248,6 +1345,7 @@ Docker Compose defines and runs multiple containers as a single application stac
 - **Network:** Joins app network for inter-container communication
 
 **Container 2: Backend Application**
+
 - **Build:** Uses Dockerfile to build custom image from source code
 - **Port Mapping:** 5000 exposed for API access
 - **Dependencies:** Won't start until MongoDB is running (depends_on)
@@ -1258,6 +1356,7 @@ Docker Compose defines and runs multiple containers as a single application stac
 - **Network:** Joins app network to communicate with MongoDB
 
 **Container 3: Nginx Reverse Proxy**
+
 - **Image:** Official Nginx Alpine image (tiny, ~20MB)
 - **Port Mapping:** 80 (HTTP) and 443 (HTTPS) exposed to internet
 - **Configuration:** Custom nginx.conf mounted as volume
@@ -1271,6 +1370,7 @@ Docker Compose defines and runs multiple containers as a single application stac
 
 **Named Volumes:**
 The mongo-data volume provides persistent storage that survives container recreation:
+
 - Data stored on host filesystem
 - Survives `docker-compose down`
 - Can be backed up independently
@@ -1278,6 +1378,7 @@ The mongo-data volume provides persistent storage that survives container recrea
 
 **Networking:**
 Docker Compose creates an isolated network for the stack:
+
 - Containers communicate by service name (mongodb, backend, nginx)
 - Network isolated from host and other Docker networks
 - Port exposure controlled explicitly
@@ -1285,6 +1386,7 @@ Docker Compose creates an isolated network for the stack:
 #### Container Lifecycle Management
 
 **Development Workflow:**
+
 1. `docker-compose up --build` - Build and start all containers
 2. Code changes detected
 3. Rebuild specific service: `docker-compose build backend`
@@ -1293,6 +1395,7 @@ Docker Compose creates an isolated network for the stack:
 6. Shell access: `docker-compose exec backend sh`
 
 **Production Deployment:**
+
 1. `docker-compose build` - Build images
 2. `docker-compose up -d` - Start detached (background)
 3. `docker-compose ps` - Verify all containers running
@@ -1301,6 +1404,7 @@ Docker Compose creates an isolated network for the stack:
 
 **Scaling:**
 Docker Compose supports horizontal scaling:
+
 - `docker-compose up -d --scale backend=3` - Run 3 backend containers
 - Nginx load balances across all instances
 - Sessions work because JWT is stateless
@@ -1310,10 +1414,12 @@ Docker Compose supports horizontal scaling:
 ### 8.2 CI/CD Pipeline (Jenkins)
 
 #### Continuous Integration & Deployment Philosophy
+
 CI/CD automates the path from code commit to production deployment, reducing manual errors and deployment time from hours to minutes.
 
 **Continuous Integration (CI):**
 Every code push triggers:
+
 1. Automated testing
 2. Code quality checks (linting)
 3. Build verification
@@ -1321,6 +1427,7 @@ Every code push triggers:
 
 **Continuous Deployment (CD):**
 If all CI checks pass:
+
 1. Build Docker image
 2. Push to registry
 3. Deploy to environment
@@ -1331,12 +1438,14 @@ If all CI checks pass:
 The Jenkinsfile defines a declarative pipeline with sequential stages:
 
 **Stage 1: Checkout**
+
 - Jenkins pulls latest code from GitHub repository
 - Uses git credentials configured in Jenkins
-- Switches to specified branch (main, develop, feature/*)
+- Switches to specified branch (main, develop, feature/\*)
 - Updates workspace to match repository state
 
 **Stage 2: Install Dependencies**
+
 - Runs `npm ci` for frontend dependencies
   - Installs exact versions from package-lock.json
   - Faster than `npm install`
@@ -1345,12 +1454,14 @@ The Jenkinsfile defines a declarative pipeline with sequential stages:
 - Caches node_modules between builds for speed
 
 **Stage 3: Build Frontend**
+
 - Executes `npm run build`
 - Vite compiles React to optimized JavaScript
 - Outputs to dist/ folder
 - If build fails, pipeline stops here (don't deploy broken code)
 
 **Stage 4: Run Tests**
+
 - Executes `npm run lint` for code quality
 - ESLint checks for:
   - Syntax errors
@@ -1360,12 +1471,14 @@ The Jenkinsfile defines a declarative pipeline with sequential stages:
 - Could also run unit tests, integration tests here
 
 **Stage 5: Docker Build**
+
 - Executes multi-stage Dockerfile
 - Tags image as dhandha:latest
 - Also tags with commit SHA for traceability (dhandha:abc123)
 - Stores image in local Docker registry
 
 **Stage 6: Deploy**
+
 - Runs `docker-compose up -d` to deploy
 - Pulls latest images
 - Recreates changed containers
@@ -1373,6 +1486,7 @@ The Jenkinsfile defines a declarative pipeline with sequential stages:
 - Verifies containers started successfully
 
 **Post-Deployment Actions:**
+
 - **On Success:** Send Slack notification, update deployment dashboard
 - **On Failure:** Send alert with error details, rollback to previous version
 
@@ -1380,11 +1494,13 @@ The Jenkinsfile defines a declarative pipeline with sequential stages:
 
 **Parallel Execution:**
 Independent stages can run in parallel:
+
 - Frontend tests + Backend tests simultaneously
 - Multiple environment deployments (dev, staging) in parallel
 
 **Build Artifacts:**
 Pipeline preserves artifacts between stages:
+
 - Built dist/ folder
 - Test reports
 - Code coverage results
@@ -1392,12 +1508,14 @@ Pipeline preserves artifacts between stages:
 
 **Environment Management:**
 Different configurations for each environment:
+
 - Development: Debug logging, local database
 - Staging: Production-like, test data
 - Production: Optimized, real database
 
 **Rollback Capability:**
 If deployment fails:
+
 1. Detect failure via health checks
 2. Stop new deployment
 3. Revert to previous Docker image
@@ -1426,6 +1544,7 @@ Vercel specializes in frontend hosting with global edge networks:
 - **Analytics:** Built-in performance monitoring and visitor analytics
 
 **Build Process on Vercel:**
+
 1. Vercel detects new commit
 2. Clones repository
 3. Installs dependencies
@@ -1453,12 +1572,14 @@ Cloud platforms optimized for backend services:
 Fully managed MongoDB cloud database:
 
 **Development (M0 Free Tier):**
+
 - 512MB storage
 - Shared RAM
 - No backups
 - Good for testing
 
 **Production (M10 Shared Cluster):**
+
 - 10GB storage
 - Dedicated RAM (2GB)
 - Automated daily backups
@@ -1468,6 +1589,7 @@ Fully managed MongoDB cloud database:
 - Automatic failover
 
 **Security Configuration:**
+
 - IP Whitelist: Only backend server IPs can connect
 - Database Authentication: Unique username/password
 - Encryption at Rest: All data encrypted on disk
@@ -1479,6 +1601,7 @@ Fully managed MongoDB cloud database:
 **Environment Variables by Environment:**
 
 Development (.env.local):
+
 - Database: Local MongoDB (localhost:27017)
 - API URL: http://localhost:5000
 - WhatsApp: Test phone number ID
@@ -1487,6 +1610,7 @@ Development (.env.local):
 - Debug: Verbose logging enabled
 
 Staging (.env.staging):
+
 - Database: MongoDB Atlas staging cluster
 - API URL: https://api-staging.paaniwale.tech
 - WhatsApp: Test account (real API, test number)
@@ -1495,6 +1619,7 @@ Staging (.env.staging):
 - Debug: Moderate logging
 
 Production (.env.production):
+
 - Database: MongoDB Atlas production cluster
 - API URL: https://api.paaniwale.hetsolanki.tech
 - WhatsApp: Production business account
@@ -1505,6 +1630,7 @@ Production (.env.production):
 
 **Secret Management:**
 Never commit .env files to Git:
+
 - Use .env.example with dummy values
 - Store real secrets in platform dashboards
 - Rotate secrets quarterly
@@ -1519,6 +1645,7 @@ Never commit .env files to Git:
 
 **1. Code Splitting with React.lazy()**
 Instead of loading entire application at once, routes are loaded on demand:
+
 - Initial bundle: ~150KB (loads instantly)
 - Dashboard route: Loads when user navigates there
 - Invoice route: Loads only when needed
@@ -1526,6 +1653,7 @@ Instead of loading entire application at once, routes are loaded on demand:
 
 **2. Image Optimization via Cloudinary**
 All images served through Cloudinary CDN:
+
 - Automatic format selection (WebP for modern browsers, JPEG fallback)
 - Responsive images (serve smaller sizes to mobile)
 - Lazy loading (images load as user scrolls)
@@ -1533,6 +1661,7 @@ All images served through Cloudinary CDN:
 
 **3. Bundle Size Reduction (Vite Tree-Shaking)**
 Vite analyzes code and removes unused portions:
+
 - Imported but unused functions: Removed
 - Entire libraries if only one function used: Stripped down
 - Dead code branches: Eliminated
@@ -1540,6 +1669,7 @@ Vite analyzes code and removes unused portions:
 
 **4. React Query Caching Strategy**
 Smart caching eliminates redundant API calls:
+
 - First customer list fetch: API call
 - Navigate away and back: Instant from cache
 - Background refetch: Updates cache silently
@@ -1547,6 +1677,7 @@ Smart caching eliminates redundant API calls:
 
 **5. Input Debouncing**
 Search inputs wait 300ms before triggering search:
+
 - User types "Party"
 - Without debounce: 5 API calls (P, Pa, Par, Part, Party)
 - With debounce: 1 API call (Party)
@@ -1556,10 +1687,12 @@ Search inputs wait 300ms before triggering search:
 
 **1. Database Indexing Strategy**
 Indexes speed up queries exponentially:
+
 - Query without index: Scans all 10,000 documents (300ms)
 - Query with index: Direct lookup (5ms)
 
 **Critical Indexes:**
+
 - uid: Most queries filter by user (supports multi-tenancy)
 - cphone_number: Customer lookups by phone (unique index)
 - delivery_date: Date-range queries for reports
@@ -1567,18 +1700,21 @@ Indexes speed up queries exponentially:
 
 **2. Connection Pooling**
 Mongoose maintains 5 persistent database connections:
+
 - Without pooling: Create connection per request (50ms overhead)
 - With pooling: Reuse existing connection (0ms overhead)
 - Handles 100 concurrent requests smoothly
 
 **3. Response Compression (Gzip)**
 Middleware compresses JSON responses:
+
 - Uncompressed customer list: 250KB
 - Gzip compressed: 30KB
 - Result: 88% bandwidth reduction
 
 **4. Lean Queries for Read-Only Data**
 Mongoose returns full document objects with methods by default:
+
 - Normal query: Returns Mongoose document (12KB)
 - Lean query: Returns plain JavaScript object (3KB)
 - Used for: Read-only APIs like dashboards, reports
@@ -1586,6 +1722,7 @@ Mongoose returns full document objects with methods by default:
 
 **5. CDN Offloading**
 Static assets served from Cloudinary, not Express:
+
 - Images, PDFs, logos: Cloudinary
 - Frontend bundle: Vercel CDN
 - Backend only serves: API responses
@@ -1596,7 +1733,9 @@ Static assets served from Cloudinary, not Express:
 ## Scalability Considerations
 
 ### Current Architecture Limits
+
 With current setup, the system can handle:
+
 - 1,000 daily active users
 - 10,000 orders per day
 - 50 concurrent users
@@ -1606,17 +1745,20 @@ With current setup, the system can handle:
 
 **Stateless Backend Design:**
 The backend stores no session data in memory, only using JWT tokens. This means:
+
 - Request 1 can go to Server A
 - Request 2 can go to Server B
 - Both work identically
 
 **Load Balancer Configuration:**
 Nginx or cloud load balancer distributes traffic:
+
 - Round-robin: Request 1→Server A, Request 2→Server B, Request 3→Server A
 - Least connections: Send to server with fewest active connections
 - Health checks: Remove failed servers from rotation
 
 **Scaling Process:**
+
 1. Deploy 2 more backend containers
 2. Configure load balancer
 3. Traffic now split: 33% each server
@@ -1626,11 +1768,13 @@ Nginx or cloud load balancer distributes traffic:
 ### Vertical Scaling (Bigger Servers)
 
 Increase server resources when hitting limits:
+
 - CPU bottleneck: Upgrade to more cores
 - Memory bottleneck: Add RAM
 - Database bottleneck: Upgrade MongoDB tier
 
 **Example: Database Scaling**
+
 - M10 cluster: 2GB RAM, handles 100 concurrent connections
 - M30 cluster: 8GB RAM, handles 400 concurrent connections
 - M40 cluster: 16GB RAM, handles 1000 concurrent connections
@@ -1640,30 +1784,35 @@ Increase server resources when hitting limits:
 As the system grows, split into specialized services:
 
 **Invoice Service (Separate Server)**
+
 - Handles only PDF generation
 - Independent scaling (invoice generation is CPU-intensive)
 - Technology: Python + ReportLab (faster PDF generation)
 - Communication: Message queue (RabbitMQ)
 
 **Notification Service**
+
 - Handles only WhatsApp and SMS
 - Retry logic and queuing
 - Rate limiting (WhatsApp has limits)
 - Technology: Node.js + Bull queue
 
 **Payment Service**
+
 - Handles only Razorpay integration
 - PCI compliance isolation
 - Webhook processing
 - Technology: Node.js + Express
 
 **Analytics Service**
+
 - Pre-aggregated reports
 - Business intelligence
 - Technology: Python + Pandas
 - Database: PostgreSQL (better for analytics)
 
 **Benefits of Microservices:**
+
 - Scale services independently
 - Deploy changes without affecting others
 - Use best technology for each service
@@ -1671,6 +1820,7 @@ As the system grows, split into specialized services:
 - Fault isolation (one service failure doesn't crash all)
 
 **Trade-offs:**
+
 - More complex deployment
 - Network latency between services
 - Distributed data management
@@ -1682,4 +1832,3 @@ As the system grows, split into specialized services:
 **Document Version:** 2.0  
 **Last Updated:** October 9, 2025  
 **Maintained By:** Development Team
-

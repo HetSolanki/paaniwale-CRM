@@ -1,11 +1,13 @@
 # Dhandha - Complete Project Overview
 
 ## 📋 Project Summary
+
 **Dhandha** is a comprehensive business management platform designed for water bottle delivery businesses. It manages customer orders, party/bulk orders, invoicing, payments, and automated WhatsApp communication.
 
 ## 🎯 Business Purpose
+
 - **Primary Users:** Water bottle delivery businesses (e.g., "Paani wale")
-- **Key Features:** 
+- **Key Features:**
   - Customer management and order tracking
   - Party order management (marriages, functions, events)
   - Automated invoice generation with PDF
@@ -16,6 +18,7 @@
 ## 🏗️ Technology Stack
 
 ### Frontend
+
 - **Framework:** React 18 with Vite
 - **UI Library:** shadcn/ui (Radix UI primitives)
 - **Styling:** Tailwind CSS
@@ -27,6 +30,7 @@
 - **Tables:** TanStack Table
 
 ### Backend
+
 - **Runtime:** Node.js
 - **Framework:** Express.js
 - **Database:** MongoDB with Mongoose ODM
@@ -36,6 +40,7 @@
 - **Messaging:** WhatsApp Business API (Meta)
 
 ### DevOps & Deployment
+
 - **Containerization:** Docker, Docker Compose
 - **CI/CD:** Jenkins (Jenkinsfile included)
 - **Web Server:** Nginx (reverse proxy)
@@ -60,7 +65,6 @@ Dhandha/
 │   │   └── DataTables/          # Table components
 │   ├── Context/                 # React Context providers
 │   │   ├── UserContext.jsx      # User authentication state
-│   │   ├── CustomerContext.jsx
 │   │   ├── ThemeProviderContext.tsx
 │   │   └── ...
 │   ├── Handlers/                # API call handlers
@@ -121,12 +125,14 @@ Dhandha/
 ## 🔑 Core Features
 
 ### 1. **Customer Management**
+
 - Add, edit, delete customers
 - Track customer details (name, phone, address)
 - Customer entry/exit logging
 - Invoice history per customer
 
 ### 2. **Party Orders**
+
 - Bulk bottle orders for events (marriages, functions, parties)
 - Two bottle types: Cold bottles & Normal bottles
 - Separate pricing for each type
@@ -136,6 +142,7 @@ Dhandha/
 - Notes/special instructions
 
 ### 3. **Invoice System**
+
 - Automated PDF generation (jsPDF)
 - Professional invoice layout with shop branding
 - Itemized billing (cold vs normal bottles)
@@ -144,6 +151,7 @@ Dhandha/
 - Invoice status tracking
 
 ### 4. **Payment Integration**
+
 - Razorpay payment link creation
 - SMS & email notifications
 - Payment reminders
@@ -151,6 +159,7 @@ Dhandha/
 - Integration with invoices
 
 ### 5. **WhatsApp Automation**
+
 - Automated invoice delivery via WhatsApp
 - Template messages for invoices
 - Text messages for payment links
@@ -158,12 +167,14 @@ Dhandha/
 - Status tracking (sent/not sent)
 
 ### 6. **Dashboard & Analytics**
+
 - Sales statistics
 - Order summaries
 - Customer insights
 - Party order metrics
 
 ### 7. **User Management**
+
 - JWT-based authentication
 - User roles (admin/user)
 - Shop/business profile
@@ -172,6 +183,7 @@ Dhandha/
 ## 🔄 User Workflows
 
 ### Customer Order Flow
+
 1. User logs in → Dashboard
 2. Navigate to Customers → View customer list
 3. Add/Edit customer details
@@ -181,6 +193,7 @@ Dhandha/
 7. Track payment status
 
 ### Party Order Flow
+
 1. Navigate to Party Orders
 2. Click "Add Party Order"
 3. Fill party details (name, phone, address, event type)
@@ -191,6 +204,7 @@ Dhandha/
 8. Order status updated to "Invoice Sent"
 
 ### Invoice Sending Flow
+
 1. Select order (customer or party)
 2. System generates PDF invoice
 3. PDF uploaded to Cloudinary
@@ -202,18 +216,21 @@ Dhandha/
 ## 🔐 Security Features
 
 ### Authentication
+
 - JWT tokens with expiration
 - Secure password hashing
 - Protected API routes
 - User session management
 
 ### Authorization
+
 - Role-based access control
 - User-specific data filtering (uid-based queries)
 - Admin-only routes
 - Protected middleware on sensitive endpoints
 
 ### Data Validation
+
 - Input validation on frontend & backend
 - Phone number validation (10 digits)
 - Required field checks
@@ -222,12 +239,14 @@ Dhandha/
 ## 🌐 API Architecture
 
 ### RESTful Design
+
 - Standard HTTP methods (GET, POST, PUT, DELETE)
 - Resource-based URLs
 - JSON request/response
 - Consistent error responses
 
 ### Authentication Flow
+
 ```
 Client → POST /api/auth/login → JWT Token
 Client → Stores token in localStorage
@@ -238,6 +257,7 @@ Server → Processes request with user context
 ```
 
 ### Error Handling
+
 - Centralized error handler (`handleFetchResponse`)
 - HTTP status codes (401, 403, 404, 500)
 - User-friendly error messages
@@ -247,22 +267,26 @@ Server → Processes request with user context
 ## 🔌 Third-Party Integrations
 
 ### 1. WhatsApp Business API
+
 - **Provider:** Meta (Facebook)
 - **Purpose:** Send invoices and payment links
 - **Configuration:** Phone Number ID, Access Token, API Version
 - **Message Types:** Template messages, Text messages
 
 ### 2. Razorpay
+
 - **Purpose:** Payment link generation
 - **Features:** SMS notifications, reminders, custom amounts
 - **Integration:** API key, account number
 
 ### 3. Cloudinary
+
 - **Purpose:** PDF invoice storage
 - **Configuration:** Cloud name, upload preset
 - **Folder Structure:** Paaniwale-Party-Invoices
 
 ### 4. MongoDB Atlas
+
 - **Database:** Cloud-hosted MongoDB
 - **Models:** Users, Customers, Party Orders, Payments, Shops
 - **ODM:** Mongoose for schema validation
@@ -270,6 +294,7 @@ Server → Processes request with user context
 ## 📊 Data Models
 
 ### User Schema
+
 ```javascript
 {
   username: String,
@@ -281,6 +306,7 @@ Server → Processes request with user context
 ```
 
 ### Party Order Schema
+
 ```javascript
 {
   uid: ObjectId (ref: User),
@@ -303,6 +329,7 @@ Server → Processes request with user context
 ```
 
 ### Customer Schema
+
 ```javascript
 {
   uid: ObjectId (ref: User),
@@ -317,6 +344,7 @@ Server → Processes request with user context
 ## 🎨 UI/UX Features
 
 ### Design System
+
 - **Theme:** Light/Dark mode support
 - **Components:** shadcn/ui (consistent, accessible)
 - **Colors:** Customizable via Tailwind config
@@ -324,12 +352,14 @@ Server → Processes request with user context
 - **Icons:** Lucide React icons
 
 ### Responsive Design
+
 - Mobile-first approach
 - Breakpoints: sm, md, lg, xl
 - Touch-friendly buttons & inputs
 - Optimized for tablets & phones
 
 ### User Feedback
+
 - Toast notifications (success/error)
 - Loading skeletons
 - Loading spinners
@@ -337,6 +367,7 @@ Server → Processes request with user context
 - Error boundaries
 
 ### Data Tables
+
 - Sorting, filtering, pagination
 - Column visibility toggle
 - Search functionality
@@ -346,6 +377,7 @@ Server → Processes request with user context
 ## 🚀 Development & Deployment
 
 ### Development Setup
+
 ```bash
 # Install frontend dependencies
 npm install
@@ -363,6 +395,7 @@ node server.js
 ```
 
 ### Environment Variables
+
 ```env
 # Frontend (.env)
 VITE_API_BASE_URL=http://localhost:5000
@@ -380,6 +413,7 @@ RAZORPAY_KEY_SECRET=your_secret
 ```
 
 ### Docker Deployment
+
 ```bash
 # Build & run containers
 docker-compose up --build
@@ -390,6 +424,7 @@ docker-compose up --build
 ```
 
 ### Production Deployment
+
 - **Frontend:** Vercel (vercel.json configured)
 - **Backend:** Any Node.js hosting (Render, Railway, AWS)
 - **Database:** MongoDB Atlas
@@ -398,6 +433,7 @@ docker-compose up --build
 ## 📈 Performance Optimizations
 
 ### Frontend
+
 - React Query caching (3-10 min stale time)
 - Code splitting with React.lazy
 - Optimized images (Cloudinary CDN)
@@ -405,6 +441,7 @@ docker-compose up --build
 - Debounced search inputs
 
 ### Backend
+
 - MongoDB indexing on frequently queried fields
 - JWT token validation caching
 - Cloudinary CDN for PDF delivery
@@ -412,6 +449,7 @@ docker-compose up --build
 - Connection pooling (Mongoose)
 
 ## 🧪 Testing Strategy
+
 - Manual testing workflows
 - Console logging for debugging
 - Error boundary components
@@ -421,6 +459,7 @@ docker-compose up --build
 ## 📝 Code Quality
 
 ### Frontend Standards
+
 - ESLint for linting
 - Prettier for formatting
 - TypeScript for type safety (partial)
@@ -428,6 +467,7 @@ docker-compose up --build
 - Component composition patterns
 
 ### Backend Standards
+
 - ES6 modules (import/export)
 - Async/await for promises
 - Error handling middleware
@@ -437,6 +477,7 @@ docker-compose up --build
 ## 🔮 Future Enhancements
 
 ### Planned Features
+
 1. SMS notifications (Twilio integration)
 2. Email invoicing (SendGrid/NodeMailer)
 3. Inventory management
@@ -449,6 +490,7 @@ docker-compose up --build
 10. Barcode/QR scanning for bottles
 
 ### Technical Improvements
+
 1. Unit & integration testing (Jest, Vitest)
 2. E2E testing (Playwright, Cypress)
 3. GraphQL API option
@@ -461,11 +503,13 @@ docker-compose up --build
 ## 👥 Team & Contribution
 
 ### Roles
+
 - **Owner:** HetSolanki
 - **Repository:** github.com/HetSolanki/Dhandha
 - **License:** (Specify if applicable)
 
 ### Contributing
+
 1. Fork the repository
 2. Create feature branch
 3. Make changes with proper documentation
@@ -475,12 +519,14 @@ docker-compose up --build
 ## 📞 Support & Documentation
 
 ### Getting Help
+
 - Check `documentation/` folder for detailed guides
 - Review error logs in browser console
 - Check backend logs for API issues
 - Refer to API_REFERENCE.md for endpoints
 
 ### Common Issues
+
 1. **Login fails:** Check JWT_SECRET, MongoDB connection
 2. **Invoice not sending:** Verify WhatsApp credentials
 3. **Payment link fails:** Check Razorpay API keys
@@ -489,6 +535,7 @@ docker-compose up --build
 ## 🏁 Quick Start Guide
 
 ### For Developers
+
 1. Clone repository
 2. Install dependencies (frontend + backend)
 3. Set up environment variables
@@ -498,6 +545,7 @@ docker-compose up --build
 7. Access http://localhost:3000
 
 ### For Users
+
 1. Navigate to deployed URL
 2. Login with credentials
 3. Explore dashboard
@@ -516,7 +564,7 @@ docker-compose up --build
 ✅ **Production-ready with Docker & CI/CD**  
 ✅ **Scalable architecture**  
 ✅ **Comprehensive error handling**  
-✅ **Mobile-responsive design**  
+✅ **Mobile-responsive design**
 
 ---
 

@@ -32,7 +32,9 @@
 **Dhandha** is a modern, production-ready business management platform specifically designed for water bottle delivery businesses operating in India. The system automates the entire order-to-payment cycle, eliminating manual paperwork and streamlining operations.
 
 ### Business Problem Solved
+
 Traditional water delivery businesses face challenges:
+
 - Manual order tracking on paper ledgers
 - Time-consuming invoice generation
 - Delayed payment collection
@@ -40,7 +42,9 @@ Traditional water delivery businesses face challenges:
 - Limited customer communication
 
 ### Our Solution
+
 Dhandha provides a complete digital transformation:
+
 - **Digital Order Management**: Track all daily deliveries and party orders in one place
 - **Automated Invoicing**: Generate professional PDF invoices with one click
 - **Instant Delivery**: Send invoices via WhatsApp automatically
@@ -49,6 +53,7 @@ Dhandha provides a complete digital transformation:
 - **Multi-tenancy**: Multiple businesses can use the same platform independently
 
 ### Target Users
+
 - Small to medium water bottle delivery businesses
 - Beverage distributors handling events and parties
 - Household water delivery services
@@ -59,24 +64,28 @@ Dhandha provides a complete digital transformation:
 ## ✨ Key Features
 
 ### 📊 Dashboard & Analytics
+
 - **Real-time Statistics**: Total customers, active orders, revenue tracking
 - **Quick Overview**: Recent orders and pending deliveries at a glance
 - **Performance Metrics**: Daily, weekly, monthly revenue reports
 - **Customer Insights**: Top customers, delivery frequency analysis
 
 ### 👥 Customer Management
+
 - **Complete CRM**: Store customer details, addresses, pricing
 - **Route Optimization**: Delivery sequence numbering for efficient routes
 - **Search & Filter**: Quick customer lookup by name or phone
 - **Bulk Operations**: Import/export customer data via CSV
 
 ### 🎉 Party Order System
+
 - **Event Management**: Handle weddings, functions, corporate events
 - **Dual Pricing**: Separate pricing for cold and normal bottles
 - **Order Tracking**: Status workflow (Pending → Confirmed → Delivered)
 - **Custom Invoicing**: Professional invoices with event details
 
 ### 📄 Invoice Generation
+
 - **PDF Creation**: Client-side PDF generation using jsPDF
 - **Custom Branding**: Shop logo, name, address on invoices
 - **Itemized Billing**: Detailed breakdown of quantities and prices
@@ -84,6 +93,7 @@ Dhandha provides a complete digital transformation:
 - **Bulk Sending**: Send invoices to all customers at once
 
 ### 💳 Payment Collection
+
 - **Razorpay Integration**: Create payment links instantly
 - **Multiple Methods**: UPI, cards, net banking, wallets
 - **Auto Notifications**: SMS and email payment reminders
@@ -91,6 +101,7 @@ Dhandha provides a complete digital transformation:
 - **Reconciliation**: Automatic payment-to-order matching
 
 ### 📱 WhatsApp Integration
+
 - **Template Messages**: Pre-approved business message templates
 - **Document Sharing**: Send PDF invoices as WhatsApp attachments
 - **Payment Links**: Share Razorpay links via WhatsApp
@@ -98,6 +109,7 @@ Dhandha provides a complete digital transformation:
 - **Delivery Status**: Message delivery tracking and reporting
 
 ### 🔐 Security & Authentication
+
 - **JWT Authentication**: Secure token-based login system
 - **Role-Based Access**: Admin and user role separation
 - **Multi-tenancy**: Complete data isolation between users
@@ -105,6 +117,7 @@ Dhandha provides a complete digital transformation:
 - **API Protection**: All sensitive endpoints require authentication
 
 ### 📈 Additional Features
+
 - **Dark Mode**: Full light/dark theme support
 - **Responsive Design**: Works on desktop, tablet, and mobile
 - **Data Export**: Export reports to CSV/Excel
@@ -117,47 +130,51 @@ Dhandha provides a complete digital transformation:
 ## 🛠 Tech Stack
 
 ### Frontend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **React** | 18.3 | UI library with hooks and functional components |
-| **Vite** | 5.4 | Next-generation build tool (10x faster than Webpack) |
-| **React Router** | 6.x | Client-side routing and navigation |
-| **React Query** | 5.x | Server state management and caching |
-| **shadcn/ui** | Latest | Customizable component library (Radix UI based) |
-| **Tailwind CSS** | 3.x | Utility-first CSS framework |
-| **Lucide React** | Latest | Beautiful icon library |
-| **jsPDF** | 2.x | Client-side PDF generation |
-| **React Hook Form** | 7.x | Form validation and state management |
-| **Zod** | 3.x | TypeScript-first schema validation |
+
+| Technology          | Version | Purpose                                              |
+| ------------------- | ------- | ---------------------------------------------------- |
+| **React**           | 18.3    | UI library with hooks and functional components      |
+| **Vite**            | 5.4     | Next-generation build tool (10x faster than Webpack) |
+| **React Router**    | 6.x     | Client-side routing and navigation                   |
+| **React Query**     | 5.x     | Server state management and caching                  |
+| **shadcn/ui**       | Latest  | Customizable component library (Radix UI based)      |
+| **Tailwind CSS**    | 3.x     | Utility-first CSS framework                          |
+| **Lucide React**    | Latest  | Beautiful icon library                               |
+| **jsPDF**           | 2.x     | Client-side PDF generation                           |
+| **React Hook Form** | 7.x     | Form validation and state management                 |
+| **Zod**             | 3.x     | TypeScript-first schema validation                   |
 
 ### Backend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **Node.js** | 18+ | JavaScript runtime environment |
-| **Express.js** | 4.x | Web application framework |
-| **MongoDB** | 7.0 | NoSQL document database |
-| **Mongoose** | 7.x | MongoDB ODM with schema validation |
-| **JWT** | 9.x | JSON Web Token authentication |
-| **bcrypt** | 5.x | Password hashing library |
-| **express-validator** | 7.x | Request validation middleware |
-| **cors** | 2.x | Cross-Origin Resource Sharing |
+
+| Technology            | Version | Purpose                            |
+| --------------------- | ------- | ---------------------------------- |
+| **Node.js**           | 18+     | JavaScript runtime environment     |
+| **Express.js**        | 4.x     | Web application framework          |
+| **MongoDB**           | 7.0     | NoSQL document database            |
+| **Mongoose**          | 7.x     | MongoDB ODM with schema validation |
+| **JWT**               | 9.x     | JSON Web Token authentication      |
+| **bcrypt**            | 5.x     | Password hashing library           |
+| **express-validator** | 7.x     | Request validation middleware      |
+| **cors**              | 2.x     | Cross-Origin Resource Sharing      |
 
 ### Third-Party Integrations
-| Service | Purpose |
-|---------|---------|
+
+| Service                   | Purpose                                |
+| ------------------------- | -------------------------------------- |
 | **WhatsApp Business API** | Automated invoice and message delivery |
-| **Razorpay** | Payment gateway for payment links |
-| **Cloudinary** | Cloud storage for PDF invoices |
+| **Razorpay**              | Payment gateway for payment links      |
+| **Cloudinary**            | Cloud storage for PDF invoices         |
 
 ### DevOps & Tools
-| Tool | Purpose |
-|------|---------|
-| **Docker** | Containerization and deployment |
-| **Docker Compose** | Multi-container orchestration |
-| **Jenkins** | CI/CD pipeline automation |
-| **Nginx** | Reverse proxy and load balancing |
-| **Git** | Version control |
-| **ESLint** | Code quality and linting |
+
+| Tool               | Purpose                          |
+| ------------------ | -------------------------------- |
+| **Docker**         | Containerization and deployment  |
+| **Docker Compose** | Multi-container orchestration    |
+| **Jenkins**        | CI/CD pipeline automation        |
+| **Nginx**          | Reverse proxy and load balancing |
+| **Git**            | Version control                  |
+| **ESLint**         | Code quality and linting         |
 
 ---
 
@@ -204,21 +221,25 @@ Dhandha provides a complete digital transformation:
 ### Key Architecture Decisions
 
 **Stateless Backend (JWT):**
+
 - Enables horizontal scaling across multiple servers
 - No server-side session storage required
 - Mobile-friendly authentication
 
 **Client-Side PDF Generation:**
+
 - Reduces server load (CPU-intensive operation)
 - Instant preview for users
 - Works offline
 
 **React Query Caching:**
+
 - Reduces API calls by 80%
 - Instant data access from cache
 - Background refetching keeps data fresh
 
 **Multi-Tenancy Design:**
+
 - Every resource associated with user ID
 - Complete data isolation
 - Single codebase serves multiple businesses
@@ -232,6 +253,7 @@ For detailed architecture diagrams and explanations, see [ARCHITECTURE.md](docum
 ### Prerequisites
 
 Ensure you have the following installed:
+
 - **Node.js** 18.x or higher ([Download](https://nodejs.org/))
 - **MongoDB** 7.0 or higher ([Download](https://www.mongodb.com/try/download/community)) or MongoDB Atlas account
 - **Git** ([Download](https://git-scm.com/))
@@ -240,17 +262,20 @@ Ensure you have the following installed:
 ### Installation
 
 #### 1. Clone the Repository
+
 ```bash
 git clone https://github.com/HetSolanki/Dhandha.git
 cd Dhandha
 ```
 
 #### 2. Install Frontend Dependencies
+
 ```bash
 npm install
 ```
 
 #### 3. Install Backend Dependencies
+
 ```bash
 cd server/API
 npm install
@@ -260,6 +285,7 @@ cd ../..
 #### 4. Configure Environment Variables
 
 Create `.env` file in the root directory:
+
 ```env
 # Frontend Environment Variables
 VITE_API_URL=http://localhost:5000/api
@@ -270,6 +296,7 @@ VITE_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
 ```
 
 Create `.env` file in `server/API/` directory:
+
 ```env
 # Backend Environment Variables
 PORT=5000
@@ -280,6 +307,7 @@ RAZORPAY_KEY_SECRET=your_razorpay_key_secret
 ```
 
 #### 5. Start MongoDB
+
 ```bash
 # If using local MongoDB
 mongod
@@ -292,22 +320,26 @@ mongod
 **Option A: Development Mode (Separate Terminals)**
 
 Terminal 1 - Backend:
+
 ```bash
 cd server/API
 npm run dev
 ```
 
 Terminal 2 - Frontend:
+
 ```bash
 npm run dev
 ```
 
 **Option B: Using Docker Compose**
+
 ```bash
 docker-compose up --build
 ```
 
 #### 7. Access the Application
+
 - **Frontend:** http://localhost:5173
 - **Backend API:** http://localhost:5000
 - **API Health Check:** http://localhost:5000/health
@@ -315,16 +347,19 @@ docker-compose up --build
 ### First-Time Setup
 
 1. **Create Admin Account:**
+
    - Navigate to signup page
    - Register with your details
    - Manually set `is_admin: true` in MongoDB for admin access
 
 2. **Configure Shop Details:**
+
    - Login to dashboard
    - Go to Settings → Shop
    - Add shop name, address, logo
 
 3. **Add First Customer:**
+
    - Navigate to Customers
    - Click "Add Customer"
    - Fill in details and save
@@ -368,7 +403,6 @@ Dhandha/
 │   │
 │   ├── Context/                     # React Context providers
 │   │   ├── UserContext.jsx          # Auth & user state
-│   │   ├── CustomerContext.jsx      # Customer state
 │   │   ├── ThemeProviderContext.tsx # Theme management
 │   │   └── ...
 │   │
@@ -468,11 +502,14 @@ Dhandha/
 ## 📚 API Documentation
 
 ### Base URL
+
 - **Development:** `http://localhost:5000/api`
 - **Production:** `https://api.paaniwale.hetsolanki.tech/api`
 
 ### Authentication
+
 All protected endpoints require JWT token in Authorization header:
+
 ```
 Authorization: Bearer <your_jwt_token>
 ```
@@ -480,6 +517,7 @@ Authorization: Bearer <your_jwt_token>
 ### Main API Endpoints
 
 #### Authentication & Users
+
 - `POST /api/auth/login` - User login
 - `POST /api/auth/user` - Create user
 - `GET /api/auth/userall` - Get all users (admin)
@@ -489,6 +527,7 @@ Authorization: Bearer <your_jwt_token>
 - `DELETE /api/auth/user/:id` - Delete user
 
 #### Customers
+
 - `POST /api/customers/customer` - Create customer
 - `GET /api/customers/customerall` - Get all customers
 - `GET /api/customers/customer/:id` - Get customer
@@ -496,12 +535,14 @@ Authorization: Bearer <your_jwt_token>
 - `DELETE /api/customers/customer/:id` - Delete customer
 
 #### Customer Entries
+
 - `POST /api/customerentry/create` - Create entry
 - `GET /api/customerentry/all` - Get all entries
 - `PUT /api/customerentry/update/:id` - Update entry
 - `DELETE /api/customerentry/delete/:id` - Delete entry
 
 #### Party Orders
+
 - `POST /api/partyorder/create` - Create order
 - `GET /api/partyorder/all` - Get all orders
 - `GET /api/partyorder/:id` - Get order
@@ -510,12 +551,14 @@ Authorization: Bearer <your_jwt_token>
 - `DELETE /api/partyorder/delete/:id` - Delete order
 
 #### Payments
+
 - `POST /api/paymentlink/create` - Create payment link
 - `POST /api/paymentlink/createall` - Bulk payment links
 - `GET /api/paymentdetails/all` - Get payment records
 - `POST /api/paymentdetails/create` - Create payment record
 
 #### Shop & Statistics
+
 - `POST /api/shop/create` - Create shop
 - `GET /api/shop/all` - Get shops
 - `PUT /api/shop/update/:id` - Update shop
@@ -528,6 +571,7 @@ For complete API documentation with request/response examples, see [API_REFERENC
 ## ⚙️ Environment Configuration
 
 ### Frontend Environment Variables (.env)
+
 ```env
 # API Configuration
 VITE_API_URL=http://localhost:5000/api
@@ -542,6 +586,7 @@ VITE_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
 ```
 
 ### Backend Environment Variables (server/API/.env)
+
 ```env
 # Server Configuration
 PORT=5000
@@ -564,16 +609,19 @@ ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5000
 ### Getting API Keys
 
 **WhatsApp Business API:**
+
 1. Go to [Meta for Developers](https://developers.facebook.com/)
 2. Create app → WhatsApp Business
 3. Get Phone Number ID and Access Token from dashboard
 
 **Razorpay:**
+
 1. Sign up at [Razorpay](https://razorpay.com/)
 2. Go to Settings → API Keys
 3. Generate test/live API keys
 
 **Cloudinary:**
+
 1. Sign up at [Cloudinary](https://cloudinary.com/)
 2. Dashboard → Settings → Upload
 3. Create unsigned upload preset
@@ -586,16 +634,19 @@ ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5000
 ### Docker Deployment
 
 **Build and run with Docker Compose:**
+
 ```bash
 docker-compose up --build -d
 ```
 
 **View logs:**
+
 ```bash
 docker-compose logs -f
 ```
 
 **Stop services:**
+
 ```bash
 docker-compose down
 ```
@@ -603,11 +654,13 @@ docker-compose down
 ### Vercel Deployment (Frontend)
 
 1. Install Vercel CLI:
+
 ```bash
 npm install -g vercel
 ```
 
 2. Deploy:
+
 ```bash
 vercel --prod
 ```
@@ -650,16 +703,19 @@ Comprehensive documentation is available in the `documentation/` folder:
 We welcome contributions! Here's how you can help:
 
 ### Reporting Bugs
+
 1. Check if issue already exists
 2. Create detailed bug report with steps to reproduce
 3. Include screenshots if applicable
 
 ### Suggesting Features
+
 1. Open feature request issue
 2. Describe the feature and use case
 3. Explain why it would be useful
 
 ### Code Contributions
+
 1. Fork the repository
 2. Create feature branch: `git checkout -b feature/amazing-feature`
 3. Commit changes: `git commit -m 'Add amazing feature'`
@@ -667,6 +723,7 @@ We welcome contributions! Here's how you can help:
 5. Open Pull Request
 
 ### Code Style Guidelines
+
 - Follow existing code patterns
 - Use meaningful variable names
 - Add comments for complex logic
@@ -684,11 +741,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 👨‍💻 Authors
 
 **Het Solanki**
+
 - GitHub: [@HetSolanki](https://github.com/HetSolanki)
 - Website: [hetsolanki.tech](https://hetsolanki.tech)
 - LinkedIn: [Het Solanki](https://linkedin.com/in/hetsolanki)
 
 **Dhruv Prajapati**
+
 - GitHub: [@dhruvp66572](https://github.com/dhruvp66572)
 - Website: [dhruvprajapati.tech](https://dhruvprajapati.tech)
 - LinkedIn: [Dhruv Prajapati](https://www.linkedin.com/in/dhruv-prajapati-088721260/)
@@ -712,6 +771,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 For support and queries:
+
 - 📧 Email: paaniwale7@gmail.com
 - 💬 GitHub Issues: [Create an issue](https://github.com/HetSolanki/Dhandha/issues)
 - 📱 WhatsApp: [Business Support](https://wa.me/919909066572)
@@ -721,6 +781,7 @@ For support and queries:
 ## 🗺️ Roadmap
 
 ### Upcoming Features
+
 - [ ] Mobile app (React Native)
 - [ ] SMS notifications (Twilio integration)
 - [ ] Advanced analytics dashboard
@@ -733,6 +794,7 @@ For support and queries:
 - [ ] QR code-based delivery confirmation
 
 ### Performance Improvements
+
 - [ ] Redis caching layer
 - [ ] GraphQL API option
 - [ ] WebSocket for real-time updates

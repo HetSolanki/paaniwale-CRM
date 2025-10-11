@@ -47,7 +47,7 @@ const Customers = () => {
     isLoading,
     error,
     refetch,
-  } = useQuery({
+  } = useQuery({ 
     queryKey: ["customers"],
     queryFn: fetchCustomers,
     enabled: !!localStorage.getItem("token"), // Only fetch if token exists

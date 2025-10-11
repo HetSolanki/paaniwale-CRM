@@ -23,13 +23,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { addcustomer } from "@/Handlers/AddcustomerHandler";
-import { useCustomer } from "@/Context/CustomerContext";
 import { useUser } from "@/Context/UserContext";
 import "react-toastify/dist/ReactToastify.css";
 import { Toaster } from "../shadcn-UI/toaster";
 import { useToast } from "../shadcn-UI/use-toast";
 import { useRef, useState } from "react";
 import { config } from "@/Data/config";
+import { useQueryClient } from "@tanstack/react-query";
 
 const formSchema = z.object({
   cname: z
@@ -63,8 +63,10 @@ export function Addcustomer() {
     resolver: zodResolver(formSchema),
   });
 
-  const { updateCustomerContext } = useCustomer();
+  const queryClient = useQueryClient();
   const [click, setClick] = useState(false);
+  const [open, setOpen] = useState(false);
+
   const { user } = useUser();
   const { toast } = useToast();
   const formSubmit = async (data) => {
@@ -88,8 +90,9 @@ export function Addcustomer() {
           description: "Customer added successfully.",
         });
         setClick(false);
-        updateCustomerContext();
+        queryClient.invalidateQueries({ queryKey: ["customers"] });
         form.reset();
+        setOpen(false);
         setIsVerified(false);
         setOtpSent(false);
         setOtp("");
@@ -227,9 +230,10 @@ export function Addcustomer() {
           setOtpSent(false);
           setOtp("");
         }}
+        open={open}
       >
         <DialogTrigger asChild>
-          <Button size="sm" className="h-8 gap-1">
+          <Button size="sm" className="h-8 gap-1" onClick={() => setOpen(true)}>
             <PlusCircle className="h-3.5 w-3.5" />
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
               Add Customer
