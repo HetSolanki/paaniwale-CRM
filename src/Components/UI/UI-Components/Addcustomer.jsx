@@ -91,6 +91,7 @@ export function Addcustomer() {
         });
         setClick(false);
         queryClient.invalidateQueries({ queryKey: ["customers"] });
+        queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
         form.reset();
         setOpen(false);
         setIsVerified(false);
@@ -340,7 +341,10 @@ export function Addcustomer() {
                         disabled={verifying || otp.length !== 6}
                       >
                         {verifying ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Verifying...
+                          </>
                         ) : (
                           "Verify OTP"
                         )}

@@ -15,7 +15,7 @@ const customerEntrySchema = new mongoose.Schema(
       required: true,
     },
     delivery_date: {
-      type: String,
+      type: Date,
       required: true,
     },
     delivery_status: {

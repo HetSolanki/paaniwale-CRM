@@ -50,6 +50,7 @@ export default function DeleteCustomer({ cid }) {
           description: "Customer deleted successfully.",
         });
         queryClient.invalidateQueries({ queryKey: ["customers"] });
+        queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
       } else {
         throw new Error(res.message || "Failed to delete customer");
       }

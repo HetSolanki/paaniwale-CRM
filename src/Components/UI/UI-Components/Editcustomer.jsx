@@ -89,6 +89,7 @@ export function Editcustomer({ id }) {
 
       if (newcustomer.status === "success") {
         queryClient.invalidateQueries({ queryKey: ["customers"] });
+        queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
         toast({
           title: "Success",
           description: "Customer details updated successfully.",

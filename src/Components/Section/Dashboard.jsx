@@ -30,6 +30,8 @@ export function Dashboard() {
     staleTime: 2 * 60 * 1000, // 2 minutes
     retry: 1,
   });
+
+  console.log(data);
   useEffect(() => {
     if (!localStorage.getItem("token")) {
       navigate("/signin");
