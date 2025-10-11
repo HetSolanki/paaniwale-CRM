@@ -443,7 +443,11 @@ export function Addcustomer() {
                   </Button>
                 )}
                 <DialogClose asChild>
-                  <Button type="button" variant="secondary">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setOpen(false)}
+                  >
                     Close
                   </Button>
                 </DialogClose>
