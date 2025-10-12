@@ -42,8 +42,7 @@ jobs:
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
             cd /home/deploy
-            docker compose pull paaniwale-frontend
-            docker compose pull paaniwale-backend
-            docker compose up -d paaniwale-frontend
-            docker compose up -d paaniwale-backend
+            docker compose pull
+            docker compose up -d --force-recreate
+            docker image prune -f
             docker compose ps

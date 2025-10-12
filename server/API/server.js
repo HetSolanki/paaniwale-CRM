@@ -29,10 +29,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use((req, res, next) => {
-  console.log(req.headers.origin);
-  next();
-});
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
@@ -48,6 +44,7 @@ const allowedOrigins = [
   "https://api.paaniwale.hetsolanki.tech",
   "https://preview.api.paaniwale.hetsolanki.tech",
 ];
+
 // CORS configuration for both development and production
 const corsOptions = {
   origin: allowedOrigins,
@@ -58,29 +55,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-// // Additional CORS headers for preflight requests
-// app.use((req, res, next) => {
-//   const origin = req.headers.origin;
-//   if (allowedOrigins.includes(origin)) {
-//     res.header("Access-Control-Allow-Origin", origin);
-//   }
-//   res.header(
-//     "Access-Control-Allow-Methods",
-//     "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
-//   );
-//   res.header(
-//     "Access-Control-Allow-Headers",
-//     "Content-Type, Authorization, X-Requested-With"
-//   );
-//   res.header("Access-Control-Allow-Credentials", "true");
-
-//   if (req.method === "OPTIONS") {
-//     res.sendStatus(200);
-//   } else {
-//     next();
-//   }
-// });
 
 app.get("/", (req, res) => {
   res.json({
