@@ -32,20 +32,21 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:5173",
+  "https://paaniwale.hetsolanki.tech",
+  "https://paaniwale.dhruvprajapati.tech",
+  "https://preview.paaniwale.hetsolanki.tech",
+  "https://preview.paaniwale.dhruvprajapati.tech",
+  "https://www.paaniwale.hetsolanki.tech",
+  "https://api.paaniwale.hetsolanki.tech",
+  "https://preview.api.paaniwale.hetsolanki.tech",
+];
 // CORS configuration for both development and production
 const corsOptions = {
-  origin: [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://localhost:5173",
-    "https://paaniwale.hetsolanki.tech",
-    "https://paaniwale.dhruvprajapati.tech",
-    "https://preview.paaniwale.hetsolanki.tech",
-    "https://preview.paaniwale.dhruvprajapati.tech",
-    "https://www.paaniwale.hetsolanki.tech",
-    "https://api.paaniwale.hetsolanki.tech",
-    "https://preview.api.paaniwale.hetsolanki.tech",
-  ],
+  origin: allowedOrigins,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   credentials: true,
@@ -54,25 +55,28 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Additional CORS headers for preflight requests
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
-  res.header(
-    "Access-Control-Allow-Methods",
-    "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
-  );
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, X-Requested-With"
-  );
-  res.header("Access-Control-Allow-Credentials", "true");
+// // Additional CORS headers for preflight requests
+// app.use((req, res, next) => {
+//   const origin = req.headers.origin;
+//   if (allowedOrigins.includes(origin)) {
+//     res.header("Access-Control-Allow-Origin", origin);
+//   }
+//   res.header(
+//     "Access-Control-Allow-Methods",
+//     "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
+//   );
+//   res.header(
+//     "Access-Control-Allow-Headers",
+//     "Content-Type, Authorization, X-Requested-With"
+//   );
+//   res.header("Access-Control-Allow-Credentials", "true");
 
-  if (req.method === "OPTIONS") {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
+//   if (req.method === "OPTIONS") {
+//     res.sendStatus(200);
+//   } else {
+//     next();
+//   }
+// });
 
 app.get("/", (req, res) => {
   res.json({
