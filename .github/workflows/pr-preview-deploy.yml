@@ -24,16 +24,16 @@ jobs:
       - name: Build the application
         run: npm run build
         env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL}}
-          VITE_CLOUD_NAME: ${{ secrets.VITE_CLOUD_NAME}}
-          VITE_CLOUD_VERSION: ${{ secrets.VITE_CLOUD_VERSION}}
-          VITE_CLOUD_API_KEY: ${{ secrets.VITE_CLOUD_API_KEY}}
-          VITE_CLOUD_API_SECRET: ${{ secrets.VITE_CLOUD_API_SECRET}}
-          VITE_CLOUD_UPLOAD_PRESET: ${{ secrets.VITE_CLOUD_UPLOAD_PRESET}}
-          VITE_WHATSAPP_BUSSINESS_ID: ${{ secrets.VITE_WHATSAPP_BUSSINESS_ID}}
-          VITE_WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.VITE_WHATSAPP_PHONE_NUMBER_ID}}
-          VITE_WHATSAPP_USER_ACCESS_TOKEN: ${{ secrets.VITE_WHATSAPP_USER_ACCESS_TOKEN}}
-          VITE_WHATSAPP_API_VERSION: ${{ secrets.VITE_WHATSAPP_API_VERSION}}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL_PREVIEW }}
+          VITE_CLOUD_NAME: ${{ secrets.VITE_CLOUD_NAME }}
+          VITE_CLOUD_VERSION: ${{ secrets.VITE_CLOUD_VERSION }}
+          VITE_CLOUD_API_KEY: ${{ secrets.VITE_CLOUD_API_KEY }}
+          VITE_CLOUD_API_SECRET: ${{ secrets.VITE_CLOUD_API_SECRET }}
+          VITE_CLOUD_UPLOAD_PRESET: ${{ secrets.VITE_CLOUD_UPLOAD_PRESET }}
+          VITE_WHATSAPP_BUSSINESS_ID: ${{ secrets.VITE_WHATSAPP_BUSSINESS_ID }}
+          VITE_WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.VITE_WHATSAPP_PHONE_NUMBER_ID }}
+          VITE_WHATSAPP_USER_ACCESS_TOKEN: ${{ secrets.VITE_WHATSAPP_USER_ACCESS_TOKEN }}
+          VITE_WHATSAPP_API_VERSION: ${{ secrets.VITE_WHATSAPP_API_VERSION }}
 
       - name: Build Docker image (Frontend)
         run: docker build -t ${{ secrets.DOCKER_HOST }}/paaniwale-frontend:preview .
@@ -62,8 +62,7 @@ jobs:
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
             cd /home/preview
-            docker compose pull paaniwale-frontend
-            docker compose pull paaniwale-backend
-            docker compose up -d paaniwale-frontend
-            docker compose up -d paaniwale-backend
+            docker compose pull
+            docker compose up -d --force-recreate
+            docker image  prune -f
             docker compose ps

@@ -1,4 +1,3 @@
-import { useCustomer } from "@/Context/CustomerContext";
 import { DataTable } from "@/Components/DataTables/CustomerEntryDatatable";
 import { columns } from "@/ColumnsSchema/CustomersEntryColumns";
 import Navbar from "./Navbar";
@@ -15,12 +14,21 @@ import { ArrowUpRight } from "lucide-react";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import { useEffect } from "react";
 import { useTheme } from "@/Context/ThemeProviderContext ";
+import { useQuery } from "@tanstack/react-query";
+import { fetchCustomers } from "@/Hooks/fetchAllCustomers";
 
 const DOMAIN_NAME = import.meta.env.VITE_API_BASE_URL;
 
 export default function CustomerEntry() {
   const navigate = useNavigate();
-  const { customer, loading, error } = useCustomer();
+
+  const customers = useQuery({
+    queryKey: ["customers"],
+    queryFn: fetchCustomers,
+    enabled: !!localStorage.getItem("token"), // Only fetch if token exists
+    staleTime: 3 * 60 * 1000, // 3 minutes
+    retry: 2,
+  });
 
   const { theme } = useTheme();
   useEffect(() => {
@@ -71,22 +79,28 @@ export default function CustomerEntry() {
         <Navbar />
         <div className="p-2 py-4 sm:p-8">
           <Card className="xl:col-span-2" x-chunk="dashboard-01-chunk-4">
-            {loading ? (
+            {customers.isLoading ? (
               <div className="mt-4 py-3 px-4">
                 <Skeleton className="h-[90px]" enableAnimation={true} />
               </div>
-            ) : error ? (
+            ) : customers.isError ? (
               <CardHeader className="flex flex-row items-center px-4 sm:p-6">
                 <div className="grid gap-2">
                   <CardTitle className="text-xl sm:text-2xl text-red-500">
                     Error Loading Data
                   </CardTitle>
                   <CardDescription className="text-red-400">
-                    {error}. Please try refreshing the page.
+                    {customers.error}. Please try refreshing the page.
                   </CardDescription>
+                  <Button
+                    onClick={() => customers.refetch()}
+                    className="mt-2 w-fit"
+                  >
+                    Retry
+                  </Button>
                 </div>
               </CardHeader>
-            ) : customer ? (
+            ) : customers.data ? (
               <CardHeader className="flex flex-row items-center px-4 sm:p-6">
                 <div className="grid gap-2">
                   <CardTitle className="text-xl sm:text-2xl">
@@ -107,19 +121,19 @@ export default function CustomerEntry() {
               </CardHeader>
             ) : null}
 
-            {loading ? (
+            {customers.isLoading ? (
               <div className="py-3 px-4 mb-4">
                 <Skeleton className="h-[300px]" enableAnimation={true} />
               </div>
-            ) : error ? (
+            ) : customers.isError ? (
               <CardContent className="px-3 sm:p-6">
                 <div className="flex items-center justify-center h-[300px] text-muted-foreground">
                   Failed to load customer entries
                 </div>
               </CardContent>
-            ) : customer ? (
+            ) : customers.data ? (
               <CardContent className="px-3 sm:p-6">
-                <DataTable data={customer} columns={columns} />
+                <DataTable data={customers?.data?.data} columns={columns} />
               </CardContent>
             ) : null}
           </Card>

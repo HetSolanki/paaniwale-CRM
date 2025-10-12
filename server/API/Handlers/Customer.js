@@ -70,7 +70,7 @@ export const createCustomer = async (req, res) => {
       bottle_price: req.body.bottle_price,
       delivery_sequence_number: req.body.delivery_sequence_number,
     });
-
+    
     res.json({ data: newCustomer, status: "success" });
   } catch (error) {
     res.json({ error });

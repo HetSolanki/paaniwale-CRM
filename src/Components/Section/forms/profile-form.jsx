@@ -42,7 +42,7 @@ const profileFormSchema = z.object({
 });
 
 export function ProfileForm() {
-  const { user, updateUserContext } = useUser();
+  const { user, refetchUser } = useUser();
 
   const form = useForm({
     resolver: zodResolver(profileFormSchema),
@@ -52,7 +52,7 @@ export function ProfileForm() {
     const uid = user.uid._id;
     const updatedUser = await updateUser(data, uid);
     if (updatedUser.status === "success") {
-      await updateUserContext();
+      await refetchUser();
       toast.success("User Updated Successfully", {
         position: "bottom-right",
         autoClose: 1000,

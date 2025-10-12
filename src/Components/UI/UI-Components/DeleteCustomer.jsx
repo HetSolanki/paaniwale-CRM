@@ -1,6 +1,5 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import { useCustomer } from "@/Context/CustomerContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,26 +11,25 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/Components/UI/shadcn-UI/alert-dialog";
-import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Loader2, Trash2 } from "lucide-react";
 import { useToast } from "../shadcn-UI/use-toast";
 import { useState } from "react";
 import { Button } from "../shadcn-UI/button";
-
-const DOMAIN_NAME = import.meta.env.VITE_API_BASE_URL;
+import { useQueryClient } from "@tanstack/react-query";
+import { config } from "@/Data/config";
 
 export default function DeleteCustomer({ cid }) {
-  const { updateCustomerContext } = useCustomer();
   const [click, setClick] = useState(false);
 
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const deleteRecord = async (cid) => {
     try {
       setClick(true);
       const deletedCustomer = await fetch(
-        `${DOMAIN_NAME}/api/customers/customer/${cid}`,
+        `${config.baseUrl}/api/customers/customer/${cid}`,
         {
           method: "DELETE",
           headers: {
@@ -51,7 +49,8 @@ export default function DeleteCustomer({ cid }) {
           title: "Success",
           description: "Customer deleted successfully.",
         });
-        updateCustomerContext();
+        queryClient.invalidateQueries({ queryKey: ["customers"] });
+        queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
       } else {
         throw new Error(res.message || "Failed to delete customer");
       }

@@ -31,7 +31,6 @@ export const fetchCustomerEnteries = async (cid) => {
     if (res.status === "error") {
       throw new Error(res.message || "Failed to fetch customer entries");
     }
-
     return res;
   } catch (error) {
     console.error("Error in fetchCustomerEnteries:", error);

@@ -14,15 +14,13 @@ import { ArrowUpDown } from "lucide-react";
 import { Button } from "../Components/UI/shadcn-UI/button";
 import { Editcustomer } from "@/Components/UI/UI-Components/Editcustomer";
 import DeleteCustomer from "@/Components/UI/UI-Components/DeleteCustomer";
-import React from "react";
 import GetInvoice from "@/Components/UI/UI-Components/GetInvoice";
-import { InvoiceX } from "@/Components/Section/Invoicex";
 
 // Define the Customer type interface for better type safety
 export interface Customer {
   _id: number;
   id: number;
-  cname: string; 
+  cname: string;
   cphone_number: number;
   caddress: string;
   bottle_price: number;
@@ -62,9 +60,7 @@ export const columns: ColumnDef<Customer>[] = [
       <span className="text-center sm:text-left">Customer Names</span>
     ),
     cell: ({ row }) => (
-      <span className="capitalize">
-        {row.getValue("cname")}
-      </span>
+      <span className="capitalize">{row.getValue("cname")}</span>
     ),
   },
 
@@ -91,13 +87,9 @@ export const columns: ColumnDef<Customer>[] = [
   // Address Column
   {
     accessorKey: "caddress",
-    header: () => (
-      <span className="text-center sm:text-left">Address</span>
-    ),
+    header: () => <span className="text-center sm:text-left">Address</span>,
     cell: ({ row }) => (
-      <span className="lowercase text-left">
-        {row.getValue("caddress")}
-      </span>
+      <span className="lowercase text-left">{row.getValue("caddress")}</span>
     ),
   },
 
@@ -123,7 +115,7 @@ export const columns: ColumnDef<Customer>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const customer = row.original;
-      
+
       return (
         <span className="flex gap-x-2">
           <Editcustomer id={customer._id} />

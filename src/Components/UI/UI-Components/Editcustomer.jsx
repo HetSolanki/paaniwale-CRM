@@ -23,7 +23,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useCustomer } from "@/Context/CustomerContext";
+import { useQueryClient } from "@tanstack/react-query";
 import { editcustomer } from "@/Handlers/EditcustomerHandler";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCustomer } from "@/Hooks/fetchCustomer";
@@ -78,7 +78,8 @@ export function Editcustomer({ id }) {
   }
 
   const [click, setClick] = useState(false);
-  const { updateCustomerContext } = useCustomer();
+  const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
   const { toast } = useToast();
 
   const formSubmit = async (data) => {
@@ -87,16 +88,14 @@ export function Editcustomer({ id }) {
       const newcustomer = await editcustomer(data, id);
 
       if (newcustomer.status === "success") {
-        updateCustomerContext();
+        queryClient.invalidateQueries({ queryKey: ["customers"] });
+        queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
         toast({
           title: "Success",
           description: "Customer details updated successfully.",
         });
-        form.reset();
-        setIsVerified(false);
-        setOtpSent(false);
-        setOtp("");
-        setPhoneChanged(false);
+        clearfield();
+        setOpen(false);
       } else {
         toast({
           variant: "destructive",
@@ -264,9 +263,13 @@ export function Editcustomer({ id }) {
             clearfield();
           }
         }}
+        open={open}
       >
         <DialogTrigger asChild>
-          <div className="cursor-pointer items-center">
+          <div
+            className="cursor-pointer items-center"
+            onClick={() => setOpen(true)}
+          >
             <Pencil />
           </div>
         </DialogTrigger>
@@ -480,7 +483,11 @@ export function Editcustomer({ id }) {
                   </Button>
                 )}
                 <DialogClose asChild>
-                  <Button type="button" variant="secondary">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setOpen(false)}
+                  >
                     Close
                   </Button>
                 </DialogClose>

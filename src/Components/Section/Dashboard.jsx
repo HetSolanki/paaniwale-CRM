@@ -7,42 +7,37 @@ import {
   CardHeader,
   CardTitle,
 } from "@/Components/UI/shadcn-UI/card";
-// import {
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableHead,
-//   TableHeader,
-//   TableRow,
-// } from "@/Components/UI/shadcn-UI/table";
 import { DataTable } from "@/Components/DataTables/ToprevenueDataTable";
-// import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Navbar from "./Navbar";
 import { CurrencyRupee, Money } from "@mui/icons-material";
 import { GetdashboardData } from "@/Handlers/GetdashboardData";
 import { columns } from "@/ColumnsSchema/DashboardColumns";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import { useTheme } from "@/Context/ThemeProviderContext ";
+import { useQuery } from "@tanstack/react-query";
 
 export function Dashboard() {
-  const [data, setData] = useState(null);
   const navigate = useNavigate();
 
   const { theme } = useTheme();
 
-  // const [data, setData] = useState({});
+  const { data } = useQuery({
+    queryKey: ["dashboardData"],
+    queryFn: GetdashboardData,
+    enabled: !!localStorage.getItem("token"), // Only fetch if token exists
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    retry: 1,
+  });
+
+  console.log(data);
   useEffect(() => {
     if (!localStorage.getItem("token")) {
-      navigate("/login");
+      navigate("/signin");
     }
-    GetdashboardData().then((data) => {
-      setData(data);
-    });
   }, [navigate]);
 
-  
   const transformedTopCustomers =
     data?.topCustomers?.map((customer, index) => ({
       _id: customer.cid,
@@ -57,7 +52,7 @@ export function Dashboard() {
     <SkeletonTheme
       baseColor={`${theme === "dark" ? "#1c1c1c" : ""}`}
       highlightColor={`${theme === "dark" ? "#525252" : ""}`}
-    >     
+    >
       <div className="flex min-h-screen w-full flex-col">
         <Navbar />
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
