@@ -115,6 +115,7 @@ export function Addcustomer() {
   };
 
   const [isVerified, setIsVerified] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
   const [verifying, setVerifying] = useState(false);
@@ -122,6 +123,7 @@ export function Addcustomer() {
 
   const handleSendOtp = async (phone) => {
     try {
+      setSendingOtp(true);
       otpgenerated.current = Math.floor(100000 + Math.random() * 900000);
       const res =
         (await fetch(
@@ -190,6 +192,8 @@ export function Addcustomer() {
         description: "Failed to send OTP. Please try again.",
       });
       return;
+    } finally {
+      setSendingOtp(false);
     }
 
     toast({ title: "OTP Sent", description: `OTP sent to ${phone}` });
@@ -315,7 +319,11 @@ export function Addcustomer() {
                                     });
                                   }
                                 }}
+                                disabled={sendingOtp}
                               >
+                                {sendingOtp && (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                )}{" "}
                                 Send OTP
                               </Button>
                             )}
@@ -340,14 +348,10 @@ export function Addcustomer() {
                         onClick={handleVerifyOtp}
                         disabled={verifying || otp.length !== 6}
                       >
-                        {verifying ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Verifying...
-                          </>
-                        ) : (
-                          "Verify OTP"
+                        {verifying && (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         )}
+                        Verify OTP
                       </Button>
                     </div>
                   )}

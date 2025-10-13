@@ -13,8 +13,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
-import { Input } from "../UI/shadcn-UI/input";
 import {
   Table,
   TableBody,
@@ -23,13 +21,6 @@ import {
   TableHeader,
   TableRow,
 } from "../UI/shadcn-UI/table";
-import "./customerdatatable.css";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "../UI/shadcn-UI/dropdown-menu";
 import { Button } from "../UI/shadcn-UI/button";
 
 export function DataTable({ data, columns }) {
@@ -174,7 +165,8 @@ export function DataTable({ data, columns }) {
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+          Page {table.getState().pagination.pageIndex + 1} of{" "}
+          {table.getPageCount()}
         </div>
         <div className="space-x-2">
           <Button

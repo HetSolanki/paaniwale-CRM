@@ -1,31 +1,12 @@
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import {
-  ArrowUpDown,
-  ClipboardCheckIcon,
-  ClipboardXIcon,
-  EyeIcon,
-  SortAsc,
-} from "lucide-react";
+import { ColumnDef } from "@tanstack/react-table";
+import { ArrowUpDown, ClipboardCheckIcon, ClipboardXIcon } from "lucide-react";
 import { Button } from "../Components/UI/shadcn-UI/button";
-import { Stack, TextField } from "@mui/material";
 import { addcustomerEntry } from "../Handlers/AddcustomerEntryHandler";
 import { Input } from "@/Components/UI/shadcn-UI/input";
-import "../index.css";
 import { toast, ToastContainer } from "react-toastify";
 import React from "react";
 import styled from "styled-components";
-import { useUser } from "@/Context/UserContext";
+import { useQueryClient } from "@tanstack/react-query";
 
 export type Customer = {
   cname: string;
@@ -40,7 +21,8 @@ export type Customer = {
 const handleEntry = async (
   customer: Customer,
   status: string,
-  setCustomers: React.Dispatch<React.SetStateAction<Customer[]>>
+  setCustomers: React.Dispatch<React.SetStateAction<Customer[]>>,
+  queryClient: ReturnType<typeof useQueryClient>
 ) => {
   const no_of_bottles = document.getElementById(customer._id);
 
@@ -59,6 +41,8 @@ const handleEntry = async (
           toast.success("Entry added successfully", {
             autoClose: 1000,
           });
+          queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
+          queryClient.invalidateQueries({ queryKey: ["paymentdetails"] });
           setCustomers((prev) => prev.filter((c) => c.uid !== customer.uid));
         } else {
           toast.error("Entry could not be added", {
@@ -91,6 +75,8 @@ const handleEntry = async (
       toast.success("Entry added successfully", {
         autoClose: 1000,
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
+      queryClient.invalidateQueries({ queryKey: ["paymentdetails"] });
       setCustomers((prev) => prev.filter((c) => c.uid !== customer.uid));
     } else {
       toast.error("Entry could not be added", {
@@ -236,6 +222,7 @@ export const columns: ColumnDef<Customer>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const [customers, setCustomers] = React.useState<Customer[]>([]);
+      const queryClient = useQueryClient();
       const customer = row.original;
       const ResponsiveStack = styled.div`
         display: flex;
@@ -253,7 +240,9 @@ export const columns: ColumnDef<Customer>[] = [
             <Button
               size="icon"
               className="h-8 gap-1 inl"
-              onClick={() => handleEntry(customer, "Present", setCustomers)}
+              onClick={() =>
+                handleEntry(customer, "Present", setCustomers, queryClient)
+              }
             >
               <ClipboardCheckIcon />
             </Button>
@@ -261,7 +250,7 @@ export const columns: ColumnDef<Customer>[] = [
               size="icon"
               className="h-8 gap-1"
               onClick={() => {
-                handleEntry(customer, "Absent", setCustomers);
+                handleEntry(customer, "Absent", setCustomers, queryClient);
               }}
             >
               <ClipboardXIcon />

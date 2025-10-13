@@ -90,6 +90,7 @@ export function Editcustomer({ id }) {
       if (newcustomer.status === "success") {
         queryClient.invalidateQueries({ queryKey: ["customers"] });
         queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
+        queryClient.invalidateQueries({ queryKey: ["paymentdetails"] });
         toast({
           title: "Success",
           description: "Customer details updated successfully.",
@@ -124,6 +125,7 @@ export function Editcustomer({ id }) {
   };
 
   const [isVerified, setIsVerified] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
   const [verifying, setVerifying] = useState(false);
@@ -155,6 +157,7 @@ export function Editcustomer({ id }) {
 
   const handleSendOtp = async (phone) => {
     try {
+      setSendingOtp(true);
       otpgenerated.current = Math.floor(100000 + Math.random() * 900000);
       const res =
         (await fetch(
@@ -216,6 +219,7 @@ export function Editcustomer({ id }) {
         });
       }
       setOtpSent(true);
+      setSendingOtp(false);
     } catch (error) {
       toast({
         variant: "destructive",
@@ -223,6 +227,8 @@ export function Editcustomer({ id }) {
         description: "Failed to send OTP. Please try again.",
       });
       return;
+    } finally {
+      setSendingOtp(false);
     }
 
     toast({ title: "OTP Sent", description: `OTP sent to ${phone}` });
@@ -331,7 +337,7 @@ export function Editcustomer({ id }) {
                                 checkPhoneChange(e.target.value);
                               }}
                             />
-                            {phoneChanged && !isVerified && !otpSent && (
+                            {phoneChanged && !isVerified && (
                               <Button
                                 type="button"
                                 size="sm"
@@ -352,7 +358,11 @@ export function Editcustomer({ id }) {
                                     });
                                   }
                                 }}
+                                disabled={sendingOtp}
                               >
+                                {sendingOtp && (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                )}{" "}
                                 Send OTP
                               </Button>
                             )}
@@ -377,11 +387,10 @@ export function Editcustomer({ id }) {
                         onClick={handleVerifyOtp}
                         disabled={verifying || otp.length !== 6}
                       >
-                        {verifying ? (
+                        {verifying && (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          "Verify OTP"
                         )}
+                        Verify OTP
                       </Button>
                     </div>
                   )}
