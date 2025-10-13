@@ -30,8 +30,7 @@ export default function PaymentDetails() {
     staleTime: 3 * 60 * 1000, // 3 minutes
     retry: 2,
   });
-
-  console.log("Query Data", data);
+  
   useEffect(() => {
     if (!localStorage.getItem("token")) {
       navigate("/login");
@@ -102,42 +101,25 @@ export default function PaymentDetails() {
           <Navbar />
           <div className="p-2 py-4 sm:p-8">
             <Card className="xl:col-span-2" x-chunk="dashboard-01-chunk-4">
-              {transformedpaymentdata.length ? (
-                <CardHeader className="flex flex-row items-center px-4 sm:p-6">
-                  <div className="grid gap-2">
-                    <CardTitle>Payment Details</CardTitle>
-                    <CardDescription>
-                      View all the payments made by customers
-                    </CardDescription>
-                  </div>
-                  <Button
-                    size="sm"
-                    className="ml-auto gap-1"
-                    onClick={handleNavigate}
-                  >
-                    View All
-                    <ArrowUpRight className="h-4 w-4" />
-                  </Button>
-                </CardHeader>
-              ) : (
-                <div className="mt-4 py-3 px-4">
-                  <Skeleton className="h-[90px]" enableAnimation={true} />
+              <CardHeader className="flex flex-row items-center px-4 sm:p-6">
+                <div className="grid gap-2">
+                  <CardTitle>Payment Details</CardTitle>
+                  <CardDescription>
+                    View all the payments made by customers
+                  </CardDescription>
                 </div>
-              )}
-              {transformedpaymentdata.length ? (
-                <CardContent className="px-3 sm:p-6">
-                  {transformedpaymentdata.length && (
-                    <DataTable
-                      data={transformedpaymentdata}
-                      columns={columns}
-                    />
-                  )}
-                </CardContent>
-              ) : (
-                <div className="py-3 px-4 mb-4">
-                  <Skeleton className="h-[300px]" enableAnimation={true} />
-                </div>
-              )}
+                <Button
+                  size="sm"
+                  className="ml-auto gap-1"
+                  onClick={handleNavigate}
+                >
+                  View All
+                  <ArrowUpRight className="h-4 w-4" />
+                </Button>
+              </CardHeader>
+              <CardContent className="px-3 sm:p-6">
+                <DataTable data={transformedpaymentdata} columns={columns} />
+              </CardContent>    
             </Card>
           </div>
         </div>

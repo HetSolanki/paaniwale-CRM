@@ -42,6 +42,7 @@ const handleEntry = async (
             autoClose: 1000,
           });
           queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
+          queryClient.invalidateQueries({ queryKey: ["paymentdetails"] });
           setCustomers((prev) => prev.filter((c) => c.uid !== customer.uid));
         } else {
           toast.error("Entry could not be added", {
@@ -75,6 +76,7 @@ const handleEntry = async (
         autoClose: 1000,
       });
       queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
+      queryClient.invalidateQueries({ queryKey: ["paymentdetails"] });
       setCustomers((prev) => prev.filter((c) => c.uid !== customer.uid));
     } else {
       toast.error("Entry could not be added", {
