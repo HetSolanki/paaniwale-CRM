@@ -30,7 +30,7 @@ import { fetchCustomer } from "@/Hooks/fetchCustomer";
 import "react-toastify/dist/ReactToastify.css";
 import { useToast } from "../shadcn-UI/use-toast";
 import { Toaster } from "../shadcn-UI/toaster";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { config } from "@/Data/config";
 
 const formSchema = z.object({
@@ -77,6 +77,19 @@ export function Editcustomer({ id }) {
     } = customerDetails.data.data;
   }
 
+  useEffect(() => {
+    if (customerDetails.data?.data) {
+      form.reset({
+        cname: customerDetails.data.data.cname,
+        cphone_number: customerDetails.data.data.cphone_number?.toString(),
+        caddress: customerDetails.data.data.caddress,
+        bottle_price: customerDetails.data.data.bottle_price?.toString(),
+        delivery_sequence_number:
+          customerDetails.data.data.delivery_sequence_number?.toString(),
+      });
+    }
+  }, [customerDetails.data]);
+
   const [click, setClick] = useState(false);
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -90,6 +103,7 @@ export function Editcustomer({ id }) {
       if (newcustomer.status === "success") {
         queryClient.invalidateQueries({ queryKey: ["customers"] });
         queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
+        queryClient.invalidateQueries({ queryKey: ["customerDetail"] });
         queryClient.invalidateQueries({ queryKey: ["paymentdetails"] });
         toast({
           title: "Success",
