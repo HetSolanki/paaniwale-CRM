@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 import { useEffect } from "react";
 import { ToastContainer } from "react-toastify";
-import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
+import { SkeletonTheme } from "react-loading-skeleton";
 import { useTheme } from "@/Context/ThemeProviderContext ";
 import { useQuery } from "@tanstack/react-query";
 import { config } from "@/Data/config";
