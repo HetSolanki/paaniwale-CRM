@@ -144,93 +144,33 @@ const PartyOrders = () => {
                 <Tabs defaultValue="all">
                   <TabsContent value="all">
                     <Card>
-                      {isLoading ? (
-                        <div className="mt-4 py-3 px-4">
-                          <Skeleton
-                            className="h-[90px]"
-                            enableAnimation={true}
-                          />
-                        </div>
-                      ) : error ? (
-                        <CardHeader className="px-2 sm:px-4">
-                          <CardTitle className="text-xl sm:text-2xl text-red-500">
-                            Error Loading Party Orders
-                          </CardTitle>
-                          <CardDescription className="text-red-400">
-                            {error?.message || "Failed to load party orders"}.
-                            Please check your connection and try again.
-                          </CardDescription>
-                          <div className="flex gap-2 mt-2">
-                            <Button onClick={() => refetch()} className="w-fit">
-                              Retry
-                            </Button>
-                            <Button
-                              variant="outline"
-                              onClick={() => window.location.reload()}
-                              className="w-fit"
-                            >
-                              Refresh Page
-                            </Button>
+                      <CardHeader className="px-2 sm:px-4">
+                        <CardTitle className="flex-col pt-4 px-2 sm:flex-row sm:flex sm:items-center sm:justify-between">
+                          <span className="text-xl font-semibold text-primary sm:text-2xl align-bottom">
+                            Party Orders
+                          </span>
+                          <div className="mt-4 sm:mt-0 flex sm:flex-row items-start sm:items-center gap-2 sm:gap-2">
+                            <AddPartyOrder onSuccess={handleSuccess} />
                           </div>
-                        </CardHeader>
-                      ) : (
-                        <CardHeader className="px-2 sm:px-4">
-                          <CardTitle className="flex-col pt-4 px-2 sm:flex-row sm:flex sm:items-center sm:justify-between">
-                            <span className="text-xl font-semibold text-primary sm:text-2xl align-bottom">
-                              Party Orders
-                            </span>
-                            <div className="mt-4 sm:mt-0 flex sm:flex-row items-start sm:items-center gap-2 sm:gap-2">
-                              <AddPartyOrder onSuccess={handleSuccess} />
-                            </div>
-                          </CardTitle>
-                          <CardDescription className="hidden sm:block px-2">
-                            Manage bulk orders for marriages, functions, and
-                            parties.
-                          </CardDescription>
-                        </CardHeader>
-                      )}
-
+                        </CardTitle>
+                        <CardDescription className="hidden sm:block px-2">
+                          Manage bulk orders for marriages, functions, and
+                          parties.
+                        </CardDescription>
+                      </CardHeader>
                       <CardContent className="py-3 px-2 sm:px-4">
-                        {isLoading ? (
-                          <div className="mb-4">
-                            <Skeleton
-                              className="h-[300px]"
-                              enableAnimation={true}
-                            />
-                          </div>
-                        ) : error ? (
-                          <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground gap-2">
-                            <p className="text-lg font-medium">
-                              Unable to load party orders
-                            </p>
-                            <p className="text-sm">
-                              {error?.message || "An error occurred"}
-                            </p>
-                          </div>
-                        ) : !ordersData?.data ||
-                          ordersData.data.length === 0 ? (
-                          <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground gap-2">
-                            <p className="text-lg font-medium">
-                              No party orders yet
-                            </p>
-                            <p className="text-sm">
-                              Create your first party order to get started
-                            </p>
-                          </div>
-                        ) : (
-                          <DataTable
-                            data={ordersData.data}
-                            columns={partyOrderColumns}
-                            filterColumn="party_name"
-                            filterPlaceholder="Search party name..."
-                            meta={{
-                              onPreview: handlePreview,
-                              onEdit: handleEdit,
-                              onSend: handleSend,
-                              onDelete: handleDelete,
-                            }}
-                          />
-                        )}
+                        <DataTable
+                          data={ordersData?.data || []}
+                          columns={partyOrderColumns}
+                          filterColumn="party_name"
+                          filterPlaceholder="Search party name..."
+                          meta={{
+                            onPreview: handlePreview,
+                            onEdit: handleEdit,
+                            onSend: handleSend,
+                            onDelete: handleDelete,
+                          }}
+                        />
                       </CardContent>
                     </Card>
                   </TabsContent>
