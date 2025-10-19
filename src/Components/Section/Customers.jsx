@@ -47,7 +47,7 @@ const Customers = () => {
     isLoading,
     error,
     refetch,
-  } = useQuery({ 
+  } = useQuery({
     queryKey: ["customers"],
     queryFn: fetchCustomers,
     enabled: !!localStorage.getItem("token"), // Only fetch if token exists
@@ -102,93 +102,54 @@ const Customers = () => {
                 <Tabs defaultValue="all">
                   <TabsContent value="all">
                     <Card>
-                      {isLoading ? (
-                        <div className="mt-4 py-3 px-4">
-                          <Skeleton
-                            className="h-[90px]"
-                            enableAnimation={true}
-                          />
-                        </div>
-                      ) : error ? (
-                        <CardHeader className="px-2 sm:px-4">
-                          <CardTitle className="text-xl sm:text-2xl text-red-500">
-                            Error Loading Customers
-                          </CardTitle>
-                          <CardDescription className="text-red-400">
-                            {error.message || "Failed to load customer data"}.
-                            Please try again.
-                          </CardDescription>
-                          <Button
-                            onClick={() => refetch()}
-                            className="mt-2 w-fit"
-                          >
-                            Retry
-                          </Button>
-                        </CardHeader>
-                      ) : (
-                        <CardHeader className="px-2 sm:px-4">
-                          <CardTitle className="flex-col pt-4 px-2 sm:flex-row sm:flex sm:items-center sm:justify-between">
-                            <span className="text-xl font-semibold text-primary sm:text-2xl align-bottom">
-                              Customers
-                            </span>
-                            <div className="mt-4 sm:mt-0 flex sm:flex-row items-start sm:items-center gap-2 sm:gap-2">
-                              <InvoiceAll />
-                              {pdfData.length > 0 && (
-                                <PDFDownloadLink
-                                  document={
-                                    <ReportPDFGenarator
-                                      data={pdfData}
-                                      columns={pdfColumns}
-                                      table_name="Customer Data"
-                                      shop_name={user?.shop_name || ""}
-                                      logo={logo}
-                                    />
-                                  }
-                                  fileName="customers_data.pdf"
-                                >
-                                  {({ loading }) => (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="h-8 gap-1"
-                                      disabled={loading}
-                                    >
-                                      <File className="h-3.5 w-3.5" />
-                                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                        Export
-                                      </span>
-                                    </Button>
-                                  )}
-                                </PDFDownloadLink>
-                              )}
-                              <Addcustomer />
-                            </div>
-                          </CardTitle>
-                          <CardDescription className="hidden sm:block px-2">
-                            Manage your customers and view their sales
-                            performance.
-                          </CardDescription>
-                        </CardHeader>
-                      )}
-
+                      <CardHeader className="px-2 sm:px-4">
+                        <CardTitle className="flex-col pt-4 px-2 sm:flex-row sm:flex sm:items-center sm:justify-between">
+                          <span className="text-xl font-semibold text-primary sm:text-2xl align-bottom">
+                            Customers
+                          </span>
+                          <div className="mt-4 sm:mt-0 flex sm:flex-row items-start sm:items-center gap-2 sm:gap-2">
+                            <InvoiceAll />
+                            {pdfData.length > 0 && (
+                              <PDFDownloadLink
+                                document={
+                                  <ReportPDFGenarator
+                                    data={pdfData}
+                                    columns={pdfColumns}
+                                    table_name="Customer Data"
+                                    shop_name={user?.shop_name || ""}
+                                    logo={logo}
+                                  />
+                                }
+                                fileName="customers_data.pdf"
+                              >
+                                {({ loading }) => (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-8 gap-1"
+                                    disabled={loading}
+                                  >
+                                    <File className="h-3.5 w-3.5" />
+                                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                                      Export
+                                    </span>
+                                  </Button>
+                                )}
+                              </PDFDownloadLink>
+                            )}
+                            <Addcustomer />
+                          </div>
+                        </CardTitle>
+                        <CardDescription className="hidden sm:block px-2">
+                          Manage your customers and view their sales
+                          performance.
+                        </CardDescription>
+                      </CardHeader>
                       <CardContent className="py-3 px-2 sm:px-4">
-                        {isLoading ? (
-                          <div className="mb-4">
-                            <Skeleton
-                              className="h-[300px]"
-                              enableAnimation={true}
-                            />
-                          </div>
-                        ) : error ? (
-                          <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-                            No customer data available
-                          </div>
-                        ) : (
-                          <DataTable
-                            data={customersData?.data || []}
-                            columns={columns}
-                          />
-                        )}
+                        <DataTable
+                          data={customersData?.data || []}
+                          columns={columns}
+                        />
                       </CardContent>
                     </Card>
                   </TabsContent>
