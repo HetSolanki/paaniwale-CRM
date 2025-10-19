@@ -79,63 +79,29 @@ export default function CustomerEntry() {
         <Navbar />
         <div className="p-2 py-4 sm:p-8">
           <Card className="xl:col-span-2" x-chunk="dashboard-01-chunk-4">
-            {customers.isLoading ? (
-              <div className="mt-4 py-3 px-4">
-                <Skeleton className="h-[90px]" enableAnimation={true} />
+            <CardHeader className="flex flex-row items-center px-4 sm:p-6">
+              <div className="grid gap-2">
+                <CardTitle className="text-xl sm:text-2xl">
+                  Customer Entry
+                </CardTitle>
+                <CardDescription className="hidden sm:block">
+                  List of all the customers and their entries
+                </CardDescription>
               </div>
-            ) : customers.isError ? (
-              <CardHeader className="flex flex-row items-center px-4 sm:p-6">
-                <div className="grid gap-2">
-                  <CardTitle className="text-xl sm:text-2xl text-red-500">
-                    Error Loading Data
-                  </CardTitle>
-                  <CardDescription className="text-red-400">
-                    {customers.error}. Please try refreshing the page.
-                  </CardDescription>
-                  <Button
-                    onClick={() => customers.refetch()}
-                    className="mt-2 w-fit"
-                  >
-                    Retry
-                  </Button>
-                </div>
-              </CardHeader>
-            ) : customers.data ? (
-              <CardHeader className="flex flex-row items-center px-4 sm:p-6">
-                <div className="grid gap-2">
-                  <CardTitle className="text-xl sm:text-2xl">
-                    Customer Entry
-                  </CardTitle>
-                  <CardDescription className="hidden sm:block">
-                    List of all the customers and their entries
-                  </CardDescription>
-                </div>
-                <Button
-                  size="sm"
-                  className="ml-auto gap-1 self-start"
-                  onClick={handleNavigate}
-                >
-                  View All
-                  <ArrowUpRight className="h-4 w-4" />
-                </Button>
-              </CardHeader>
-            ) : null}
+              <Button
+                size="sm"
+                className="ml-auto gap-1 self-start"
+                onClick={handleNavigate}
+                disabled={customers?.isLoading}
+              >
+                View All
+                <ArrowUpRight className="h-4 w-4" />
+              </Button>
+            </CardHeader>
 
-            {customers.isLoading ? (
-              <div className="py-3 px-4 mb-4">
-                <Skeleton className="h-[300px]" enableAnimation={true} />
-              </div>
-            ) : customers.isError ? (
-              <CardContent className="px-3 sm:p-6">
-                <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-                  Failed to load customer entries
-                </div>
-              </CardContent>
-            ) : customers.data ? (
-              <CardContent className="px-3 sm:p-6">
-                <DataTable data={customers?.data?.data} columns={columns} />
-              </CardContent>
-            ) : null}
+            <CardContent className="px-3 sm:p-6">
+              <DataTable data={customers?.data?.data || []} columns={columns} />
+            </CardContent>
           </Card>
         </div>
       </div>
