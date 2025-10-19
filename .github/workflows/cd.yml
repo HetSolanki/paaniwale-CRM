@@ -1,27 +1,47 @@
-name: Deployment
+name: pr-production
 
 on:
-  push:
+  pull_request:
     branches: [main]
 
 jobs:
-  Deploy:
-    name: Deploy
+  pr-preview:
+    name: pr-production
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: pull images
-        run: |
-          docker pull thehetsolanki/paaniwale-frontend:preview
-          docker pull thehetsolanki/paaniwale-backend:preview
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
 
-      - name: updating the tag from preview to latest
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build the application
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_CLOUD_NAME: ${{ secrets.VITE_CLOUD_NAME }}
+          VITE_CLOUD_VERSION: ${{ secrets.VITE_CLOUD_VERSION }}
+          VITE_CLOUD_API_KEY: ${{ secrets.VITE_CLOUD_API_KEY }}
+          VITE_CLOUD_API_SECRET: ${{ secrets.VITE_CLOUD_API_SECRET }}
+          VITE_CLOUD_UPLOAD_PRESET: ${{ secrets.VITE_CLOUD_UPLOAD_PRESET }}
+          VITE_WHATSAPP_BUSSINESS_ID: ${{ secrets.VITE_WHATSAPP_BUSSINESS_ID }}
+          VITE_WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.VITE_WHATSAPP_PHONE_NUMBER_ID }}
+          VITE_WHATSAPP_USER_ACCESS_TOKEN: ${{ secrets.VITE_WHATSAPP_USER_ACCESS_TOKEN }}
+          VITE_WHATSAPP_API_VERSION: ${{ secrets.VITE_WHATSAPP_API_VERSION }}
+
+      - name: Build Docker image (Frontend)
+        run: docker build -t ${{ secrets.DOCKER_HOST }}/paaniwale-frontend:latest .
+
+      - name: Build Docker image (Backend)
         run: |
-          docker tag thehetsolanki/paaniwale-frontend:preview thehetsolanki/paaniwale-frontend:latest
-          docker tag thehetsolanki/paaniwale-backend:preview thehetsolanki/paaniwale-backend:latest
+          cd server/API
+          docker build -t ${{ secrets.DOCKER_HOST }}/paaniwale-backend:latest .
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -34,7 +54,7 @@ jobs:
           docker push ${{secrets.DOCKER_HOST}}/paaniwale-frontend:latest
           docker push ${{secrets.DOCKER_HOST}}/paaniwale-backend:latest
 
-      - name: Deploy to droplet
+      - name: Deploy to droplet (Production)
         uses: appleboy/ssh-action@v0.1.8
         with:
           host: ${{ secrets.DO_HOST }}
@@ -44,5 +64,5 @@ jobs:
             cd /home/deploy
             docker compose pull
             docker compose up -d --force-recreate
-            docker image prune -f
+            docker image  prune -f
             docker compose ps
