@@ -1,8 +1,8 @@
-const DOMAIN_NAME = import.meta.env.VITE_DOMAIN_NAME;
+import { config } from "@/Data/config";
 
 export const GetdashboardData = async () => {
   const data = await fetch(
-    `${DOMAIN_NAME}/api/customerentry/getdashboarddata/`,
+    `${config.baseUrl}/api/customerentry/getdashboarddata/`,
     {
       method: "GET",
       headers: {

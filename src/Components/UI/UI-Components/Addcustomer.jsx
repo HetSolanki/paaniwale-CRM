@@ -23,13 +23,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { addcustomer } from "@/Handlers/AddcustomerHandler";
-import { useCustomer } from "@/Context/CustomerContext";
 import { useUser } from "@/Context/UserContext";
 import "react-toastify/dist/ReactToastify.css";
 import { Toaster } from "../shadcn-UI/toaster";
 import { useToast } from "../shadcn-UI/use-toast";
-import { useState } from "react";
-import { sendOtp, verifyOtp } from "@/Handlers/OtpHandler";
+import { useRef, useState } from "react";
+import { config } from "@/Data/config";
+import { useQueryClient } from "@tanstack/react-query";
 
 const formSchema = z.object({
   cname: z
@@ -63,29 +63,50 @@ export function Addcustomer() {
     resolver: zodResolver(formSchema),
   });
 
-  const { updateCustomerContext } = useCustomer();
+  const queryClient = useQueryClient();
   const [click, setClick] = useState(false);
+  const [open, setOpen] = useState(false);
+
   const { user } = useUser();
   const { toast } = useToast();
   const formSubmit = async (data) => {
-    setClick(true);
-    const newcustomer = await addcustomer(data, user.uid._id);
+    try {
+      setClick(true);
+      const newcustomer = await addcustomer(data, user.uid._id);
 
-    if (newcustomer.error) {
+      if (newcustomer.error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: newcustomer.error || "This number is already in use.",
+        });
+        setClick(false);
+        return;
+      }
+
+      if (newcustomer.status === "success") {
+        toast({
+          title: "Success",
+          description: "Customer added successfully.",
+        });
+        setClick(false);
+        queryClient.invalidateQueries({ queryKey: ["customers"] });
+        queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
+        form.reset();
+        setOpen(false);
+        setIsVerified(false);
+        setOtpSent(false);
+        setOtp("");
+      }
+    } catch (error) {
+      console.error("Error adding customer:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "This number is already in use.",
-      });
-    }
-    if (newcustomer.status === "success") {
-      toast({
-        title: "Success",
-        description: "Customer added successfully.",
+        description:
+          error.message || "Failed to add customer. Please try again.",
       });
       setClick(false);
-      updateCustomerContext();
-      form.reset();
     }
   };
 
@@ -94,31 +115,28 @@ export function Addcustomer() {
   };
 
   const [isVerified, setIsVerified] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
   const [verifying, setVerifying] = useState(false);
-  let otpgenerated = Math.floor(100000 + Math.random() * 900000);
-  
+  let otpgenerated = useRef(null);
 
   const handleSendOtp = async (phone) => {
     try {
-      console.log(otpSent);
-      console.log(otpgenerated);
+      setSendingOtp(true);
+      otpgenerated.current = Math.floor(100000 + Math.random() * 900000);
       const res =
         (await fetch(
-          `https://graph.facebook.com/${process.env.WHATSAPP_API_VERSION}/${process.env.WHASTAPP_PHONE_NUMBER_ID}/messages`,
+          `https://graph.facebook.com/${config.whatsapp.version}/${config.whatsapp.phoneNumberId}/messages`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization:
-                "Bearer EAAMfDZCmvZCH4BO2bVmZA8HoD3O0TrCX9rHRYmCuHSZCRc2ot0JIyJDdMmPvGkaDgrZCMkd1q619abd4py14BFtsTW55qcSwfMC3dPtIynTCzu2FICP9sfcKXWx3uaFRS6Tb2bf8WHaFGnnjv5g8rkofzZAjIcl2OakmuC9PYUpvQlwgT2QKcg7ACHZAjJnA04rFJNGh2xIl8nu6KtPMZCrQiYcap51G7jBYpqlncQWrHOAbY063k4cZD", // Use your access token
+              Authorization: config.whatsapp.authorization, // Use your access token
             },
             body: JSON.stringify({
               messaging_product: "whatsapp",
-              // recipient_type: "individual",
               to: `91${phone}`,
-              // to: "918849698524",
               type: "template",
               template: {
                 name: "otp_verification",
@@ -131,7 +149,7 @@ export function Addcustomer() {
                     parameters: [
                       {
                         type: "text",
-                        text: `${otpgenerated}`,
+                        text: `${otpgenerated.current}`,
                       },
                     ],
                   },
@@ -142,7 +160,7 @@ export function Addcustomer() {
                     parameters: [
                       {
                         type: "text",
-                        text: `${otpgenerated}`,
+                        text: `${otpgenerated.current}`,
                       },
                     ],
                   },
@@ -153,7 +171,6 @@ export function Addcustomer() {
         )) ?? {};
 
       const data = await res.json();
-      console.log(data);
       if (!res.ok) {
         toast({
           variant: "destructive",
@@ -162,7 +179,6 @@ export function Addcustomer() {
         });
         throw new Error(`Error: ${data.error.message}`);
       } else {
-        // console.log("Message sent successfully!", data);
         toast({
           title: "Success",
           description: "OTP sent successfully!",
@@ -176,6 +192,8 @@ export function Addcustomer() {
         description: "Failed to send OTP. Please try again.",
       });
       return;
+    } finally {
+      setSendingOtp(false);
     }
 
     toast({ title: "OTP Sent", description: `OTP sent to ${phone}` });
@@ -184,12 +202,7 @@ export function Addcustomer() {
   const handleVerifyOtp = async () => {
     setVerifying(true);
     try {
-      console.log(otp);
-      if (     
-        otp.length !== 6 ||
-        isNaN(otp) ||
-        otp !== otpgenerated.toString()      
-      ) {
+      if (otp.length === 6 && Number(otp) === Number(otpgenerated.current)) {
         setIsVerified(true);
         toast({
           title: "Success",
@@ -222,9 +235,10 @@ export function Addcustomer() {
           setOtpSent(false);
           setOtp("");
         }}
+        open={open}
       >
         <DialogTrigger asChild>
-          <Button size="sm" className="h-8 gap-1">
+          <Button size="sm" className="h-8 gap-1" onClick={() => setOpen(true)}>
             <PlusCircle className="h-3.5 w-3.5" />
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
               Add Customer
@@ -305,7 +319,11 @@ export function Addcustomer() {
                                     });
                                   }
                                 }}
+                                disabled={sendingOtp}
                               >
+                                {sendingOtp && (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                )}{" "}
                                 Send OTP
                               </Button>
                             )}
@@ -330,11 +348,10 @@ export function Addcustomer() {
                         onClick={handleVerifyOtp}
                         disabled={verifying || otp.length !== 6}
                       >
-                        {verifying ? (
+                        {verifying && (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          "Verify OTP"
                         )}
+                        Verify OTP
                       </Button>
                     </div>
                   )}
@@ -434,7 +451,11 @@ export function Addcustomer() {
                   </Button>
                 )}
                 <DialogClose asChild>
-                  <Button type="button" variant="secondary">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setOpen(false)}
+                  >
                     Close
                   </Button>
                 </DialogClose>

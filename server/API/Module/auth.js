@@ -1,6 +1,6 @@
-/* eslint-disable no-undef */
 import { compare, hash } from "bcrypt";
 import jwt from "jsonwebtoken";
+import process from "process";
 
 export const hashPassword = (password) => {
   return hash(password, 10);

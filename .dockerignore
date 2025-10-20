@@ -1,3 +1,8 @@
 node_modules/
 .git
 server/
+build
+
+.env
+.env.production
+.env.development

@@ -87,7 +87,7 @@ const Admindashboard = () => {
       try {
         const response = await getadmindashborddata();
         const users = await GetAllUsers();
-        console.log(users);
+        // console.log(users);
         if (users.status === "success") {
           const mappedUsers = users.data.map((user) => ({
             name: `${user.fname} ${user.lname}`,
@@ -98,11 +98,11 @@ const Admindashboard = () => {
           }));
 
           setRecentUsers(mappedUsers);  
-          console.log("Recent Users:", mappedUsers);        
+          // console.log("Recent Users:", mappedUsers);        
         } else {
           console.error("Error fetching users:", users);
         }
-        console.log(response);
+        // console.log(response);
         if (response.status === 200) {
           setData(response.data);
         } else {
@@ -123,7 +123,7 @@ const Admindashboard = () => {
   const filteredCustomers = (data?.topCustomers ?? []).filter((customer) =>
     customer.customerName?.toLowerCase().includes(customerSearch.toLowerCase())
   );
-  console.log(data);
+  // console.log(data);
   return (
     <>
       <div className="mb-6">

@@ -1,8 +1,8 @@
-const DOMAIN_NAME = import.meta.env.VITE_DOMAIN_NAME;
+import { config } from "@/Data/config";
 
 export const createPaymentLinkAll = async () => {
   const allCustomers = await fetch(
-    `${DOMAIN_NAME}/api/paymentlink/createpaymentlinkall`,
+    `${config.baseUrl}/api/paymentlink/createpaymentlinkall`,
     {
       method: "POST",
       headers: {

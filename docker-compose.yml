@@ -6,12 +6,15 @@ services:
     ports:
       - "4000:4000"
     env_file:
-      - .env
+      - .env.production
+
   web:
     build:
       context: .
       dockerfile: src/Dockerfile
+      args:
+        VITE_API_BASE_URL: http://128.199.19.208:4000
     env_file:
-      - .env
+      - .env.production
     ports:
       - "3000:80"

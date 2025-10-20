@@ -32,11 +32,7 @@ import { useState } from "react";
 import { createShop } from "@/Handlers/AddShop";
 import { Stack } from "@mui/material";
 
-const steps = [
-  "Sign Up",
-  "Create Display Name",
-  "Complate Sign Up",
-];
+const steps = ["Sign Up", "Create Display Name", "Complate Sign Up"];
 
 const formSchema = z.object({
   fname: z.string({
@@ -85,12 +81,6 @@ const formSchema = z.object({
   }),
 });
 
-// const formSchema1 = z.object({
-//   pin: z.string().min(6, {
-//     message: "Your one-time password must be 6 characters.",
-//   }),
-// });
-
 const shopSchema = z.object({
   shop_name: z
     .string({ message: "Shop name is required" })
@@ -99,7 +89,6 @@ const shopSchema = z.object({
 
 export default function SignUp() {
   const [currentpage, setCurrentpage] = useState(0);
-  // const [shoperr, setShoperr] = useState(false);
   const navigate = useNavigate();
 
   const handlepage = (page) => {
@@ -140,37 +129,11 @@ export default function SignUp() {
     handlepage(2);
   };
 
-  // const form1 = useForm({
-  //   resolver: zodResolver(formSchema1),
-  //   defaultValues: {
-  //     pin: "",
-  //   },
-  // });
-
-  // const verifyotp = async (data) => {
-  //   const otp_verification = await VerifyOtp(data, phone_number);
-
-  //   // console.log(otp_verification);
-  //   if (otp_verification.message.status == "approved") {
-  //     handlepage(2);
-  //   } else {
-  //     toast.error("Enter Valid OTP", {
-  //       position: "top-right",
-  //       autoClose: 2000,
-  //       draggable: true,
-  //       closeOnClick: true,
-  //       theme: "light",
-  //     });
-  //   }
-  // };
-
-  
   const formSubmit = async (data) => {
     if (!checkValidation(data)) {
       return;
-    } else {
-      // console.log("Validation Passed");
     }
+
     const newUser = await createUser(data);
 
     if (newUser.status === "success") {
@@ -182,9 +145,6 @@ export default function SignUp() {
         theme: "light",
       });
       localStorage.setItem("token", newUser.token);
-      // localStorage.setItem("cid", newUser.cid);
-      // await sendOtp(data);
-
       handlepage(1);
     } else if (newUser.status === "failed") {
       toast.error("User already exists", {
@@ -413,12 +373,12 @@ export default function SignUp() {
                       <Button type="submit" className="w-full font-semibold">
                         Create an account
                       </Button>
-                      <Button
+                      {/* <Button
                         variant="outline"
                         className="w-full font-semibold"
                       >
                         Sign up with GitHub
-                      </Button>
+                      </Button> */}
                     </div>
                     <div className="mt-4 text-center text-sm font-medium">
                       Already have an account?{" "}
@@ -431,59 +391,6 @@ export default function SignUp() {
               </form>
             </Form>
           </div>
-          {/* <div
-            className={`${
-              currentpage === 1 ? "" : "hidden"
-            } flex justify-center items-center p-10`}
-          > */}
-            {/* <div className="h-screen flex justify-center items-center "> */}
-            {/* <Form {...form1}>
-              <form1 onSubmit={form1.handleSubmit(verifyotp)}>
-                <Card className="mx-auto max-w-sm">
-                  <CardHeader>
-                    <CardTitle className="text-2xl font-[700]">
-                      OTP Verification
-                    </CardTitle>
-                    <CardDescription>
-                      Enter your OTP below to Verify your Phone Number
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <form className="w-2/3 space-y-6">
-                      <FormField
-                        control={form1.control}
-                        name="pin"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>One-Time Password</FormLabel>
-                            <FormControl>
-                              <InputOTP maxLength={6} {...field}>
-                                <InputOTPGroup>
-                                  <InputOTPSlot index={0} />
-                                  <InputOTPSlot index={1} />
-                                  <InputOTPSlot index={2} />
-                                  <InputOTPSlot index={3} />
-                                  <InputOTPSlot index={4} />
-                                  <InputOTPSlot index={5} />
-                                </InputOTPGroup>
-                              </InputOTP>
-                            </FormControl>
-                            <FormDescription>
-                              Please enter the one-time password sent to your
-                              phone.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button>Submit</Button>
-                    </form>
-                  </CardContent>
-                </Card>
-              </form1>
-            </Form>
-          </div> */}
-          {/* </div> */}
           <div
             className={`${
               currentpage === 1 ? "" : "hidden"
@@ -564,7 +471,7 @@ export default function SignUp() {
                         theme: "light",
                       });
                       setTimeout(() => {
-                        navigate("/dashboard");
+                        navigate("/signin");
                       }, 2000);
                     }}
                     className="w-full font-semibold"

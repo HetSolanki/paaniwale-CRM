@@ -11,7 +11,6 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  // DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -22,40 +21,88 @@ import Navbar from "./Navbar";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { DatePickerForm } from "../UI/UI-Components/Datepicker";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { SkeletonTheme } from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 import { DataTable } from "@/Components/DataTables/CustomerEntryDatadatatable";
 import { columns1 } from "@/ColumnsSchema/CustomersEntryDataColums";
-import CustomerEntryContext from "@/Context/CustomerEntryContext";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import ReportPDFGenarator from "./ReportPDFGenarator";
 import { useUser } from "@/Context/UserContext";
 import logo from "@/assets/paniwalalogo.png";
+import { useQuery } from "@tanstack/react-query";
+import { config } from "@/Data/config";
+import { format } from "date-fns";
 
 const CustomerEntryData = () => {
   const { user } = useUser();
-  const location = useLocation();
-  const intialdata = location.state;
   const navigate = useNavigate();
-  const [customers, setCustomers] = useState([...intialdata]);
+
+  const [customers, setCustomers] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null);
   const [presentcheck, setPresentcheck] = useState(false);
   const [absentcheck, setAbsentcheck] = useState(false);
+
+  const { data: customersQuery } = useQuery({
+    queryKey: ["customerEntryData"],
+    queryFn: async () => {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${config.baseUrl}/api/customerentry/getallcustomerentrys/`,
+        {
+          method: "GET",
+          headers: {
+            authorization: "Bearer " + token,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch customer entries");
+      }
+      const data = await response.json();
+      return data.data || [];
+    },
+    enabled: !!localStorage.getItem("token"),
+    staleTime: 3 * 60 * 1000, // 3 minutes
+    retry: 2,
+  });
+
+  const filteredCustomers = useMemo(() => {
+    if (!customers) return [];
+    if (!selectedDate) return customers;
+    return customers.filter((c) => {
+      return (
+        format(c.delivery_date, "yyyy-MM-dd") ===
+        format(selectedDate, "yyyy-MM-dd")
+      );
+    });
+  }, [customers, selectedDate]);
 
   useEffect(() => {
     if (!localStorage.getItem("token")) {
       navigate("/login");
+      return;
     }
-  }, [navigate]);
+  }, []);
 
-  const pdfData = customers.map((customer) => {
-    return {
-      delivery_sequence_number: customer.cid.delivery_sequence_number,
-      cname: customer.cid.cname,
-      bottle_count: customer.bottle_count,
-      delivery_date: customer.delivery_date,
-      delivery_status: customer.delivery_status,
-    };
-  });
+  useEffect(() => {
+    if (customersQuery) {
+      setCustomers(customersQuery);
+    }
+  }, [customersQuery]);
+
+  const pdfData = customers
+    ?.filter((customer) => customer && customer.cid) // Filter out null/undefined entries
+    ?.map((customer) => {
+      return {
+        delivery_sequence_number: customer.cid?.delivery_sequence_number || "",
+        cname: customer.cid?.cname || "",
+        bottle_count: customer.bottle_count || 0,
+        delivery_date: customer.delivery_date || "",
+        delivery_status: customer.delivery_status || "",
+      };
+    });
   const pdfColumns = [
     {
       header: "Sequence Number",
@@ -81,23 +128,23 @@ const CustomerEntryData = () => {
 
   const getallfilteredcustomers = (status) => {
     if (status === "Present") {
-      const presentcustomers = intialdata.filter(
-        (customer) => customer.delivery_status === "Present"
+      const presentcustomers = customersQuery.filter(
+        (customer) => customer && customer.delivery_status === "Present"
       );
       setCustomers(presentcustomers);
     } else if (status === "Absent") {
-      const absentcustomers = intialdata.filter(
-        (customer) => customer.delivery_status === "Absent"
+      const absentcustomers = customersQuery.filter(
+        (customer) => customer && customer.delivery_status === "Absent"
       );
       setCustomers(absentcustomers);
     } else {
-      setCustomers(intialdata);
+      setCustomers(customersQuery);
     }
   };
 
   return (
     <>
-      <CustomerEntryContext.Provider value={{ customers, setCustomers }}>
+      <SkeletonTheme baseColor="#1c1c1c" highlightColor="#525252">
         <Navbar />
         <div className="flex min-h-screen mx-auto flex-col bg-muted/40">
           <TooltipProvider>
@@ -196,21 +243,17 @@ const CustomerEntryData = () => {
                         </CardTitle>
                         <CardDescription className="hidden sm:block">
                           <div className=" mt-4 flex items-center gap-1 float-end">
-                            <DatePickerForm />
+                            <DatePickerForm setSelectedDate={setSelectedDate} />
                           </div>
                           List of all the customers and their entries
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="">
-                        <DataTable data={customers} columns={columns1} />
+                        <DataTable
+                          data={filteredCustomers || []}
+                          columns={columns1}
+                        />
                       </CardContent>
-                      {/* <CardFooter>
->>>>>>> 06d6ec857a781f35541053c981951c641862994f
-                        <div className="text-xs text-muted-foreground">
-                          Showing <strong>1-10</strong> of <strong>32</strong>{" "}
-                          customers
-                        </div>
-                      </CardFooter> */}
                     </Card>
                   </TabsContent>
                 </Tabs>
@@ -219,7 +262,7 @@ const CustomerEntryData = () => {
           </TooltipProvider>
           <ToastContainer />
         </div>
-      </CustomerEntryContext.Provider>
+      </SkeletonTheme>
     </>
   );
 };

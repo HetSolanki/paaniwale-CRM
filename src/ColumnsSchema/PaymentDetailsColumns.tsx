@@ -1,30 +1,12 @@
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import {
-  ArrowUpDown,
-  ClipboardCheckIcon,
-  ClipboardXIcon,
-  EyeIcon,
-  SortAsc,
-} from "lucide-react";
+import { ColumnDef } from "@tanstack/react-table";
+import { ArrowUpDown, ClipboardCheckIcon } from "lucide-react";
 import { Button } from "../Components/UI/shadcn-UI/button";
-import { Stack, TextField } from "@mui/material";
-import "../index.css";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import React from "react";
 import { PendingActions } from "@mui/icons-material";
 import { addpaymententry } from "@/Handlers/AddPaymentEntry";
 import styled from "styled-components";
+import { useQueryClient } from "@tanstack/react-query";
 
 export type Customer = {
   _id: string;
@@ -32,16 +14,17 @@ export type Customer = {
   cname: string;
   caddress: string;
   cphone_number: string;
-  totalamount: number
+  totalamount: number;
 };
 
 const handleEntry = async (
   customer: Customer,
   status: string,
   totalamount: number,
-  setCustomers: React.Dispatch<React.SetStateAction<Customer[]>>
+  setCustomers: React.Dispatch<React.SetStateAction<Customer[]>>,
+  queryClient: ReturnType<typeof useQueryClient>
 ) => {
- if (status === "Received") {
+  if (status === "Received") {
     const newEntry = await addpaymententry(
       {
         amount: totalamount,
@@ -54,6 +37,7 @@ const handleEntry = async (
       toast.success("Payment Received", {
         autoClose: 1000,
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
       setCustomers((prev) => prev.filter((c) => c.uid !== customer.uid));
     } else {
       toast.error("Error on Receive", {
@@ -71,10 +55,11 @@ const handleEntry = async (
       },
       customer._id
     );
-   if (newEntry.status === "success") {
+    if (newEntry.status === "success") {
       toast.info("Payment in Pending", {
         autoClose: 1000,
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
       setCustomers((prev) => prev.filter((c) => c.uid !== customer.uid));
     } else {
       toast.error("Error in Pending", {
@@ -102,9 +87,7 @@ export const columns: ColumnDef<Customer>[] = [
       );
     },
     cell: ({ row }) => (
-      <div className="lowercase text-left">
-        {row.getValue("id")}
-      </div>
+      <div className="lowercase text-left">{row.getValue("id")}</div>
     ),
   },
   {
@@ -144,17 +127,18 @@ export const columns: ColumnDef<Customer>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const [customers, setCustomers] = React.useState<Customer[]>([]);
+      const queryClient = useQueryClient();
       const customer = row.original;
       const ResponsiveStack = styled.div`
-      display: flex;
-      flex-direction: row;
-      gap: 8px;
-    
-      @media (max-width: 600px) {
-        flex-direction: column;
-        margin-left: -10px;        
-      }
-    `;
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+
+        @media (max-width: 600px) {
+          flex-direction: column;
+          margin-left: -10px;
+        }
+      `;
       return (
         <>
           <ResponsiveStack>
@@ -162,21 +146,35 @@ export const columns: ColumnDef<Customer>[] = [
               size="icon"
               className="h-8 gap-1 inl"
               title="Received"
-              onClick={() => handleEntry(customer, "Received", row.original.totalamount, setCustomers)}
+              onClick={() =>
+                handleEntry(
+                  customer,
+                  "Received",
+                  row.original.totalamount,
+                  setCustomers,
+                  queryClient
+                )
+              }
             >
               <ClipboardCheckIcon />
-            </Button>          
+            </Button>
             <Button
               size="icon"
-              title="Pending"              
+              title="Pending"
               className="h-8 gap-1"
               onClick={() => {
-                handleEntry(customer, "Pending", row.original.totalamount, setCustomers);
+                handleEntry(
+                  customer,
+                  "Pending",
+                  row.original.totalamount,
+                  setCustomers,
+                  queryClient
+                );
               }}
             >
               <PendingActions />
-            </Button>       
-        </ResponsiveStack>
+            </Button>
+          </ResponsiveStack>
         </>
       );
     },

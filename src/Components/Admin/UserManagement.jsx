@@ -95,7 +95,7 @@ const UserManagement = () => {
     const GetUsers = async () => {
       try {
         const users = await GetAllUsers();
-        console.log(users);
+        // console.log(users);
         if (users.status === "success") {
           const mappedUsers = users.data.map((user) => ({
             name: `${user.fname} ${user.lname}`,
@@ -108,7 +108,7 @@ const UserManagement = () => {
           }));
 
           setUsers(mappedUsers);
-          console.log("Recent Users:", mappedUsers);
+          // console.log("Recent Users:", mappedUsers);
         } else {
           console.error("Error fetching users:", users);
         }
@@ -143,7 +143,7 @@ const UserManagement = () => {
       try {
         const response = await AddNewUser(userForm);
         if (response.status === "success") {
-          console.log("User created successfully");
+          // console.log("User created successfully");
           setUsers([...users, { id: Date.now(), ...userForm, lastLogin: "-" }]);
         } else {
           console.error("Error creating user:", response);
@@ -157,7 +157,7 @@ const UserManagement = () => {
 
   const handleDeleteUser = async (id) => {
     try {
-        console.log(id);
+        // console.log(id);
       const response = await DeleteUser(id);
       if (response.status === "success") {
         console.log("User deleted successfully");

@@ -22,18 +22,24 @@ export const getAllPaymentDetails = async (req, res) => {
 
 export const getAllPaymentEntrys = async (req, res) => {
   try {
-    const allpaymentdetails = await PaymentDetail.find({
-      uid: req.user.id,
-    }).populate("cid");
+    // For admin, get all payments; for regular users, only their payments
+    const query = req.user.is_admin ? {} : { uid: req.user.id };
+
+    const allpaymentdetails = await PaymentDetail.find(query)
+      .populate("cid")
+      .populate("uid", "fname lname email phone_number")
+      .sort({ createdAt: -1 });
+
     if (!allpaymentdetails) {
       return res.json({
-        message: "No any Customer's Entry Found",
+        message: "No any Payment Entry Found",
         status: "error",
       });
     }
     res.json({ data: allpaymentdetails, status: "success" });
   } catch (error) {
-    res.json({ message: error });
+    console.error("Error fetching payments:", error);
+    res.json({ message: error.message, status: "error" });
   }
 };
 

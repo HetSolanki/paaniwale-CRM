@@ -7,7 +7,7 @@ import { GetCustomerInvoice } from "@/Handlers/GetCustomerInvoice";
 import React, { useContext, useEffect, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 
-const DOMAIN_NAME = import.meta.env.VITE_DOMAIN_NAME;
+const DOMAIN_NAME = import.meta.env.VITE_API_BASE_URL;
 
 const Invoice = React.forwardRef((props, ref) => {
   const [firstPartCustomers, setFirstPartCustomers] = useState([]);

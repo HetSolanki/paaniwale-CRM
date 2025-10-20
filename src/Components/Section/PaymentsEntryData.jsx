@@ -48,12 +48,12 @@ const PaymentsEntryData = () => {
 
   const pdfdata = paymentEntrys.map((data) => {
     return {
-      Customer_Name: data.cid.cname,
-      Phone_Number: data.cid.cphone_number,
-      Bottle_Price: data.cid.bottle_price,
-      Amount: data.amount,
-      Payment_Date: data.payment_date,
-      Payment_Status: data.payment_status,
+      Customer_Name: data?.cid?.cname,
+      Phone_Number: data?.cid?.cphone_number,
+      Bottle_Price: data?.cid?.bottle_price,
+      Amount: data?.amount,
+      Payment_Date: data?.payment_date,
+      Payment_Status: data?.payment_status,
     };
   });
 

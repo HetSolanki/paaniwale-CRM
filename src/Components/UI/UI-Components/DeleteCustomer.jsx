@@ -1,6 +1,5 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import { useCustomer } from "@/Context/CustomerContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,42 +11,60 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/Components/UI/shadcn-UI/alert-dialog";
-import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Loader2, Trash2 } from "lucide-react";
 import { useToast } from "../shadcn-UI/use-toast";
 import { useState } from "react";
 import { Button } from "../shadcn-UI/button";
-
-const DOMAIN_NAME = import.meta.env.VITE_DOMAIN_NAME;
+import { useQueryClient } from "@tanstack/react-query";
+import { config } from "@/Data/config";
 
 export default function DeleteCustomer({ cid }) {
-  const { updateCustomerContext } = useCustomer();
   const [click, setClick] = useState(false);
 
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
   const deleteRecord = async (cid) => {
-    setClick(true);
-    const deletedCustomer = await fetch(
-      `${DOMAIN_NAME}/api/customers/customer/${cid}`,
-      {
-        method: "DELETE",
+    try {
+      setClick(true);
+      const deletedCustomer = await fetch(
+        `${config.baseUrl}/api/customers/customer/${cid}`,
+        {
+          method: "DELETE",
+          headers: {
+            authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (!deletedCustomer.ok) {
+        throw new Error(`HTTP error! status: ${deletedCustomer.status}`);
       }
-    );
-    const res = await deletedCustomer.json();
-    if (res.status === "success") {
-      toast({
-        title: "Success",
-        description: "Customer Deleted",
-      });
-      updateCustomerContext();
-      setClick(false);
-    } else {
+
+      const res = await deletedCustomer.json();
+
+      if (res.status === "success") {
+        toast({
+          title: "Success",
+          description: "Customer deleted successfully.",
+        });
+        queryClient.invalidateQueries({ queryKey: ["customers"] });
+        queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
+        queryClient.invalidateQueries({ queryKey: ["paymentdetails"] });
+      } else {
+        throw new Error(res.message || "Failed to delete customer");
+      }
+    } catch (error) {
+      console.error("Error deleting customer:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Something Went Wrong",
+        description:
+          error.message || "Failed to delete customer. Please try again.",
       });
+    } finally {
+      setClick(false);
     }
   };
 

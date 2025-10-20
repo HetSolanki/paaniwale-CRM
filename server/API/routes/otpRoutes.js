@@ -3,6 +3,7 @@ import axios from "axios";
 
 const router = express.Router();
 const otpStore = {};
+import process from "process";
 
 router.post("/send", async (req, res) => {
   const { phone } = req.body;
@@ -12,7 +13,7 @@ router.post("/send", async (req, res) => {
   console.log("Generated OTP:", otp);
 
   const authKey = process.env.MSG91_AUTH_KEY;
-  const templateId = process.env.MSG91_TEMPLATE_ID;    
+  const templateId = process.env.MSG91_TEMPLATE_ID;
   const url = `https://control.msg91.com/api/v5/flow`;
 
   const data = {
@@ -43,13 +44,13 @@ router.post("/send", async (req, res) => {
       });
     }
 
-    console.log(axiosRes)
+    // console.log(axiosRes)
 
     res.json({
       success: true,
       message: "OTP sent successfully",
     });
-    console.log("OTP sent successfully:", axiosRes.data);
+    // console.log("OTP sent successfully:", axiosRes.data);
   } catch (error) {
     res.status(500).json({
       success: false,

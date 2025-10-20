@@ -7,6 +7,8 @@ import {
   updateCustomer,
   deleteCustomer,
   uploadFile,
+  getallCustomerAdmin,
+  getCustomerStats,
 } from "../Handlers/Customer.js";
 import { inputErrorHandler } from "../Module/middleware.js";
 import cors from "cors";
@@ -16,10 +18,14 @@ const router = Route();
 router.use(cors());
 // Get All the Customers
 router.get("/customerall", protect, getAllCustomer);
+router.get("/customeralladmin", protect, getallCustomerAdmin);
+
+// Get Customer Stats
+router.get("/stats", protect, getCustomerStats);
 
 // Get Customer by it's id
 router.get("/customer/:id", getOneCustomer);
-  
+
 // Create Customer
 router.post(
   "/customer",
@@ -54,4 +60,3 @@ router.delete("/customer/:id", deleteCustomer);
 router.get("/uploadfile/Dhandha/:publicid", uploadFile);
 
 export default router;
-  

@@ -1,7 +1,7 @@
-const DOMAIN_NAME = import.meta.env.VITE_DOMAIN_NAME;
+import { config } from "@/Data/config";
 
 export const Addshopname = async (cid, name) => {
-  const user = await fetch(`${DOMAIN_NAME}/api/auth/user/${cid}`, {
+  const user = await fetch(`${config.baseUrl}/api/auth/user/${cid}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",

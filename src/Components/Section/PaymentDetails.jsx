@@ -11,64 +11,46 @@ import {
 import { Button } from "../UI/shadcn-UI/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ToastContainer } from "react-toastify";
-import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
+import { SkeletonTheme } from "react-loading-skeleton";
 import { useTheme } from "@/Context/ThemeProviderContext ";
-
-const DOMAIN_NAME = import.meta.env.VITE_DOMAIN_NAME;
+import { useQuery } from "@tanstack/react-query";
+import { config } from "@/Data/config";
+import { fetchpaymentdata } from "@/Handlers/fetchPaymentData";
 
 export default function PaymentDetails() {
   const navigate = useNavigate();
-  const [data, setData] = useState([]);
 
-  const {theme} = useTheme();
+  const { theme } = useTheme();
+  const { data } = useQuery({
+    queryKey: ["paymentdetails"],
+    queryFn: fetchpaymentdata,
+    enabled: !!localStorage.getItem("token"), // Only fetch if token exists
+    staleTime: 3 * 60 * 1000, // 3 minutes
+    retry: 2,
+  });
+  
   useEffect(() => {
-    fetchpaymentdata();
-    if (!fetchpaymentdata) {
-      alert("No Data Found");
-    }
     if (!localStorage.getItem("token")) {
       navigate("/login");
     }
   }, [navigate]);
 
-  const fetchpaymentdata = async () => {
-    const paymentdata = await fetch(
-      `${DOMAIN_NAME}/api/customerentry/customersforpayment`,
-      {
-        method: "GET",
-        headers: {
-          "content-type": "application/json",
-          authorization: `bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-    const res = await paymentdata.json();
-    // console.log(res.message);
-    setData(res.message);
-    if (res.status === "success") {
-      return res.data;
-    } else {
- return [];
-    }
-  };
-
-  const transformedpaymentdata = data?.map((customer, index) => ({
-    _id: customer?.cid,
-    id: index + 1,
-    cname: customer?.customer?.cname,
-    cphone_number: customer?.customer?.cphone_number,
-    caddress: customer?.customer?.caddress,
-    totalamount: customer?.totalBottle * customer?.customer?.bottle_price,
-  }));
-
-  // console.log(transformedpaymentdata);
+  const transformedpaymentdata =
+    data?.map((customer, index) => ({
+      _id: customer?.cid,
+      id: index + 1,
+      cname: customer?.customer?.cname,
+      cphone_number: customer?.customer?.cphone_number,
+      caddress: customer?.customer?.caddress,
+      totalamount: customer?.totalBottle * customer?.customer?.bottle_price,
+    })) || [];
 
   const getintialdata = async () => {
     const token = localStorage.getItem("token");
     const entrys = await fetch(
-      `${DOMAIN_NAME}/api/paymentdetails/getAllPaymentEntrys`,
+      `${config.baseUrl}/api/paymentdetails/getAllPaymentEntrys`,
       {
         method: "GET",
         headers: {
@@ -90,37 +72,35 @@ export default function PaymentDetails() {
         );
       });
 
-       return thisMonthCustomers;
+      return thisMonthCustomers;
     } else {
-     return [];
+      return [];
     }
   };
 
   const handleNavigate = async () => {
     const data = getintialdata();
-  
+
     const paymentdata = await data;
     console.log(paymentdata);
 
     if (paymentdata.length === 0) {
       alert("No Data Found");
-    }
-    else{ 
+    } else {
       navigate("/paymentsdata", { state: await data });
     }
   };
 
   return (
     <>
-    <SkeletonTheme
-      baseColor={`${theme === "dark" ? "#1c1c1c" : ""}`}
-      highlightColor={`${theme === "dark" ? "#525252" : ""}`}
-    >
-      <div>
-        <Navbar />
-        <div className="p-2 py-4 sm:p-8">
-          <Card className="xl:col-span-2" x-chunk="dashboard-01-chunk-4">
-            {transformedpaymentdata.length ? (
+      <SkeletonTheme
+        baseColor={`${theme === "dark" ? "#1c1c1c" : ""}`}
+        highlightColor={`${theme === "dark" ? "#525252" : ""}`}
+      >
+        <div>
+          <Navbar />
+          <div className="p-2 py-4 sm:p-8">
+            <Card className="xl:col-span-2" x-chunk="dashboard-01-chunk-4">
               <CardHeader className="flex flex-row items-center px-4 sm:p-6">
                 <div className="grid gap-2">
                   <CardTitle>Payment Details</CardTitle>
@@ -137,26 +117,13 @@ export default function PaymentDetails() {
                   <ArrowUpRight className="h-4 w-4" />
                 </Button>
               </CardHeader>
-            ) : (
-              <div className="mt-4 py-3 px-4">
-                <Skeleton className="h-[90px]" enableAnimation={true} />
-              </div>
-            )}
-            {transformedpaymentdata.length ? (
               <CardContent className="px-3 sm:p-6">
-                {transformedpaymentdata.length && (
-                  <DataTable data={transformedpaymentdata} columns={columns} />
-                )}
-              </CardContent>
-            ) : (
-              <div className="py-3 px-4 mb-4">
-                <Skeleton className="h-[300px]" enableAnimation={true} />
-              </div>
-            )}
-          </Card>
+                <DataTable data={transformedpaymentdata} columns={columns} />
+              </CardContent>    
+            </Card>
+          </div>
         </div>
-      </div>
-      <ToastContainer />
+        <ToastContainer />
       </SkeletonTheme>
     </>
   );

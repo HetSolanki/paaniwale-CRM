@@ -4,186 +4,929 @@ import subimg1 from "@/assets/sub1.png";
 import subimg2 from "@/assets/sub2.png";
 import paaniwale from "@/assets/paniwalalogo.png";
 import { Button } from "../UI/shadcn-UI/button";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "../UI/shadcn-UI/card";
+import { Badge } from "../UI/shadcn-UI/badge";
+
+// Inquiry Form Component
+const InquiryForm = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    company: "",
+    subject: "",
+    message: "",
+    inquiryType: "general",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    try {
+      const DOMAIN_NAME = import.meta.env.VITE_API_BASE_URL;
+      const response = await fetch(`${DOMAIN_NAME}/api/inquiry/submit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSubmitStatus({
+          type: "success",
+          message:
+            "Thank you! Your inquiry has been submitted successfully. We'll get back to you within 24 hours.",
+        });
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          company: "",
+          subject: "",
+          message: "",
+          inquiryType: "general",
+        });
+      } else {
+        setSubmitStatus({
+          type: "error",
+          message:
+            data.message || "Failed to submit inquiry. Please try again.",
+        });
+      }
+    } catch (error) {
+      setSubmitStatus({
+        type: "error",
+        message: "Network error. Please check your connection and try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div>
+      <h3 className="text-2xl font-bold text-gray-900 mb-6">
+        Send Us Your Inquiry
+      </h3>
+
+      {submitStatus && (
+        <div
+          className={`mb-6 p-4 rounded-lg ${
+            submitStatus.type === "success"
+              ? "bg-green-50 border border-green-200 text-green-800"
+              : "bg-red-50 border border-red-200 text-red-800"
+          }`}
+        >
+          <div className="flex items-center space-x-2">
+            {submitStatus.type === "success" ? (
+              <svg
+                className="w-5 h-5 text-green-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            ) : (
+              <svg
+                className="w-5 h-5 text-red-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            )}
+            <span className="font-medium">{submitStatus.message}</span>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Full Name *
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              placeholder="Enter your full name"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Email Address *
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              placeholder="your@email.com"
+            />
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label
+              htmlFor="phone"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Phone Number *
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              placeholder="+91 12345 67890"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="company"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Company Name
+            </label>
+            <input
+              type="text"
+              id="company"
+              name="company"
+              value={formData.company}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              placeholder="Your company name (optional)"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label
+            htmlFor="subject"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Subject *
+          </label>
+          <input
+            type="text"
+            id="subject"
+            name="subject"
+            value={formData.subject}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            placeholder="Brief subject of your inquiry"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="inquiryType"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Inquiry Type
+          </label>
+          <select
+            id="inquiryType"
+            name="inquiryType"
+            value={formData.inquiryType}
+            onChange={handleChange}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          >
+            <option value="general">General Inquiry</option>
+            <option value="sales">Sales & Pricing</option>
+            <option value="demo">Request Demo</option>
+            <option value="support">Technical Support</option>
+            <option value="partnership">Partnership</option>
+          </select>
+        </div>
+
+        <div>
+          <label
+            htmlFor="message"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Message *
+          </label>
+          <textarea
+            id="message"
+            name="message"
+            value={formData.message}
+            onChange={handleChange}
+            required
+            rows={4}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+            placeholder="Tell us about your water business, customer count, and how we can help streamline your operations..."
+          />
+        </div>
+
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+        >
+          {isSubmitting ? (
+            <div className="flex items-center justify-center space-x-2">
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <span>Submitting...</span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center space-x-2">
+              <span>Send Inquiry</span>
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+          )}
+        </Button>
+
+        <p className="text-sm text-gray-500 text-center">
+          By submitting this form, you agree to our{" "}
+          <a href="#" className="text-blue-600 hover:text-blue-800 underline">
+            privacy policy
+          </a>
+          . We&apos;ll contact you within 24 hours to discuss your requirements.
+        </p>
+      </form>
+    </div>
+  );
+};
 
 const LandingPage = () => {
-  useEffect(() => {
-    document.title = "Paani Wale";    
-  }, []);
-
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    totalClients: 0,
+    invoicesSent: 0,
+    paymentsProcessed: 0,
+    loading: true,
+  });
+
+  useEffect(() => {
+    document.title = "Paani Wale - Smart Water Bottle Supply Management";
+
+    if (localStorage.getItem("token")) {
+      navigate("/dashboard");
+    }
+
+    // Fetch stats for the landing page
+    fetchLandingStats();
+  }, [navigate]);
+
+  const fetchLandingStats = async () => {
+    try {
+      const DOMAIN_NAME = import.meta.env.VITE_API_BASE_URL;
+
+      // Simulate API calls - replace with actual endpoints
+      const clientsResponse = await fetch(
+        `${DOMAIN_NAME}/api/stats/clients`
+      ).catch(() => null);
+      const invoicesResponse = await fetch(
+        `${DOMAIN_NAME}/api/stats/invoices`
+      ).catch(() => null);
+      const paymentsResponse = await fetch(
+        `${DOMAIN_NAME}/api/stats/payments`
+      ).catch(() => null);
+
+      let clientCount = 250; // Default fallback
+      let invoiceCount = 1200;
+      let paymentCount = 980;
+
+      // Read JSON responses once and store them
+      let clientData = null;
+      let invoiceData = null;
+      let paymentData = null;
+
+      if (clientsResponse?.ok) {
+        clientData = await clientsResponse.json();
+        clientCount = clientData.data.count || clientCount;
+      }
+
+      if (invoicesResponse?.ok) {
+        invoiceData = await invoicesResponse.json();
+        invoiceCount = invoiceData.data.count || invoiceCount;
+      }
+
+      if (paymentsResponse?.ok) {
+        paymentData = await paymentsResponse.json();
+        paymentCount = paymentData.data.count || paymentCount;
+      }
+
+      console.log("API Responses:", {
+        clientsResponse: clientData,
+        invoicesResponse: invoiceData,
+        paymentsResponse: paymentData,
+      });
+
+      setStats({
+        totalClients: clientCount,
+        invoicesSent: invoiceCount,
+        paymentsProcessed: paymentCount,
+        loading: false,
+      });
+    } catch (error) {
+      // Use fallback values if API fails
+      setStats({
+        totalClients: 250,
+        invoicesSent: 1200,
+        paymentsProcessed: 980,
+        loading: false,
+      });
+    }
+  };
+
   return (
     <>
-      <header>
-        <nav className="bg-white border-gray-200 px-4 lg:px-6 py-2.5 dark:bg-gray-800">
-          <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
-            <a href="#" className="flex items-center">
+      {/* Enhanced Header with Navigation */}
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+        <nav className="px-4 lg:px-6 py-3">
+          <div className="flex flex-wrap justify-between items-center mx-auto max-w-7xl">
+            <a href="#" className="flex items-center space-x-3">
               <img
                 src={paaniwale}
-                className="mr-3 h-6 sm:h-9 rounded-full"
-                alt="Paani wale Logo"
+                className="h-8 w-8 rounded-full ring-2 ring-blue-100"
+                alt="Paani Wale Logo"
               />
-              <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
-                Paani Wale
-              </span>
+              <div>
+                <span className="text-xl font-bold text-gray-900">
+                  Paani Wale
+                </span>
+                <div className="text-xs text-blue-600 font-medium">
+                  Smart Water Supply
+                </div>
+              </div>
             </a>
-            <div className="flex items-center lg:order-2">
-              {
-                localStorage.getItem("token") ? (
-                  <Button
-                    className="mr-2 text-white bg-blue-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-700 dark:hover:bg-blue-700 dark:focus:ring-primary-800"
-                    onClick={() => {
-                      localStorage.removeItem("token");
-                      navigate("/signin");
-                    }}
-                  >
-                    logout
-                  </Button>
-                ) : (
-                  <Button
-                className="mr-2 text-white bg-blue-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-700 dark:hover:bg-blue-700 dark:focus:ring-primary-800"
-                onClick={() => {
-                  navigate("/signin");
-                }}
+
+            {/* Navigation Links */}
+            <div className="hidden lg:flex items-center space-x-8">
+              <a
+                href="#features"
+                className="text-gray-600 hover:text-blue-600 font-medium transition-colors"
               >
-                Log in
-              </Button>
-                )
-              }
-              {/* <Button
-                className="mr-2 text-white bg-blue-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-700 dark:hover:bg-blue-700 dark:focus:ring-primary-800"
-                onClick={() => {
-                  navigate("/signin");
-                }}
+                Features
+              </a>
+              <a
+                href="#stats"
+                className="text-gray-600 hover:text-blue-600 font-medium transition-colors"
               >
-                Log in
-              </Button> */}
-              {/* <a
-                href="#"
-                className="text-white bg-blue-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 dark:bg-blue-700 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-primary-800"
+                Stats
+              </a>
+              <a
+                href="#about"
+                className="text-gray-600 hover:text-blue-600 font-medium transition-colors"
               >
-                Get started
-              </a> */}
-              <button
-                data-collapse-toggle="mobile-menu-2"
-                type="button"
-                className="inline-flex items-center p-2 ml-1 text-sm text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-                aria-controls="mobile-menu-2"
-                aria-expanded="false"
+                About
+              </a>
+              <a
+                href="#contact"
+                className="text-gray-600 hover:text-blue-600 font-medium transition-colors"
               >
-                <span className="sr-only">Open main menu</span>
-                <svg
-                  className="w-6 h-6"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                    clipRule="evenodd"
-                  ></path>
-                </svg>
-                <svg
-                  className="hidden w-6 h-6"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  ></path>
-                </svg>
-              </button>
+                Contact
+              </a>
             </div>
-            <div
-              className="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1"
-              id="mobile-menu-2"
-            ></div>
+
+            <div className="flex items-center space-x-3">
+              {localStorage.getItem("token") ? (
+                <Button
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-6 py-2 rounded-full transition-all duration-200 shadow-lg hover:shadow-xl"
+                  onClick={() => {
+                    localStorage.removeItem("token");
+                    navigate("/signin");
+                  }}
+                >
+                  Logout
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    className="border-blue-600 text-blue-600 hover:bg-blue-50 font-medium px-6 py-2 rounded-full transition-all duration-200"
+                    onClick={() => navigate("/signin")}
+                  >
+                    Sign In
+                  </Button>
+                  <a
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-6 py-2 rounded-full transition-all duration-200 shadow-lg hover:shadow-xl"
+                    href="#contact"
+                  >
+                    Get Started
+                  </a>
+                </>
+              )}
+            </div>
           </div>
         </nav>
       </header>
 
-      <section className="bg-white dark:bg-gray-900">
-        <div className="grid py-8 px-4 mx-auto max-w-screen-xl lg:gap-8 xl:gap-0 lg:py-16 lg:grid-cols-12">
-          <div className="place-self-center mr-auto lg:col-span-7">
-            <h1 className="mb-4 max-w-2xl text-3xl font-extrabold leading-none md:text-5xl xl:text-6xl dark:text-white">
-              Manage your water bottle supply efficiently
-            </h1>
-            <p className="mb-6 max-w-2xl font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
-              From customer management to monthly billing, Paani Wale simplifies
-              your water bottle supply billing system.
-            </p>
-            {
-              localStorage.getItem("token") ? (
-                <a
-                  href="/dashboard"
-                  className="inline-flex justify-center items-center py-3 px-5 mr-3 text-base font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:focus:ring-primary-900"
+      {/* Enhanced Hero Section */}
+      <section className="relative bg-gradient-to-br from-blue-50 via-white to-blue-50 overflow-hidden">
+        <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[bottom_1px_center] dark:bg-grid-slate-400/[0.05] dark:bg-bottom dark:border-b dark:border-slate-100/5"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
+          <div className="grid lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 space-y-8">
+              {/* Badge */}
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 text-blue-800 text-sm font-medium">
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
                 >
-                  Go to Dashboard
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Trusted by {stats.totalClients}+ Water Suppliers
+              </div>
+              {/* Main Heading */}
+              <div className="space-y-4">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+                  Smart Water Supply
+                  <span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                    {" "}
+                    Management
+                  </span>
+                </h1>
+                <p className="text-xl text-gray-600 max-w-2xl leading-relaxed">
+                  Complete business solution with{" "}
+                  <strong>WhatsApp invoice delivery</strong>,
+                  <strong> integrated payments</strong>, and automated billing
+                  for water bottle suppliers.
+                </p>
+              </div>
+              {/* Key Features */}
+              <div className="flex flex-wrap gap-4 text-sm">
+                <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+                  📱 WhatsApp Invoices
+                </Badge>
+                <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+                  💳 Payment Integration
+                </Badge>
+                <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">
+                  🤖 Auto Billing
+                </Badge>
+                <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200">
+                  📊 Analytics
+                </Badge>
+              </div>
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                {localStorage.getItem("token") ? (
+                  <Button
+                    size="lg"
+                    className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 text-lg"
+                    onClick={() => navigate("/dashboard")}
+                  >
+                    Go to Dashboard
+                    <svg
+                      className="ml-2 w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </Button>
+                ) : (
+                  <a
+                    className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 text-lg flex items-center justify-center"
+                    href="#contact"
+                  >
+                    Start Free Trial
+                    <svg
+                      className="ml-2 w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </a>
+                )}
+
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold px-8 py-4 rounded-full transition-all duration-200 text-lg"
+                  onClick={() => window.open("tel:+916355459412")}
+                >
+                  📞 Call Sales
+                </Button>
+              </div>
+              {/* Trust Indicators */}
+              <div className="flex items-center space-x-6 text-sm text-gray-500">
+                <div className="flex items-center">
                   <svg
-                    className="ml-2 -mr-1 w-5 h-5"
+                    className="w-5 h-5 text-yellow-400 mr-1"
                     fill="currentColor"
                     viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  4.9/5 Rating
+                </div>
+                <div>•</div>
+                <div>24/7 Support</div>
+                <div>•</div>
+                <div>Reliable Service</div>
+              </div>
+            </div>
+
+            {/* Hero Image */}
+            <div className="lg:col-span-5">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-2xl transform rotate-6 scale-105 opacity-20"></div>
+                <img
+                  src={mainimg}
+                  alt="Paani Wale Dashboard"
+                  className="relative w-full h-auto rounded-2xl shadow-2xl"
+                />
+                {/* Floating Stats Cards */}
+                <div className="absolute -top-4 -left-4 bg-white rounded-lg shadow-lg p-4 animate-bounce">
+                  <div className="text-2xl font-bold text-green-600">
+                    {stats.loading ? "..." : stats.invoicesSent}+
+                  </div>
+                  <div className="text-sm text-gray-600">Invoices Sent</div>
+                </div>
+                <div className="absolute -bottom-4 -right-4 bg-white rounded-lg shadow-lg p-4 animate-pulse">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {stats.loading ? "..." : stats.paymentsProcessed}+
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Payments Processed
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section id="stats" className="bg-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Trusted by Water Suppliers Across India
+            </h2>
+            <p className="text-xl text-gray-600">
+              Join thousands of businesses that have streamlined their
+              operations with Paani Wale
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="text-center p-8 border-2 hover:border-blue-200 transition-all duration-200 hover:shadow-lg">
+              <CardHeader className="pb-4">
+                <div className="text-4xl font-bold text-blue-600 mb-2">
+                  {stats.loading ? "..." : stats.totalClients.toLocaleString()}+
+                </div>
+                <CardTitle className="text-xl text-gray-700">
+                  Active Clients
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Water suppliers managing their business with our platform
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center p-8 border-2 hover:border-green-200 transition-all duration-200 hover:shadow-lg">
+              <CardHeader className="pb-4">
+                <div className="text-4xl font-bold text-green-600 mb-2">
+                  {stats.loading ? "..." : stats.invoicesSent.toLocaleString()}+
+                </div>
+                <CardTitle className="text-xl text-gray-700">
+                  WhatsApp Invoices
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Invoices delivered instantly via WhatsApp to customers
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center p-8 border-2 hover:border-purple-200 transition-all duration-200 hover:shadow-lg">
+              <CardHeader className="pb-4">
+                <div className="text-4xl font-bold text-purple-600 mb-2">
+                  {stats.loading
+                    ? "..."
+                    : stats.paymentsProcessed.toLocaleString()}
+                  +
+                </div>
+                <CardTitle className="text-xl text-gray-700">
+                  Payments Processed
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Secure payments processed through integrated payment gateway
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Additional Stats Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12 pt-12 border-t border-gray-200">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-900">99.9%</div>
+              <div className="text-sm text-gray-600">Uptime</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-900">24/7</div>
+              <div className="text-sm text-gray-600">Support</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-900">Fast</div>
+              <div className="text-sm text-gray-600">Deployment</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-900">24/7</div>
+              <div className="text-sm text-gray-600">Available</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* WhatsApp & Payment Integration Highlight */}
+      <section className="bg-gradient-to-r from-green-50 to-blue-50 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              🚀 Revolutionary Features
+            </h2>
+            <p className="text-xl text-gray-600">
+              The only platform you need to manage your entire water supply
+              business
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* WhatsApp Integration */}
+            <div className="space-y-6">
+              <div className="flex items-center space-x-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-6 h-6 text-green-600"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.109" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  WhatsApp Invoice Delivery
+                </h3>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                    <svg
+                      className="w-4 h-4 text-green-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">
+                      Instant PDF Invoices
+                    </h4>
+                    <p className="text-gray-600">
+                      Send professionally formatted invoices directly to
+                      customers&apos; WhatsApp
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                    <svg
+                      className="w-4 h-4 text-green-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">
+                      Automated Reminders
+                    </h4>
+                    <p className="text-gray-600">
+                      Smart payment reminders via WhatsApp to reduce pending
+                      payments
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                    <svg
+                      className="w-4 h-4 text-green-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">
+                      Delivery Confirmation
+                    </h4>
+                    <p className="text-gray-600">
+                      Real-time delivery status and read receipts for all
+                      invoices
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Integration */}
+            <div className="space-y-6">
+              <div className="flex items-center space-x-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-6 h-6 text-blue-600"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
                   >
                     <path
                       fillRule="evenodd"
-                      d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                      d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"
                       clipRule="evenodd"
-                    ></path>
+                    />
                   </svg>
-                </a>
-              ) : (
-                <a
-              href="/signin"
-              className="inline-flex justify-center items-center py-3 px-5 mr-3 text-base font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:focus:ring-primary-900"
-            >
-              Login Now
-              <svg
-                className="ml-2 -mr-1 w-5 h-5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-            </a>
-              )
-            }
-            {/* <a
-              href="/signin"
-              className="inline-flex justify-center items-center py-3 px-5 mr-3 text-base font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:focus:ring-primary-900"
-            >
-              Login Now
-              <svg
-                className="ml-2 -mr-1 w-5 h-5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-            </a> */}
-            <a
-              href="tel:+916355459412"
-              className="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-gray-900 rounded-lg border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
-            >
-              Call to Purchase
-            </a>
-          </div>
-          <div className="hidden lg:mt-0 lg:col-span-5 lg:flex">
-            <img src={mainimg} alt="mockup" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  Integrated Payment Gateway
+                </h3>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
+                    <svg
+                      className="w-4 h-4 text-blue-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">
+                      Razorpay Integration
+                    </h4>
+                    <p className="text-gray-600">
+                      Secure payments via UPI, Cards, Net Banking, and Wallets
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
+                    <svg
+                      className="w-4 h-4 text-blue-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">
+                      Payment Links
+                    </h4>
+                    <p className="text-gray-600">
+                      Generate secure payment links embedded in WhatsApp
+                      invoices
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
+                    <svg
+                      className="w-4 h-4 text-blue-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">
+                      Auto Reconciliation
+                    </h4>
+                    <p className="text-gray-600">
+                      Automatic payment tracking and invoice status updates
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -659,34 +1402,393 @@ const LandingPage = () => {
         </div>
       </section> */}
 
-      <footer className="p-6 bg-gray-800 text-white">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-6 md:mb-0">
-              <h1 className="text-2xl font-semibold">Paani Wale</h1>
-              <p className="text-gray-400 text-sm">
-                Innovative Solutions for Campus Needs
-              </p>
+      {/* Contact/Inquiry Section */}
+      <section
+        id="contact"
+        className="bg-gradient-to-br from-blue-50 via-white to-purple-50"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="text-center mb-12">
+            <Badge
+              variant="outline"
+              className="mb-4 px-4 py-2 bg-blue-100 text-blue-800 border-blue-200"
+            >
+              Get Started Today
+            </Badge>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Ready to Transform Your Water Business?
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Join hundreds of water suppliers who have streamlined their
+              operations with our platform.
+              <span className="font-semibold text-blue-600">
+                {" "}
+                Contact us
+              </span>{" "}
+              to discuss flexible usage plans.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            {/* Contact Info */}
+            <div className="space-y-8">
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                  Get in Touch
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-4 p-4 bg-white rounded-lg shadow-sm border">
+                    <div className="bg-blue-100 p-3 rounded-full">
+                      <svg
+                        className="w-6 h-6 text-blue-600"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Email Us</h4>
+                      <a
+                        href="mailto:paaniwale7@gmail.com"
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        paaniwale7@gmail.com
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-4 p-4 bg-white rounded-lg shadow-sm border">
+                    <div className="bg-green-100 p-3 rounded-full">
+                      <svg
+                        className="w-6 h-6 text-green-600"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Call Us</h4>
+                      <a
+                        href="tel:+916355459412"
+                        className="text-green-600 hover:text-green-800"
+                      >
+                        +91 63554 59412
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-4 p-4 bg-white rounded-lg shadow-sm border">
+                    <div className="bg-purple-100 p-3 rounded-full">
+                      <svg
+                        className="w-6 h-6 text-purple-600"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">
+                        Business Hours
+                      </h4>
+                      <p className="text-gray-600">Mon - Sat: 9 AM - 8 PM</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Why Choose Us */}
+              <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white">
+                <h4 className="text-xl font-bold mb-4">
+                  Why Choose Paani Wale?
+                </h4>
+                <ul className="space-y-2">
+                  <li className="flex items-center space-x-2">
+                    <svg
+                      className="w-5 h-5 text-green-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span>Flexible pricing - Pay only for usage</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <svg
+                      className="w-5 h-5 text-green-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span>WhatsApp invoice delivery</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <svg
+                      className="w-5 h-5 text-green-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span>Integrated payment solutions</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <svg
+                      className="w-5 h-5 text-green-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span>24/7 customer support</span>
+                  </li>
+                </ul>
+              </div>
             </div>
-            <div className="text-center">
-              <h2 className="text-lg font-semibold">Developer Details</h2>
-              <p className="text-gray-300 text-sm">
-                Email:{" "}
-                <a href="mailto:paaniwale7@gmail.com" className="underline">
-                  paaniwale7@gmail.com
-                </a>
-              </p>
-              <p className="text-gray-300 text-sm">
-                Phone:{" "}
-                <a href="tel:+916355459412" className="underline">
-                  +91 6355459412
-                </a>
-              </p>
+
+            {/* Inquiry Form */}
+            <div className="bg-white rounded-2xl shadow-xl p-8">
+              <InquiryForm />
             </div>
           </div>
-          <hr className="my-4 border-gray-600" />
-          <div className="text-center text-gray-400 text-sm">
-            <p>&copy; 2024 Paani Wale™. All Rights Reserved.</p>
+        </div>
+      </section>
+
+      {/* Enhanced Footer */}
+      <footer className="bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Company Info */}
+            <div className="col-span-1 md:col-span-2">
+              <div className="flex items-center space-x-3 mb-4">
+                <img
+                  src={paaniwale}
+                  className="h-10 w-10 rounded-full ring-2 ring-blue-400"
+                  alt="Paani Wale Logo"
+                />
+                <div>
+                  <h1 className="text-2xl font-bold text-white">Paani Wale</h1>
+                  <p className="text-blue-400 text-sm font-medium">
+                    Smart Water Supply Management
+                  </p>
+                </div>
+              </div>
+              <p className="text-gray-300 mb-6 max-w-md">
+                Complete business solution for water bottle suppliers with
+                WhatsApp invoice delivery, integrated payments, and automated
+                billing systems.
+              </p>
+
+              {/* Social/Contact */}
+              <div className="flex space-x-4">
+                <a
+                  href="mailto:paaniwale7@gmail.com"
+                  className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full transition-colors"
+                  aria-label="Email us"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                  </svg>
+                </a>
+                <a
+                  href="tel:+916355459412"
+                  className="bg-green-600 hover:bg-green-700 text-white p-3 rounded-full transition-colors"
+                  aria-label="Call us"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            {/* Features */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Features
+              </h3>
+              <ul className="space-y-2">
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-300 hover:text-blue-400 transition-colors"
+                  >
+                    WhatsApp Invoices
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-300 hover:text-blue-400 transition-colors"
+                  >
+                    Payment Integration
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-300 hover:text-blue-400 transition-colors"
+                  >
+                    Customer Management
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-300 hover:text-blue-400 transition-colors"
+                  >
+                    Analytics Dashboard
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-300 hover:text-blue-400 transition-colors"
+                  >
+                    Automated Billing
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Support */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">Support</h3>
+              <ul className="space-y-2">
+                <li>
+                  <a
+                    href="tel:+916355459412"
+                    className="text-gray-300 hover:text-blue-400 transition-colors"
+                  >
+                    📞 Call Support
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="mailto:paaniwale7@gmail.com"
+                    className="text-gray-300 hover:text-blue-400 transition-colors"
+                  >
+                    📧 Email Support
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-300 hover:text-blue-400 transition-colors"
+                  >
+                    📚 Documentation
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-300 hover:text-blue-400 transition-colors"
+                  >
+                    🎥 Video Tutorials
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-300 hover:text-blue-400 transition-colors"
+                  >
+                    💬 24/7 Chat
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Stats Bar */}
+          <div className="border-t border-gray-800 mt-8 pt-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+              <div>
+                <div className="text-2xl font-bold text-blue-400">
+                  {stats.totalClients}+
+                </div>
+                <div className="text-sm text-gray-400">Active Users</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-green-400">
+                  {stats.invoicesSent}+
+                </div>
+                <div className="text-sm text-gray-400">Invoices Sent</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-purple-400">
+                  {stats.paymentsProcessed}+
+                </div>
+                <div className="text-sm text-gray-400">Payments</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-orange-400">99.9%</div>
+                <div className="text-sm text-gray-400">Uptime</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+            <div className="text-gray-400 text-sm mb-4 md:mb-0">
+              <p>
+                &copy; {new Date().getFullYear()} Paani Wale™. All Rights
+                Reserved. | Built with ❤️ for Water Suppliers
+                Inc
+              </p>
+            </div>
+            <div className="flex space-x-6 text-sm">
+              <a
+                href="#"
+                className="text-gray-400 hover:text-blue-400 transition-colors"
+              >
+                Privacy Policy
+              </a>
+              <a
+                href="#"
+                className="text-gray-400 hover:text-blue-400 transition-colors"
+              >
+                Terms of Service
+              </a>
+              <a
+                href="#"
+                className="text-gray-400 hover:text-blue-400 transition-colors"
+              >
+                Refund Policy
+              </a>
+            </div>
           </div>
         </div>
       </footer>

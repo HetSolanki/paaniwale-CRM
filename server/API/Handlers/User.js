@@ -4,7 +4,6 @@ import { comparePassword } from "../Module/auth.js";
 import customer from "../Schema/customer.js";
 import PaymentDetail from "../Schema/PaymentDetail.js";
 import customerEntry from "../Schema/customerEntry.js";
-import mongoose from "mongoose";
 
 export const getAllUser = async (req, res) => {
   try {
@@ -123,6 +122,8 @@ export const getAdmindashboardData = async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
     const totalCustomers = await customer.countDocuments();
+    const totalPayments = await PaymentDetail.countDocuments();
+    const totalOrders = await customerEntry.countDocuments();
 
     const totalrevenue = await PaymentDetail.aggregate([
       {
@@ -132,8 +133,10 @@ export const getAdmindashboardData = async (req, res) => {
         },
       },
     ]);
-    const totalRevenue =totalrevenue.length > 0 ? totalrevenue[0].totalRevenue : 0;
-    
+    const totalRevenue =
+      totalrevenue.length > 0 ? totalrevenue[0].totalRevenue : 0;
+
+    // Get top customers with more details
     const topCustomers = await customer.aggregate([
       {
         $lookup: {
@@ -144,94 +147,126 @@ export const getAdmindashboardData = async (req, res) => {
         },
       },
       {
-        $unwind: "$payments",
-      },
-      {
-        $group: {
-          _id: "$_id",
-          totalAmount: { $sum: "$payments.amount" },
-          customerName: { $first: "$cname" },
+        $addFields: {
+          totalPayment: { $sum: "$payments.amount" },
+          orderCount: { $size: "$payments" },
         },
       },
       {
-        $sort: { totalAmount: -1 },
+        $project: {
+          _id: 1,
+          name: "$cname",
+          email: "$email",
+          phone: "$cphone",
+          totalPayment: 1,
+          orderCount: 1,
+        },
+      },
+      {
+        $sort: { totalPayment: -1 },
       },
       {
         $limit: 5,
       },
     ]);
 
+    // Get recent users
+    const recentUsers = await User.find({})
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select("username email is_admin createdAt");
+
     const now = new Date();
     const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
     const usersLastMonth = await User.countDocuments({
-      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth }
+      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth },
     });
     const usersThisMonth = await User.countDocuments({
-      createdAt: { $gte: startOfThisMonth }
+      createdAt: { $gte: startOfThisMonth },
     });
     const customersLastMonth = await customer.countDocuments({
-      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth }
+      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth },
     });
     const customersThisMonth = await customer.countDocuments({
-      createdAt: { $gte: startOfThisMonth }
+      createdAt: { $gte: startOfThisMonth },
+    });
+    const ordersLastMonth = await customerEntry.countDocuments({
+      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth },
+    });
+    const ordersThisMonth = await customerEntry.countDocuments({
+      createdAt: { $gte: startOfThisMonth },
     });
 
     const calcPercentChange = (current, previous) => {
       if (previous === 0) return current > 0 ? 100 : 0;
       return ((current - previous) / previous) * 100;
-    }
+    };
 
     const userGrowthPercent = calcPercentChange(usersThisMonth, usersLastMonth);
-    const customerGrowthPercent = calcPercentChange(customersThisMonth, customersLastMonth);
+    const customerGrowthPercent = calcPercentChange(
+      customersThisMonth,
+      customersLastMonth
+    );
+    const orderGrowthPercent = calcPercentChange(
+      ordersThisMonth,
+      ordersLastMonth
+    );
 
     const revenueLastMonthAgg = await PaymentDetail.aggregate([
       {
         $match: {
-          createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth }
-        }
+          createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth },
+        },
       },
       {
         $group: {
           _id: null,
-          total: { $sum: "$amount" }
-        }
-      }
+          total: { $sum: "$amount" },
+        },
+      },
     ]);
     const revenueThisMonthAgg = await PaymentDetail.aggregate([
       {
         $match: {
-          createdAt: { $gte: startOfThisMonth }
-        }
+          createdAt: { $gte: startOfThisMonth },
+        },
       },
       {
         $group: {
           _id: null,
-          total: { $sum: "$amount" }
-        }
-      }
+          total: { $sum: "$amount" },
+        },
+      },
     ]);
-    const revenueLastMonth = revenueLastMonthAgg.length > 0 ? revenueLastMonthAgg[0].total : 0;
-    const revenueThisMonth = revenueThisMonthAgg.length > 0 ? revenueThisMonthAgg[0].total : 0;
-    const revenueGrowthPercent = calcPercentChange(revenueThisMonth, revenueLastMonth);
+    const revenueLastMonth =
+      revenueLastMonthAgg.length > 0 ? revenueLastMonthAgg[0].total : 0;
+    const revenueThisMonth =
+      revenueThisMonthAgg.length > 0 ? revenueThisMonthAgg[0].total : 0;
+    const revenueGrowthPercent = calcPercentChange(
+      revenueThisMonth,
+      revenueLastMonth
+    );
 
     res.json({
-      totalUsers,
-      totalCustomers,
-      totalRevenue,
-      topCustomers,
-      revenueGrowthPercent,   
-      userGrowthPercent,
-      customerGrowthPercent,
-      usersThisMonth,
-      usersLastMonth,
-      customersThisMonth,
-      customersLastMonth,
-      revenueThisMonth,
-      revenueLastMonth,               
+      data: {
+        totalUsers,
+        totalCustomers,
+        totalRevenue,
+        totalPayments,
+        totalOrders,
+        totalInquiries: 0, // Add inquiry count if you have inquiry schema
+        topCustomers,
+        recentUsers,
+        revenueGrowth: parseFloat(revenueGrowthPercent.toFixed(1)),
+        userGrowth: parseFloat(userGrowthPercent.toFixed(1)),
+        customerGrowth: parseFloat(customerGrowthPercent.toFixed(1)),
+        orderGrowth: parseFloat(orderGrowthPercent.toFixed(1)),
+      },
+      success: true,
     });
   } catch (error) {
-    res.json({ error });
+    res.json({ error, success: false });
   }
 };

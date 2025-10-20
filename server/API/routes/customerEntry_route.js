@@ -10,8 +10,9 @@ import {
   getAllCustomerEntryCurrentMonth,
   getCustomerForPayment,
   getCustomerInvoice,
-  getdashboardData,
+  getDashboardData,
   getAllCustomerInvoice,
+  getAllCustomerEntryAdmin,
 } from "../Handlers/CustomerEntry.js";
 import { inputErrorHandler } from "../Module/middleware.js";
 import cors from "cors";
@@ -22,6 +23,9 @@ router.use(cors());
 
 // Get All the Customer Entry
 router.get("/getallcustomerentry/:id", protect, getAllCustomerEntry);
+
+// Get All the Customer Entry
+router.get("/getallcustomerentryadmin/:id", protect, getAllCustomerEntryAdmin);
 
 // Get All the Customer Entry
 router.get("/getallcustomerentrys/", protect, getAllCustomerEntrys);
@@ -71,6 +75,6 @@ router.get("/getCustomerInvoice/:id", protect, getCustomerInvoice);
 
 router.get("/getAllCustomerInvoice", protect, getAllCustomerInvoice);
 
-router.get("/getdashboarddata/", protect, getdashboardData);
+router.get("/getdashboarddata/", protect, getDashboardData);
 
 export default router;

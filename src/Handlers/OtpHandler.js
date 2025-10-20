@@ -1,8 +1,7 @@
-console.log("VITE_DOMAIN_NAME:", import.meta.env.VITE_DOMAIN_NAME);
-const DOMAIN_NAME = import.meta.env.VITE_DOMAIN_NAME;
+import { config } from "@/Data/config";
 
 export const sendOtp = async (data) => {
-  const response = await fetch(`${DOMAIN_NAME}/api/otp/send`, {
+  const response = await fetch(`${config.baseUrl}/api/otp/send`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -14,10 +13,10 @@ export const sendOtp = async (data) => {
 
   const result = await response.json();
   return result;
-}
+};
 
 export const verifyOtp = async (data) => {
-  const response = await fetch(`${DOMAIN_NAME}/api/otp/verify`, {
+  const response = await fetch(`${config.baseUrl}/api/otp/verify`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -30,4 +29,4 @@ export const verifyOtp = async (data) => {
 
   const result = await response.json();
   return result;
-}
+};
