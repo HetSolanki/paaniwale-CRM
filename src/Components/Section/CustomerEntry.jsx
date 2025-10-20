@@ -38,37 +38,36 @@ export default function CustomerEntry() {
   }, [navigate]);
 
   const handleNavigate = async () => {
-    const data = getintialdata();
-    navigate("/customerentrydata", { state: await data });
+    navigate("/customerentrydata");
   };
 
-  const getintialdata = async () => {
-    // alert(new Date(Date.now()).toISOString().split("T")[0]);
-    const token = localStorage.getItem("token");
-    const customers = await fetch(
-      `${DOMAIN_NAME}/api/customerentry/getallcustomerentrys/`,
-      {
-        method: "GET",
-        headers: {
-          authorization: "Bearer " + token,
-        },
-      }
-    );
-    const res = await customers.json();
-    if (res.status === "success") {
-      const todayscustomer = res.data.filter((customer) => {
-        return (
-          customer &&
-          customer.cid &&
-          customer.delivery_date ===
-            new Date(Date.now()).toISOString().split("T")[0]
-        );
-      });
-      return todayscustomer;
-    } else {
-      return [];
-    }
-  };
+  // const getintialdata = async () => {
+  //   alert(new Date(Date.now()).toISOString().split("T")[0]);
+  //   const token = localStorage.getItem("token");
+  //   const customers = await fetch(
+  //     `${DOMAIN_NAME}/api/customerentry/getallcustomerentrys/`,
+  //     {
+  //       method: "GET",
+  //       headers: {
+  //         authorization: "Bearer " + token,
+  //       },
+  //     }
+  //   );
+  //   const res = await customers.json();
+  //   if (res.status === "success") {
+  //     const todayscustomer = res.data.filter((customer) => {
+  //       return (
+  //         customer &&
+  //         customer.cid &&
+  //         customer.delivery_date ===
+  //           new Date(Date.now()).toISOString().split("T")[0]
+  //       );
+  //     });
+  //     return todayscustomer;
+  //   } else {
+  //     return [];
+  //   }
+  // };
 
   return (
     <SkeletonTheme

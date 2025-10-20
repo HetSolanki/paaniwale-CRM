@@ -11,6 +11,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { format } from "date-fns";
 
 export type Customer = {
   _id: string;
@@ -33,7 +34,10 @@ export const columns1: ColumnDef<Customer>[] = [
     accessorKey: "delivery_date",
     header: () => <div className="text-center sm:text-left">Delivery Date</div>,
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("delivery_date") || "N/A"}</div>
+      <div className="capitalize">
+        {format(row.getValue("delivery_date").toString(), "yyyy-M-dd") ||
+          "N/A"}
+      </div>
     ),
   },
   {

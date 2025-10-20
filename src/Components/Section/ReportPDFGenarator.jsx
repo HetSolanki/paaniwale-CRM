@@ -1,12 +1,17 @@
-import React from 'react';
-import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
-import { useUser } from '@/Context/UserContext';
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image,
+} from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   page: {
     padding: 30,
-    flexDirection: 'column',
-    justifyContent: 'flex-start', // Start from the top
+    flexDirection: "column",
+    justifyContent: "flex-start", // Start from the top
   },
   section: {
     marginBottom: 20, // Ensure enough space between sections
@@ -40,7 +45,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     marginBottom: 10,
-    textAlign: 'center',
+    textAlign: "center",
   },
   logo: {
     width: 50,
@@ -50,16 +55,16 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 12,
     marginBottom: 5,
-    textAlign: 'center',
+    textAlign: "center",
   },
   footer: {
     marginTop: 20,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 10,
   },
 });
 
-const ReportPDFGenarator = ({ data, columns, table_name, shop_name,logo }) => {
+const ReportPDFGenarator = ({ data, columns, table_name, shop_name, logo }) => {
   const today = new Date().toLocaleDateString();
   const website_name = "http://128.199.19.208:3000/";
   return (
@@ -73,18 +78,20 @@ const ReportPDFGenarator = ({ data, columns, table_name, shop_name,logo }) => {
         </View>
         <View style={styles.table}>
           <View style={styles.tableRow}>
-            {columns.map(col => (
+            {columns?.map((col) => (
               <View style={styles.tableCol} key={col.accessorKey}>
                 <Text style={styles.tableCell}>{col.header}</Text>
               </View>
             ))}
           </View>
-          {data.map((customer, rowIndex) => (
+          {data?.map((customer, rowIndex) => (
             <View style={styles.tableRow} key={rowIndex}>
-              {columns.map(col => (
+              {columns?.map((col) => (
                 <View style={styles.tableCol} key={col.accessorKey}>
                   <Text style={styles.tableCell}>
-                    {customer[col.accessorKey] !== undefined ? customer[col.accessorKey].toString() : ""}
+                    {customer[col.accessorKey] !== undefined
+                      ? customer[col.accessorKey].toString()
+                      : ""}
                   </Text>
                 </View>
               ))}
@@ -93,7 +100,7 @@ const ReportPDFGenarator = ({ data, columns, table_name, shop_name,logo }) => {
         </View>
         <View style={styles.footer}>
           <Text>{website_name}</Text>
-        </View> 
+        </View>
       </Page>
     </Document>
   );
