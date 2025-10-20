@@ -141,18 +141,29 @@ export const createCustomerEntry = async (req, res) => {
 };
 
 export const updateCustomerEntry = async (req, res) => {
-  const updatedCustomerEntry = await CustomerEntry.findByIdAndUpdate(
-    req.params.id,
-    {
-      cid: req.body.cid,
-      bottle_count: req.body.bottle_count,
-      delivery_date: req.body.delivery_date,
-      delivery_status: req.body.delivery_status,
-    },
-    { new: true }
-  );
+  try {
+    const updatedCustomerEntry = await CustomerEntry.findByIdAndUpdate(
+      req.params.id,
+      {
+        cid: req.body.cid,
+        bottle_count: req.body.bottle_count,
+        delivery_date: req.body.delivery_date,
+        delivery_status: req.body.delivery_status,
+      },
+      { new: true }
+    );
 
-  res.json({ data: updatedCustomerEntry, status: "success" });
+    if (!updatedCustomerEntry) {
+      return res.json({
+        message: "Customer Entry not found",
+        status: "error",
+      });
+    }
+
+    res.json({ data: updatedCustomerEntry, status: "success" });
+  } catch (error) {
+    res.json({ message: error.message, status: "error" });
+  }
 };
 
 export const deleteCustomerEntry = async (req, res) => {

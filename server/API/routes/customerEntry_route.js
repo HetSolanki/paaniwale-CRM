@@ -63,11 +63,15 @@ router.put(
     body("delivery_status").optional(),
   ],
   inputErrorHandler,
+  protect,
   updateCustomerEntry
 );
 
 // Delete Customer Entry
-router.delete("/removecustomerentry/:id", deleteCustomerEntry);
+router.delete("/deletecustomerentry/:id", protect, deleteCustomerEntry);
+
+// Legacy delete route (keeping for backward compatibility)
+router.delete("/removecustomerentry/:id", protect, deleteCustomerEntry);
 
 router.get("/customersforpayment", protect, getCustomerForPayment);
 
