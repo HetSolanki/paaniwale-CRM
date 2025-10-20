@@ -533,12 +533,12 @@ export default function EnhancedAdminDashboard() {
                   <div className="flex items-center space-x-3">
                     <Avatar className="h-10 w-10">
                       <AvatarFallback className="bg-purple-100 text-purple-600">
-                        {user.username?.charAt(0) || "U"}
+                        {user.fname?.charAt(0) || "U"}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <p className="font-medium">
-                        {user.username || "Unknown"}
+                        {user.fname + " " + user.lname || "Unknown"}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         {user.email || "No email"}
