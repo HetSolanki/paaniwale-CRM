@@ -1,9 +1,9 @@
-const DOMAIN_NAME = import.meta.env.VITE_API_BASE_URL;
+import { config } from "@/Data/config";
 
 export const fetchUser = async ({ queryKey }) => {
   const uid = queryKey[1];
 
-  const user = await fetch(`${DOMAIN_NAME}/api/auth/user/${uid}`);
+  const user = await fetch(`${config.baseUrl}/api/auth/user/${uid}`);
 
   const userRes = await user.json();
 

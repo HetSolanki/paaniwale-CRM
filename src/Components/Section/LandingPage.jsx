@@ -1766,6 +1766,7 @@ const LandingPage = () => {
               <p>
                 &copy; {new Date().getFullYear()} Paani Wale™. All Rights
                 Reserved. | Built with ❤️ for Water Suppliers
+                Inc
               </p>
             </div>
             <div className="flex space-x-6 text-sm">

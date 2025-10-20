@@ -1,122 +1,57 @@
-/* eslint-disable react/prop-types */
+/* eslint-disable */
+import { createContext, useContext } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { config } from "@/Data/config";
 import { jwtDecode } from "jwt-decode";
-import { createContext, useContext, useEffect, useState } from "react";
-const DOMAIN_NAME = import.meta.env.VITE_API_BASE_URL;
 
 const UserContext = createContext({
   user: null,
   loading: true,
   error: null,
+  refetchUser: () => {},
 });
 
 export default function UserProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        const userToken = jwtDecode(token);
-
-        if (!userToken?.id) {
-          throw new Error("Invalid token: missing user ID");
-        }
-
-        const userDetails = await fetch(
-          `${DOMAIN_NAME}/api/shop/getshop/${userToken.id}`,
-          {
-            method: "GET",
-            headers: {
-              authorization: "Bearer " + token,
-            },
-          }
-        );
-
-        if (!userDetails.ok) {
-          throw new Error(`HTTP error! status: ${userDetails.status}`);
-        }
-
-        const userRes = await userDetails.json();
-
-        if (userRes.status === "success" && userRes.data) {
-          setUser(userRes.data);
-        } else {
-          throw new Error(userRes.message || "Failed to fetch user data");
-        }
-      } catch (err) {
-        console.error("Error fetching user data:", err);
-        setError(err.message);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, []); // Empty dependency array - only run once on mount
-
-  const updateUserContext = async () => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      console.warn("No token found, cannot update user context");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
+  const userQuery = useQuery({
+    queryKey: ["currentUser", token],
+    queryFn: async () => {
+      if (!token) throw new Error("No token found");
 
       const userToken = jwtDecode(token);
+      if (!userToken?.id) throw new Error("Invalid token: missing user ID");
 
-      if (!userToken?.id) {
-        throw new Error("Invalid token: missing user ID");
-      }
-
-      const userDetails = await fetch(
-        `${DOMAIN_NAME}/api/shop/getshop/${userToken.id}`,
+      const res = await fetch(
+        `${config.baseUrl}/api/shop/getshop/${userToken.id}`,
         {
-          method: "GET",
-          headers: {
-            authorization: "Bearer " + token,
-          },
+          headers: { authorization: "Bearer " + token },
         }
       );
 
-      if (!userDetails.ok) {
-        throw new Error(`HTTP error! status: ${userDetails.status}`);
-      }
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
-      const userRes = await userDetails.json();
+      const data = await res.json();
+      console.log("Fetched user data:", data);  
+      if (data.status !== "success" || !data.data)
+        throw new Error(data.message || "Failed to fetch user");
 
-      if (userRes.status === "success" && userRes.data) {
-        setUser(userRes.data);
-      } else {
-        throw new Error(userRes.message || "Failed to update user data");
-      }
-    } catch (err) {
-      console.error("Error updating user data:", err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+      return data.data;
+    },
+    enabled: !!token,
+    staleTime: 5 * 60 * 1000, // cache for 5 minutes
+    refetchOnWindowFocus: false,
+  });
+
+  const value = {
+    user: userQuery.data,
+    loading: userQuery.isLoading,
+    error: userQuery.error?.message,
+    refetchUser: userQuery.refetch,
   };
 
-  const value = { user, loading, error, updateUserContext };
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
 
-export const useUser = () => {
-  return useContext(UserContext);
-};
+export const useUser = () => useContext(UserContext);

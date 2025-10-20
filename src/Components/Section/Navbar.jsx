@@ -92,7 +92,7 @@ const Navbar = () => {
         <div className="flex sm:items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
           <ModeToggle />
           <span className="hidden sm:block">
-            Hey 👋, {user?.uid.fname + " " + user?.uid.lname}
+            Hey 👋, {user?.uid?.fname || "Your Name"} {user?.uid?.lname}
           </span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

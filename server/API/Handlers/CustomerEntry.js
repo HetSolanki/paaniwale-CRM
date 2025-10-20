@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import CustomerEntry from "../Schema/customerEntry.js";
-import PaymentEntry from "../Schema/PaymentDetail.js";
-
+import Customer from "../Schema/customer.js";
+import PaymentDetail from "../Schema/PaymentDetail.js";
 // for admin
 
 export const getAllCustomerEntryAdmin = async (req, res) => {
@@ -557,14 +557,16 @@ export const getAllCustomerInvoice = async (req, res) => {
 //   }
 // };
 
-export const getdashboardData = async (req, res) => {
+export const getDashboardData = async (req, res) => {
   try {
-    const totalCustomer = await CustomerEntry.aggregate([
-      {
-        $match: {
-          uid: new mongoose.Types.ObjectId(req.user.id),
-        },
-      },
+    const userId = new mongoose.Types.ObjectId(req.user.id);
+
+    // Total Customers
+    const totalCustomerData = await Customer.countDocuments({ uid: userId });
+
+    // Revenue & Sales per Customer
+    const customerRevenueData = await CustomerEntry.aggregate([
+      { $match: { uid: userId } },
       {
         $lookup: {
           from: "customers",
@@ -573,9 +575,7 @@ export const getdashboardData = async (req, res) => {
           as: "customerDetails",
         },
       },
-      {
-        $unwind: "$customerDetails",
-      },
+      { $unwind: "$customerDetails" },
       {
         $addFields: {
           revenue: {
@@ -591,185 +591,30 @@ export const getdashboardData = async (req, res) => {
           customerDetails: { $first: "$customerDetails" },
         },
       },
-      {
-        $project: {
-          _id: 0,
-          cid: "$_id",
-          totalBottle: 1,
-          totalRevenue: 1,
-          customerDetails: 1,
-        },
-      },
+      { $sort: { totalRevenue: -1 } },
     ]);
 
-    const totalBottle = totalCustomer.reduce(
-      (acc, current) => acc + current.totalBottle,
+    // Total Bottle & Revenue
+    const totalBottle = customerRevenueData.reduce(
+      (acc, c) => acc + c.totalBottle,
+      0
+    );
+    const totalRevenue = customerRevenueData.reduce(
+      (acc, c) => acc + c.totalRevenue,
       0
     );
 
-    const totalRevenue = totalCustomer.reduce(
-      (acc, current) => acc + current.totalRevenue,
-      0
-    );
+    // Top 5 Revenue Customers
+    const topCustomers = customerRevenueData.slice(0, 5);
 
-    const totalCustomerData = totalCustomer.length;
+    // Total CustomerEntry count
+    const totalCustomerEntry = await CustomerEntry.countDocuments({
+      uid: userId,
+    });
 
-    const totalCustomerEntry = await CustomerEntry.find({
-      uid: req.user.id,
-    }).countDocuments();
-
-    // const monthlyRevenueResult = await CustomerEntry.aggregate([
-    //   {
-    //     $match: {
-    //       delivery_date: {
-    //         $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    //         $lt: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1),
-    //       },
-    //     },
-    //   },
-    //   {
-    //     $lookup: {
-    //       from: "customers",
-    //       localField: "cid",
-    //       foreignField: "_id",
-    //       as: "customerDetails",
-    //     },
-    //   },
-    //   {
-    //     $unwind: "$customerDetails",
-    //   },
-    //   {
-    //     $addFields: {
-    //       revenue: { $multiply: ["$bottle_count", "$customerDetails.bottle_price"] },
-    //     },
-    //   },
-    //   {
-    //     $group: {
-    //       _id: null,
-    //       totalRevenue: { $sum: "$revenue" },
-    //     },
-    //   },
-    // ]);
-
-    // const monthlyRevenue = monthlyRevenueResult.length ? monthlyRevenueResult[0].totalRevenue : 0;
-
-    const topCustomers = await CustomerEntry.aggregate([
-      {
-        $match: {
-          uid: new mongoose.Types.ObjectId(req.user.id),
-        },
-      },
-      {
-        $lookup: {
-          from: "customers",
-          localField: "cid",
-          foreignField: "_id",
-          as: "customerDetails",
-        },
-      },
-      {
-        $unwind: "$customerDetails",
-      },
-      {
-        $addFields: {
-          revenue: {
-            $multiply: ["$bottle_count", "$customerDetails.bottle_price"],
-          },
-        },
-      },
-      {
-        $group: {
-          _id: "$cid",
-          totalRevenue: { $sum: "$revenue" },
-          customerDetails: { $first: "$customerDetails" },
-        },
-      },
-      {
-        $sort: { totalRevenue: -1 },
-      },
-      {
-        $limit: 5,
-      },
-      {
-        $project: {
-          _id: 0,
-          cid: "$_id",
-          totalRevenue: 1,
-          customerDetails: 1,
-        },
-      },
-    ]);
-
-    const monthlySalesResult = await CustomerEntry.aggregate([
-      {
-        $match: {
-          delivery_date: {
-            $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-            $lt: new Date(
-              new Date().getFullYear(),
-              new Date().getMonth() + 1,
-              1
-            ),
-          },
-          uid: new mongoose.Types.ObjectId(req.user.id),
-        },
-      },
-      {
-        $lookup: {
-          from: "customers",
-          localField: "cid",
-          foreignField: "_id",
-          as: "customerDetails",
-        },
-      },
-      {
-        $unwind: "$customerDetails",
-      },
-      {
-        $addFields: {
-          revenue: {
-            $multiply: ["$bottle_count", "$customerDetails.bottle_price"],
-          },
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          totalSales: { $sum: "$revenue" },
-        },
-      },
-    ]);
-
-    // const monthlySales = monthlySalesResult.length ? monthlySalesResult[0].totalSales : 0;
-
-    // Aggregating total due amount from PaymentEntry with pending status
-
-    const totalDueAmountResult = await PaymentEntry.aggregate([
-      {
-        $match: {
-          payment_status: "Pending",
-          uid: new mongoose.Types.ObjectId(req.user.id),
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          totalDue: { $sum: "$amount" },
-        },
-      },
-    ]);
-
-    const totalDueAmount = totalDueAmountResult.length
-      ? totalDueAmountResult[0].totalDue
-      : 0;
-    // Aggregating customers with pending payment status
-    const pendingPaymentCustomersResult = await PaymentEntry.aggregate([
-      {
-        $match: {
-          payment_status: "Pending",
-          uid: new mongoose.Types.ObjectId(req.user.id),
-        },
-      },
+    // Pending Payment Details
+    const pendingPaymentCustomersResult = await PaymentDetail.aggregate([
+      { $match: { uid: userId, payment_status: "Pending" } },
       {
         $group: {
           _id: "$cid",
@@ -784,9 +629,7 @@ export const getdashboardData = async (req, res) => {
           as: "customerDetails",
         },
       },
-      {
-        $unwind: "$customerDetails",
-      },
+      { $unwind: "$customerDetails" },
       {
         $project: {
           _id: 0,
@@ -797,22 +640,24 @@ export const getdashboardData = async (req, res) => {
       },
     ]);
 
+    const totalDueAmount = pendingPaymentCustomersResult.reduce(
+      (acc, c) => acc + c.totalDue,
+      0
+    );
     const pendingPaymentCustomersCount = pendingPaymentCustomersResult.length;
 
     res.json({
-      totalCustomer,
+      totalCustomer: totalCustomerData,
       totalBottle,
       totalRevenue,
       totalCustomerData,
       totalCustomerEntry,
-      // monthlyRevenue,
-      // monthlySales,
       topCustomers,
       totalDueAmount,
       pendingPaymentCustomers: pendingPaymentCustomersResult,
       pendingPaymentCustomersCount,
     });
   } catch (error) {
-    res.json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };

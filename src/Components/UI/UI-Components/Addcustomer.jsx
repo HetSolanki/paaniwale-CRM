@@ -23,13 +23,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { addcustomer } from "@/Handlers/AddcustomerHandler";
-import { useCustomer } from "@/Context/CustomerContext";
 import { useUser } from "@/Context/UserContext";
 import "react-toastify/dist/ReactToastify.css";
 import { Toaster } from "../shadcn-UI/toaster";
 import { useToast } from "../shadcn-UI/use-toast";
 import { useRef, useState } from "react";
-import { config } from "@/Data/meta";
+import { config } from "@/Data/config";
+import { useQueryClient } from "@tanstack/react-query";
 
 const formSchema = z.object({
   cname: z
@@ -63,8 +63,10 @@ export function Addcustomer() {
     resolver: zodResolver(formSchema),
   });
 
-  const { updateCustomerContext } = useCustomer();
+  const queryClient = useQueryClient();
   const [click, setClick] = useState(false);
+  const [open, setOpen] = useState(false);
+
   const { user } = useUser();
   const { toast } = useToast();
   const formSubmit = async (data) => {
@@ -88,8 +90,10 @@ export function Addcustomer() {
           description: "Customer added successfully.",
         });
         setClick(false);
-        updateCustomerContext();
+        queryClient.invalidateQueries({ queryKey: ["customers"] });
+        queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
         form.reset();
+        setOpen(false);
         setIsVerified(false);
         setOtpSent(false);
         setOtp("");
@@ -111,6 +115,7 @@ export function Addcustomer() {
   };
 
   const [isVerified, setIsVerified] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
   const [verifying, setVerifying] = useState(false);
@@ -118,6 +123,7 @@ export function Addcustomer() {
 
   const handleSendOtp = async (phone) => {
     try {
+      setSendingOtp(true);
       otpgenerated.current = Math.floor(100000 + Math.random() * 900000);
       const res =
         (await fetch(
@@ -186,6 +192,8 @@ export function Addcustomer() {
         description: "Failed to send OTP. Please try again.",
       });
       return;
+    } finally {
+      setSendingOtp(false);
     }
 
     toast({ title: "OTP Sent", description: `OTP sent to ${phone}` });
@@ -227,9 +235,10 @@ export function Addcustomer() {
           setOtpSent(false);
           setOtp("");
         }}
+        open={open}
       >
         <DialogTrigger asChild>
-          <Button size="sm" className="h-8 gap-1">
+          <Button size="sm" className="h-8 gap-1" onClick={() => setOpen(true)}>
             <PlusCircle className="h-3.5 w-3.5" />
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
               Add Customer
@@ -310,7 +319,11 @@ export function Addcustomer() {
                                     });
                                   }
                                 }}
+                                disabled={sendingOtp}
                               >
+                                {sendingOtp && (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                )}{" "}
                                 Send OTP
                               </Button>
                             )}
@@ -335,11 +348,10 @@ export function Addcustomer() {
                         onClick={handleVerifyOtp}
                         disabled={verifying || otp.length !== 6}
                       >
-                        {verifying ? (
+                        {verifying && (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          "Verify OTP"
                         )}
+                        Verify OTP
                       </Button>
                     </div>
                   )}
@@ -439,7 +451,11 @@ export function Addcustomer() {
                   </Button>
                 )}
                 <DialogClose asChild>
-                  <Button type="button" variant="secondary">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setOpen(false)}
+                  >
                     Close
                   </Button>
                 </DialogClose>

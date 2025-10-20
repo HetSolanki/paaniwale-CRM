@@ -1,7 +1,7 @@
-const DOMAIN_NAME = import.meta.env.VITE_API_BASE_URL;
+import { config } from "@/Data/config";
 
 export const VerifyOtp = async (data, phone_number) => {
-  const verification = await fetch(`${DOMAIN_NAME}/api/auth/verifyotp`, {
+  const verification = await fetch(`${config.baseUrl}/api/auth/verifyotp`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

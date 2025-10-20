@@ -1,8 +1,8 @@
-const DOMAIN_NAME = import.meta.env.VITE_API_BASE_URL;
+import { config } from "@/Data/config";
 
 export const GetAllCustomerInvoice = async () => {
   const customerEntry = await fetch(
-    `${DOMAIN_NAME}/api/customerentry/getAllCustomerInvoice`,
+    `${config.baseUrl}/api/customerentry/getAllCustomerInvoice`,
     {
       method: "GET",
       headers: {

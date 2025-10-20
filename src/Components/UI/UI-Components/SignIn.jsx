@@ -75,7 +75,7 @@ export default function SignIn() {
   });
 
   const navigate = useNavigate();
-  const { updateUserContext } = useUser();
+  const { refetchUser } = useUser();
   const [click, setClick] = useState(false);
   const { toast } = useToast();
 
@@ -87,7 +87,7 @@ export default function SignIn() {
       if (signin.success === true) {
         localStorage.setItem("token", signin.token);
 
-        updateUserContext();
+        refetchUser();
 
         toast({
           title: "Success",

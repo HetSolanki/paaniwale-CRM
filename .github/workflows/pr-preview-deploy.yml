@@ -1,12 +1,12 @@
-name: pr-production
+name: pr-preview
 
 on:
-  push:
+  pull_request:
     branches: [main]
 
 jobs:
   pr-preview:
-    name: pr-production
+    name: pr-preview
     runs-on: ubuntu-latest
 
     steps:
@@ -24,7 +24,7 @@ jobs:
       - name: Build the application
         run: npm run build
         env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL_PREVIEW }}
           VITE_CLOUD_NAME: ${{ secrets.VITE_CLOUD_NAME }}
           VITE_CLOUD_VERSION: ${{ secrets.VITE_CLOUD_VERSION }}
           VITE_CLOUD_API_KEY: ${{ secrets.VITE_CLOUD_API_KEY }}
@@ -36,12 +36,12 @@ jobs:
           VITE_WHATSAPP_API_VERSION: ${{ secrets.VITE_WHATSAPP_API_VERSION }}
 
       - name: Build Docker image (Frontend)
-        run: docker build -t ${{ secrets.DOCKER_HOST }}/paaniwale-frontend:latest .
+        run: docker build -t ${{ secrets.DOCKER_HOST }}/paaniwale-frontend:preview .
 
       - name: Build Docker image (Backend)
         run: |
           cd server/API
-          docker build -t ${{ secrets.DOCKER_HOST }}/paaniwale-backend:latest .
+          docker build -t ${{ secrets.DOCKER_HOST }}/paaniwale-backend:preview .
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -51,17 +51,17 @@ jobs:
 
       - name: Push Docker images
         run: |
-          docker push ${{secrets.DOCKER_HOST}}/paaniwale-frontend:latest
-          docker push ${{secrets.DOCKER_HOST}}/paaniwale-backend:latest
+          docker push ${{secrets.DOCKER_HOST}}/paaniwale-frontend:preview
+          docker push ${{secrets.DOCKER_HOST}}/paaniwale-backend:preview
 
-      - name: Deploy to droplet (Production)
+      - name: Deploy to droplet (preview)
         uses: appleboy/ssh-action@v0.1.8
         with:
           host: ${{ secrets.DO_HOST }}
           username: ${{ secrets.DO_USER }}
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
-            cd /home/deploy
+            cd /home/preview
             docker compose pull
             docker compose up -d --force-recreate
             docker image  prune -f

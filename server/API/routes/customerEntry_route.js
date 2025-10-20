@@ -10,7 +10,7 @@ import {
   getAllCustomerEntryCurrentMonth,
   getCustomerForPayment,
   getCustomerInvoice,
-  getdashboardData,
+  getDashboardData,
   getAllCustomerInvoice,
   getAllCustomerEntryAdmin,
 } from "../Handlers/CustomerEntry.js";
@@ -75,6 +75,6 @@ router.get("/getCustomerInvoice/:id", protect, getCustomerInvoice);
 
 router.get("/getAllCustomerInvoice", protect, getAllCustomerInvoice);
 
-router.get("/getdashboarddata/", protect, getdashboardData);
+router.get("/getdashboarddata/", protect, getDashboardData);
 
 export default router;

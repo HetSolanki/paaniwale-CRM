@@ -7,7 +7,7 @@ import { createPaymentLink } from "@/Handlers/CreatepaymentLinkHandler";
 import { Button } from "../UI/shadcn-UI/button";
 import { Loader2, Send, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { useToast } from "../UI/shadcn-UI/use-toast";
-import { config } from "@/Data/meta";
+import { config } from "@/Data/config";
 import {
   Dialog,
   DialogContent,

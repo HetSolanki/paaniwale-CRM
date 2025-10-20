@@ -96,10 +96,8 @@ export const updateCustomer = async (req, res) => {
 export const deleteCustomer = async (req, res) => {
   try {
     const deletedCustomer = await Customer.findByIdAndDelete(req.params.id);
-
-    customerEntry.deleteMany({ cid: req.params.id });
-
-    PaymentDetail.deleteMany({ cid: req.params.id });
+    await customerEntry.deleteMany({ cid: req.params.id });
+    await PaymentDetail.deleteMany({ cid: req.params.id });
 
     if (!deletedCustomer) {
       return res.json({ data: "No Customer Found", status: "failed" });

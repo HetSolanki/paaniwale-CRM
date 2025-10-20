@@ -23,15 +23,15 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useCustomer } from "@/Context/CustomerContext";
+import { useQueryClient } from "@tanstack/react-query";
 import { editcustomer } from "@/Handlers/EditcustomerHandler";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCustomer } from "@/Hooks/fetchCustomer";
 import "react-toastify/dist/ReactToastify.css";
 import { useToast } from "../shadcn-UI/use-toast";
 import { Toaster } from "../shadcn-UI/toaster";
-import { useRef, useState } from "react";
-import { config } from "@/Data/meta";
+import { useEffect, useRef, useState } from "react";
+import { config } from "@/Data/config";
 
 const formSchema = z.object({
   cname: z.string().min(1, {
@@ -77,8 +77,22 @@ export function Editcustomer({ id }) {
     } = customerDetails.data.data;
   }
 
+  useEffect(() => {
+    if (customerDetails.data?.data) {
+      form.reset({
+        cname: customerDetails.data.data.cname,
+        cphone_number: customerDetails.data.data.cphone_number?.toString(),
+        caddress: customerDetails.data.data.caddress,
+        bottle_price: customerDetails.data.data.bottle_price?.toString(),
+        delivery_sequence_number:
+          customerDetails.data.data.delivery_sequence_number?.toString(),
+      });
+    }
+  }, [customerDetails.data]);
+
   const [click, setClick] = useState(false);
-  const { updateCustomerContext } = useCustomer();
+  const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
   const { toast } = useToast();
 
   const formSubmit = async (data) => {
@@ -87,16 +101,16 @@ export function Editcustomer({ id }) {
       const newcustomer = await editcustomer(data, id);
 
       if (newcustomer.status === "success") {
-        updateCustomerContext();
+        queryClient.invalidateQueries({ queryKey: ["customers"] });
+        queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
+        queryClient.invalidateQueries({ queryKey: ["customerDetail"] });
+        queryClient.invalidateQueries({ queryKey: ["paymentdetails"] });
         toast({
           title: "Success",
           description: "Customer details updated successfully.",
         });
-        form.reset();
-        setIsVerified(false);
-        setOtpSent(false);
-        setOtp("");
-        setPhoneChanged(false);
+        clearfield();
+        setOpen(false);
       } else {
         toast({
           variant: "destructive",
@@ -125,6 +139,7 @@ export function Editcustomer({ id }) {
   };
 
   const [isVerified, setIsVerified] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
   const [verifying, setVerifying] = useState(false);
@@ -156,6 +171,7 @@ export function Editcustomer({ id }) {
 
   const handleSendOtp = async (phone) => {
     try {
+      setSendingOtp(true);
       otpgenerated.current = Math.floor(100000 + Math.random() * 900000);
       const res =
         (await fetch(
@@ -217,6 +233,7 @@ export function Editcustomer({ id }) {
         });
       }
       setOtpSent(true);
+      setSendingOtp(false);
     } catch (error) {
       toast({
         variant: "destructive",
@@ -224,6 +241,8 @@ export function Editcustomer({ id }) {
         description: "Failed to send OTP. Please try again.",
       });
       return;
+    } finally {
+      setSendingOtp(false);
     }
 
     toast({ title: "OTP Sent", description: `OTP sent to ${phone}` });
@@ -264,9 +283,13 @@ export function Editcustomer({ id }) {
             clearfield();
           }
         }}
+        open={open}
       >
         <DialogTrigger asChild>
-          <div className="cursor-pointer items-center">
+          <div
+            className="cursor-pointer items-center"
+            onClick={() => setOpen(true)}
+          >
             <Pencil />
           </div>
         </DialogTrigger>
@@ -328,7 +351,7 @@ export function Editcustomer({ id }) {
                                 checkPhoneChange(e.target.value);
                               }}
                             />
-                            {phoneChanged && !isVerified && !otpSent && (
+                            {phoneChanged && !isVerified && (
                               <Button
                                 type="button"
                                 size="sm"
@@ -349,7 +372,11 @@ export function Editcustomer({ id }) {
                                     });
                                   }
                                 }}
+                                disabled={sendingOtp}
                               >
+                                {sendingOtp && (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                )}{" "}
                                 Send OTP
                               </Button>
                             )}
@@ -374,11 +401,10 @@ export function Editcustomer({ id }) {
                         onClick={handleVerifyOtp}
                         disabled={verifying || otp.length !== 6}
                       >
-                        {verifying ? (
+                        {verifying && (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          "Verify OTP"
                         )}
+                        Verify OTP
                       </Button>
                     </div>
                   )}
@@ -480,7 +506,11 @@ export function Editcustomer({ id }) {
                   </Button>
                 )}
                 <DialogClose asChild>
-                  <Button type="button" variant="secondary">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setOpen(false)}
+                  >
                     Close
                   </Button>
                 </DialogClose>
