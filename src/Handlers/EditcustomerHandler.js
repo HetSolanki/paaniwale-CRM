@@ -2,7 +2,7 @@ import { handleFetchResponse } from "@/lib/errorHandler";
 
 const DOMAIN_NAME = import.meta.env.VITE_API_BASE_URL;
 
-export const editcustomer = async (data, id) => {
+export const editcustomer = async (data, id, phone_verification_status) => {
   try {
     const customer = await fetch(
       `${DOMAIN_NAME}/api/customers/customer/${id}`,
@@ -18,6 +18,7 @@ export const editcustomer = async (data, id) => {
           caddress: data.caddress,
           bottle_price: data.bottle_price,
           delivery_sequence_number: data.delivery_sequence_number,
+          phone_verification_status,
         }),
       }
     );

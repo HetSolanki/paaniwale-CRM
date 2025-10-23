@@ -101,6 +101,8 @@ export const InvoiceAll = () => {
       status: "pending", // pending, processing, success, failed
       message: "Waiting...",
       paymentLink: null, // Store payment link URL
+      phone_verification_status:
+        customer.customerDetails?.phone_verification_status || false,
     }));
     setSendingStatus(initialStatus);
 
@@ -109,15 +111,18 @@ export const InvoiceAll = () => {
       const customer = customerInvoice[index];
 
       // Update status to processing
-      setSendingStatus((prev) =>
-        prev.map((item, i) =>
-          i === index
-            ? { ...item, status: "processing", message: "Generating PDF..." }
-            : item
-        )
-      );
 
       try {
+        if (!customer.customerDetails?.phone_verification_status)
+          throw new Error("Phone number is not verified");
+
+        setSendingStatus((prev) =>
+          prev.map((item, i) =>
+            i === index
+              ? { ...item, status: "processing", message: "Generating PDF..." }
+              : item
+          )
+        );
         const partitionSize = Math.ceil(customer.customerEntry.length / 3);
 
         const firstPartCustomers = customer.customerEntry.slice(

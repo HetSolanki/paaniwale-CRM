@@ -19,6 +19,7 @@ import {
   FormLabel,
   FormMessage,
 } from "../shadcn-UI/form";
+import { Switch } from "@/Components/UI/shadcn-UI/switch";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -66,13 +67,19 @@ export function Addcustomer() {
   const queryClient = useQueryClient();
   const [click, setClick] = useState(false);
   const [open, setOpen] = useState(false);
+  const [enableOtpVerification, setEnableOtpVerification] = useState(false);
 
   const { user } = useUser();
   const { toast } = useToast();
+
   const formSubmit = async (data) => {
     try {
       setClick(true);
-      const newcustomer = await addcustomer(data, user.uid._id);
+      const newcustomer = await addcustomer(
+        data,
+        user.uid._id,
+        enableOtpVerification
+      );
 
       if (newcustomer.error) {
         toast({
@@ -97,6 +104,7 @@ export function Addcustomer() {
         setIsVerified(false);
         setOtpSent(false);
         setOtp("");
+        setEnableOtpVerification(false);
       }
     } catch (error) {
       console.error("Error adding customer:", error);
@@ -132,7 +140,7 @@ export function Addcustomer() {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: config.whatsapp.authorization, // Use your access token
+              Authorization: config.whatsapp.authorization,
             },
             body: JSON.stringify({
               messaging_product: "whatsapp",
@@ -226,6 +234,8 @@ export function Addcustomer() {
     }
   };
 
+  const isSubmitDisabled = enableOtpVerification ? !isVerified : false;
+
   return (
     <>
       <Dialog
@@ -234,6 +244,7 @@ export function Addcustomer() {
           setIsVerified(false);
           setOtpSent(false);
           setOtp("");
+          setEnableOtpVerification(false);
         }}
         open={open}
       >
@@ -255,6 +266,30 @@ export function Addcustomer() {
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
+                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <div className="flex flex-col gap-1">
+                    <FormLabel className="font-semibold">
+                      Enable OTP Verification
+                    </FormLabel>
+                    <p className="text-xs text-muted-foreground">
+                      {enableOtpVerification
+                        ? "OTP verification is required"
+                        : "OTP verification is optional"}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={enableOtpVerification}
+                    onCheckedChange={(checked) => {
+                      setEnableOtpVerification(checked);
+                      if (!checked) {
+                        setIsVerified(false);
+                        setOtpSent(false);
+                        setOtp("");
+                      }
+                    }}
+                  />
+                </div>
+
                 <div className="grid gap-2 items-center ">
                   <FormField
                     control={form.control}
@@ -296,9 +331,9 @@ export function Addcustomer() {
                               type="text"
                               placeholder="Customer Phone Number"
                               {...field}
-                              disabled={isVerified}
+                              disabled={enableOtpVerification && isVerified}
                             />
-                            {!otpSent && (
+                            {enableOtpVerification && !otpSent && (
                               <Button
                                 type="button"
                                 size="sm"
@@ -333,7 +368,7 @@ export function Addcustomer() {
                       </FormItem>
                     )}
                   />
-                  {otpSent && !isVerified && (
+                  {enableOtpVerification && otpSent && !isVerified && (
                     <div className="flex gap-2 mt-2">
                       <Input
                         type="text"
@@ -355,9 +390,9 @@ export function Addcustomer() {
                       </Button>
                     </div>
                   )}
-                  {isVerified && (
+                  {enableOtpVerification && isVerified && (
                     <div className="text-green-600 text-xs mt-1">
-                      Phone number verified
+                      ✓ Phone number verified
                     </div>
                   )}
                 </div>
@@ -439,8 +474,8 @@ export function Addcustomer() {
                   <Button
                     type="submit"
                     className="font-semibold"
-                    disabled={!isVerified}
-                    title={!isVerified ? "Verify phone number first" : ""}
+                    disabled={isSubmitDisabled}
+                    title={isSubmitDisabled ? "Verify phone number first" : ""}
                   >
                     Add Customer
                   </Button>
