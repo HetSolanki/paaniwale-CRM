@@ -60,6 +60,7 @@ export const InvoiceX = ({ cid }) => {
   useEffect(() => {
     const fetchCustomerData = async () => {
       const customerData = await GetCustomerInvoice(cid);
+
       if (customerData?.data) {
         setCustomerInvoice(customerData.data);
         const partitionSize = Math.ceil(
@@ -92,11 +93,13 @@ export const InvoiceX = ({ cid }) => {
   }, [customerInvoice]);
 
   const handleClick = async () => {
-    if (!customerInvoice) return;
-
-    setClick(true);
-
     try {
+      if (!customerInvoice) return;
+      if (!customerInvoice[0]?.customerDetails?.phone_verification_status) {
+        throw new Error("Please verify phone number");
+      }
+      setClick(true);
+
       // Generate PDF (runs in parallel with any async prep)
       const pdfGenerationPromise = new Promise((resolve) => {
         const pdf = pdfGenerator(

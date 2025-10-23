@@ -11,7 +11,8 @@ import {
   DialogClose,
 } from "@/Components/UI/shadcn-UI/dialog";
 import { Input } from "@/Components/UI/shadcn-UI/input";
-import { Loader2, Pencil } from "lucide-react";
+import { Loader2, Pencil, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription } from "@/Components/UI/shadcn-UI/alert";
 import {
   Form,
   FormControl,
@@ -74,6 +75,7 @@ export function Editcustomer({ id }) {
       cphone_number,
       delivery_sequence_number,
       bottle_price,
+      is_phone_verified,
     } = customerDetails.data.data;
   }
 
@@ -87,6 +89,10 @@ export function Editcustomer({ id }) {
         delivery_sequence_number:
           customerDetails.data.data.delivery_sequence_number?.toString(),
       });
+      // Set initial verification status from database
+      setIsVerified(
+        customerDetails.data.data.phone_verification_status || false
+      );
     }
   }, [customerDetails.data]);
 
@@ -98,7 +104,7 @@ export function Editcustomer({ id }) {
   const formSubmit = async (data) => {
     try {
       setClick(true);
-      const newcustomer = await editcustomer(data, id);
+      const newcustomer = await editcustomer(data, id, isVerified);
 
       if (newcustomer.status === "success") {
         queryClient.invalidateQueries({ queryKey: ["customers"] });
@@ -132,7 +138,6 @@ export function Editcustomer({ id }) {
   };
   const clearfield = () => {
     form.reset();
-    setIsVerified(false);
     setOtpSent(false);
     setOtp("");
     setPhoneChanged(false);
@@ -157,8 +162,8 @@ export function Editcustomer({ id }) {
     const hasChanged = newPhone !== originalPhone;
     setPhoneChanged(hasChanged);
     if (!hasChanged) {
-      // If phone number is reverted to original, no need for verification
-      setIsVerified(true);
+      // If phone number is reverted to original, restore original verification status
+      setIsVerified(is_phone_verified || false);
       setOtpSent(false);
       setOtp("");
     } else {
@@ -180,7 +185,7 @@ export function Editcustomer({ id }) {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: config.whatsapp.authorization, // Use your access token
+              Authorization: config.whatsapp.authorization,
             },
             body: JSON.stringify({
               messaging_product: "whatsapp",
@@ -293,7 +298,7 @@ export function Editcustomer({ id }) {
             <Pencil />
           </div>
         </DialogTrigger>
-        <DialogContent className="w-[90%] sm:max-w-[425px] rounded-md">
+        <DialogContent className="w-[90%] sm:max-w-[425px] rounded-md max-h-[90vh] overflow-y-auto">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(formSubmit)}>
               <DialogHeader>
@@ -303,6 +308,40 @@ export function Editcustomer({ id }) {
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
+                {/* Warning Alert for Unverified Phone */}
+                {!isVerified && !phoneChanged && (
+                  <Alert
+                    variant="destructive"
+                    className="border-yellow-500 bg-yellow-50 text-yellow-800"
+                  >
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription className="ml-2">
+                      Phone number is not verified.
+                      <Button
+                        type="button"
+                        variant="link"
+                        size="sm"
+                        className="px-1 h-auto text-yellow-800 underline"
+                        onClick={async () => {
+                          const valid = await form.trigger("cphone_number");
+                          if (valid) {
+                            handleSendOtp(form.getValues("cphone_number"));
+                          } else {
+                            toast({
+                              variant: "destructive",
+                              title: "Invalid Phone",
+                              description: "Enter valid phone number first.",
+                            });
+                          }
+                        }}
+                        disabled={sendingOtp}
+                      >
+                        {sendingOtp ? "Sending..." : "Click to verify"}
+                      </Button>
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 <div className="grid gap-2 items-center ">
                   <FormField
                     control={form.control}
@@ -335,9 +374,22 @@ export function Editcustomer({ id }) {
                       <FormItem>
                         <FormLabel
                           htmlFor="cphone_number"
-                          className="font-semibold"
+                          className="font-semibold flex items-center gap-2"
                         >
                           Customer Phone Number
+                          {!isVerified && (
+                            <span
+                              className="text-yellow-600"
+                              title="Not verified"
+                            >
+                              <AlertTriangle size={14} />
+                            </span>
+                          )}
+                          {isVerified && (
+                            <span className="text-green-600" title="Verified">
+                              ✓
+                            </span>
+                          )}
                         </FormLabel>
                         <FormControl>
                           <div className="flex gap-2">
@@ -351,7 +403,7 @@ export function Editcustomer({ id }) {
                                 checkPhoneChange(e.target.value);
                               }}
                             />
-                            {phoneChanged && !isVerified && (
+                            {phoneChanged && !isVerified && !otpSent && (
                               <Button
                                 type="button"
                                 size="sm"
@@ -386,7 +438,7 @@ export function Editcustomer({ id }) {
                       </FormItem>
                     )}
                   />
-                  {otpSent && !isVerified && phoneChanged && (
+                  {otpSent && !isVerified && (
                     <div className="flex gap-2 mt-2">
                       <Input
                         type="text"
@@ -409,7 +461,7 @@ export function Editcustomer({ id }) {
                     </div>
                   )}
                   {isVerified && phoneChanged && (
-                    <div className="text-green-600 text-xs mt-1">
+                    <div className="text-green-600 text-xs mt-1 flex items-center gap-1">
                       ✓ Phone number verified
                     </div>
                   )}
