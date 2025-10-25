@@ -10,4 +10,5 @@ export const config = {
     authorization: `Bearer ${import.meta.env.VITE_WHATSAPP_USER_ACCESS_TOKEN}`,
   },
   baseUrl: import.meta.env.VITE_API_BASE_URL,
+  GA_tracking_id: import.meta.env.VITE_GA_TRACKING_ID,
 };

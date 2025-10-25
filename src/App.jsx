@@ -1,5 +1,11 @@
 /* eslint-disable react/no-children-prop */
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import SignIn from "./Components/UI/UI-Components/SignIn";
 import SignUp from "./Components/UI/UI-Components/SignUp";
 import { Dashboard } from "./Components/Section/Dashboard";
@@ -33,6 +39,26 @@ import AdminPaymentReview from "./Components/Admin/AdminPaymentReview";
 import PartyOrders from "./Components/Section/PartyOrders";
 import UserProvider from "./Context/UserContext";
 import AdminCustomerManagement from "./Components/Admin/AdminCustomerManagement";
+import ReactGA from "react-ga4";
+import { config } from "./Data/config";
+
+// Initialize Google Analytics
+const GA_TRACKING_ID = config.GA_tracking_id;
+if (GA_TRACKING_ID) {
+  ReactGA.initialize(GA_TRACKING_ID);
+}
+
+// Component to track page views
+function PageTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Track page view whenever route changes
+    ReactGA.send({ hitType: "pageview", page: location.pathname });
+  }, [location]);
+
+  return null;
+}
 
 function App() {
   const [defaultRoute, setDefaultRoute] = useState("/mainpage");
@@ -46,6 +72,7 @@ function App() {
 
   return (
     <>
+      <PageTracker />
       <UserProvider>
         <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
           <SkeletonTheme
