@@ -34,6 +34,7 @@ jobs:
           VITE_WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.VITE_WHATSAPP_PHONE_NUMBER_ID }}
           VITE_WHATSAPP_USER_ACCESS_TOKEN: ${{ secrets.VITE_WHATSAPP_USER_ACCESS_TOKEN }}
           VITE_WHATSAPP_API_VERSION: ${{ secrets.VITE_WHATSAPP_API_VERSION }}
+          VITE_GA_TRACKING_ID: ${{secrets.VITE_GA_TRACKING_ID }}
 
       - name: Build Docker image (Frontend)
         run: docker build -t ${{ secrets.DOCKER_HOST }}/paaniwale-frontend:latest .
