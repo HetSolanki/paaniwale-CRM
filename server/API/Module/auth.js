@@ -24,7 +24,6 @@ export const createJWT = (user) => {
 };
 
 export const protect = (req, res, next) => {
-  console.log(req.user)
   const bearer = req.headers.authorization;
   // console.log("Bearer = " + bearer);
   if (!bearer) {
@@ -63,4 +62,3 @@ export const requireRole = (role) => {
     next();
   };
 };
-

@@ -21,10 +21,9 @@ import {
   Package,
 } from "lucide-react";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "@/Context/ThemeProviderContext ";
 import { useQuery } from "@tanstack/react-query";
-import { fetchCustomers } from "@/Hooks/fetchAllCustomers";
 import { Badge } from "@/Components/UI/shadcn-UI/badge";
 import {
   updateCustomerEntry as updateCustomerEntryAPI,
@@ -42,98 +41,28 @@ import {
 import { Input } from "@/Components/UI/shadcn-UI/input";
 import { Label } from "@/Components/UI/shadcn-UI/label";
 import { toast } from "react-toastify";
-
-const DOMAIN_NAME = import.meta.env.VITE_API_BASE_URL;
+import { fetchTodaysEntries } from "@/Hooks/fetchTodaysEntries";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function CustomerEntry() {
   const navigate = useNavigate();
-  const [customerEntries, setCustomerEntries] = useState({});
-  const [refreshKey, setRefreshKey] = useState(0);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [viewEntriesDialogOpen, setViewEntriesDialogOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [editBottleCount, setEditBottleCount] = useState(0);
   const [todayEntryId, setTodayEntryId] = useState(null);
-  const [customerAllEntries, setCustomerAllEntries] = useState([]);
   const [loadingEntries, setLoadingEntries] = useState(false);
 
-  const customers = useQuery({
-    queryKey: ["customers"],
-    queryFn: fetchCustomers,
+  const { data: customers } = useQuery({
+    queryKey: ["customersEntries"],
+    queryFn: fetchTodaysEntries,
     enabled: !!localStorage.getItem("token"), // Only fetch if token exists
     staleTime: 3 * 60 * 1000, // 3 minutes
     retry: 2,
   });
 
   const { theme } = useTheme();
-
-  // Fetch today's entries count for each customer
-  useEffect(() => {
-    const fetchTodayEntries = async () => {
-      const token = localStorage.getItem("token");
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayStr = today.toISOString().split("T")[0];
-
-      try {
-        const response = await fetch(
-          `${DOMAIN_NAME}/api/customerentry/getallcustomerentrys`,
-          {
-            method: "GET",
-            headers: {
-              authorization: "Bearer " + token,
-            },
-          }
-        );
-        const res = await response.json();
-
-        if (res.status === "success" && res.data) {
-          // Count today's entries per customer (count bottle_count, not number of entries)
-          const entriesMap = {};
-          res.data.forEach((entry) => {
-            if (!entry.cid?._id) return;
-
-            // Compare dates properly
-            const entryDate = new Date(entry.delivery_date);
-            entryDate.setHours(0, 0, 0, 0);
-            const entryDateStr = entryDate.toISOString().split("T")[0];
-
-            if (entryDateStr === todayStr) {
-              const customerId = entry.cid._id;
-              if (!entriesMap[customerId]) {
-                entriesMap[customerId] = {
-                  count: 0,
-                  bottles: 0,
-                  entryId: entry._id,
-                };
-              }
-              entriesMap[customerId].count += 1;
-              entriesMap[customerId].bottles += entry.bottle_count || 0;
-              entriesMap[customerId].entryId = entry._id; // Store latest entry ID
-            }
-          });
-          setCustomerEntries(entriesMap);
-        }
-      } catch (error) {
-        console.error("Error fetching entries:", error);
-      }
-    };
-
-    if (customers.data?.data) {
-      fetchTodayEntries();
-    }
-  }, [customers.data, refreshKey]);
-
-  // Listen for entry added events to refresh the list
-  useEffect(() => {
-    const handleEntryAdded = () => {
-      setRefreshKey((prev) => prev + 1);
-    };
-
-    window.addEventListener("customerEntryAdded", handleEntryAdded);
-    return () =>
-      window.removeEventListener("customerEntryAdded", handleEntryAdded);
-  }, []);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!localStorage.getItem("token")) {
@@ -141,99 +70,25 @@ export default function CustomerEntry() {
     }
   }, [navigate]);
 
-  // Separate customers into pending (0 entries) and done (> 0 entries)
-  const { pendingCustomers, doneCustomers, stats } = useMemo(() => {
-    if (!customers.data?.data) {
-      return {
-        pendingCustomers: [],
-        doneCustomers: [],
-        stats: { pending: 0, done: 0, totalBottles: 0 },
-      };
-    }
-
-    const pending = [];
-    const done = [];
-    let totalBottles = 0;
-
-    customers.data.data.forEach((customer) => {
-      const entryData = customerEntries[customer._id];
-      const hasEntry = entryData && entryData.count > 0;
-
-      const customerWithEntry = {
-        ...customer,
-        todayEntryCount: entryData ? entryData.count : 0,
-        todayBottleCount: entryData ? entryData.bottles : 0,
-      };
-
-      if (!hasEntry) {
-        pending.push(customerWithEntry);
-      } else {
-        done.push(customerWithEntry);
-        totalBottles += entryData.bottles;
-      }
-    });
-
-    return {
-      pendingCustomers: pending,
-      doneCustomers: done,
-      stats: {
-        pending: pending.length,
-        done: done.length,
-        totalBottles: totalBottles,
-      },
-    };
-  }, [customers.data, customerEntries]);
-
   const handleNavigate = async () => {
     navigate("/customerentrydata");
   };
 
   const handleEditEntry = (customer) => {
-    const entryData = customerEntries[customer._id];
+    const entryData = customer?.todayEntryDetails;
     setSelectedCustomer(customer);
-    setEditBottleCount(entryData?.bottles || 0);
-    setTodayEntryId(entryData?.entryId || null);
+    setEditBottleCount(entryData?.bottle_count || 0);
+    setTodayEntryId(entryData?._id || null);
     setEditDialogOpen(true);
-  };
-
-  const handleViewAllEntries = async (customer) => {
-    setSelectedCustomer(customer);
-    setViewEntriesDialogOpen(true);
-    setLoadingEntries(true);
-
-    try {
-      const res = await getAllCustomerEntries(customer._id);
-
-      if (res.status === "success" && res.data) {
-        // Sort entries by date, most recent first
-        const sortedEntries = res.data.sort(
-          (a, b) => new Date(b.delivery_date) - new Date(a.delivery_date)
-        );
-        setCustomerAllEntries(sortedEntries);
-      } else {
-        setCustomerAllEntries([]);
-      }
-    } catch (error) {
-      console.error("Error fetching entries:", error);
-      toast.error("Failed to load entries", {
-        autoClose: 1000,
-      });
-      setCustomerAllEntries([]);
-    } finally {
-      setLoadingEntries(false);
-    }
   };
 
   const handleUpdateEntry = async () => {
     if (!todayEntryId || !selectedCustomer) return;
 
-    const today = new Date().toISOString().split("T")[0];
-
     try {
       const res = await updateCustomerEntryAPI(todayEntryId, {
         cid: selectedCustomer._id,
         bottle_count: parseInt(editBottleCount),
-        delivery_date: today,
         delivery_status: "Present",
       });
 
@@ -242,8 +97,8 @@ export default function CustomerEntry() {
           autoClose: 1000,
         });
         setEditDialogOpen(false);
-        setRefreshKey((prev) => prev + 1);
-        window.dispatchEvent(new CustomEvent("customerEntryAdded"));
+        queryClient.invalidateQueries({ queryKey: ["customersEntries"] });
+        queryClient.invalidateQueries({ queryKey: ["allCustomerEntries"] });
       } else {
         toast.error(res.message || "Failed to update entry", {
           autoClose: 1000,
@@ -258,20 +113,19 @@ export default function CustomerEntry() {
   };
 
   const handleDeleteEntry = async (customer) => {
-    const entryData = customerEntries[customer._id];
-    if (!entryData?.entryId) return;
+    const entryData = customer.todayEntryDetails;
+    if (!entryData?._id) return;
 
     if (!window.confirm(`Delete entry for ${customer.cname}?`)) return;
 
     try {
-      const res = await deleteCustomerEntryAPI(entryData.entryId);
+      const res = await deleteCustomerEntryAPI(entryData._id);
 
       if (res.status === "success") {
         toast.success("Entry deleted successfully", {
           autoClose: 1000,
         });
-        setRefreshKey((prev) => prev + 1);
-        window.dispatchEvent(new CustomEvent("customerEntryAdded"));
+        queryClient.invalidateQueries({ queryKey: ["customersEntries"] });
       } else {
         toast.error(res.message || "Failed to delete entry", {
           autoClose: 1000,
@@ -283,6 +137,18 @@ export default function CustomerEntry() {
         autoClose: 1000,
       });
     }
+  };
+
+  const { data: customerAllEntries = [] } = useQuery({
+    queryKey: ["allCustomerEntries", selectedCustomer?._id],
+    queryFn: async () => await getAllCustomerEntries(selectedCustomer._id),
+    enabled: viewEntriesDialogOpen && !!selectedCustomer?._id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const handleViewAllEntries = async (customer) => {
+    setSelectedCustomer(customer);
+    setViewEntriesDialogOpen(true);
   };
 
   return (
@@ -301,7 +167,9 @@ export default function CustomerEntry() {
                   <Clock className="h-4 w-4" />
                   Pending Entries
                 </CardDescription>
-                <CardTitle className="text-3xl">{stats.pending}</CardTitle>
+                <CardTitle className="text-3xl">
+                  {customers?.stats?.pending}
+                </CardTitle>
               </CardHeader>
             </Card>
 
@@ -312,7 +180,7 @@ export default function CustomerEntry() {
                   Completed Today
                 </CardDescription>
                 <CardTitle className="text-3xl text-green-600">
-                  {stats.done}
+                  {customers?.stats?.completed}
                 </CardTitle>
               </CardHeader>
             </Card>
@@ -320,7 +188,9 @@ export default function CustomerEntry() {
             <Card>
               <CardHeader className="pb-3">
                 <CardDescription>Total Bottles Delivered</CardDescription>
-                <CardTitle className="text-3xl">{stats.totalBottles}</CardTitle>
+                <CardTitle className="text-3xl">
+                  {customers?.stats?.totalBottles}
+                </CardTitle>
               </CardHeader>
             </Card>
 
@@ -343,7 +213,7 @@ export default function CustomerEntry() {
           </div>
 
           {/* Pending Entries Section */}
-          {pendingCustomers.length > 0 && (
+          {customers?.pending.length > 0 && (
             <Card className="mb-6">
               <CardHeader className="flex flex-row items-center px-4 sm:p-6">
                 <div className="grid gap-2">
@@ -351,7 +221,7 @@ export default function CustomerEntry() {
                     <Clock className="h-5 w-5 text-orange-500" />
                     Pending Customer Entries
                     <Badge variant="secondary" className="ml-2">
-                      {pendingCustomers.length}
+                      {customers?.pending.length}
                     </Badge>
                   </CardTitle>
                   <CardDescription className="hidden sm:block">
@@ -373,14 +243,14 @@ export default function CustomerEntry() {
                 {customers?.isLoading ? (
                   <Skeleton className="h-[300px]" enableAnimation={true} />
                 ) : (
-                  <DataTable data={pendingCustomers} columns={columns} />
+                  <DataTable data={customers?.pending} columns={columns} />
                 )}
               </CardContent>
             </Card>
           )}
 
           {/* Completed Entries Section */}
-          {doneCustomers.length > 0 && (
+          {customers?.completed.length > 0 && (
             <Card>
               <CardHeader className="flex flex-row items-center px-4 sm:p-6 bg-green-50 dark:bg-green-950">
                 <div className="grid gap-2">
@@ -388,7 +258,7 @@ export default function CustomerEntry() {
                     <CheckCircle2 className="h-5 w-5 text-green-600" />
                     Completed Entries Today
                     <Badge variant="default" className="ml-2 bg-green-600">
-                      {doneCustomers.length}
+                      {customers?.completed.length}
                     </Badge>
                   </CardTitle>
                   <CardDescription className="hidden sm:block">
@@ -399,7 +269,7 @@ export default function CustomerEntry() {
 
               <CardContent className="px-3 sm:p-6">
                 <div className="space-y-4">
-                  {doneCustomers.map((customer) => (
+                  {customers?.completed.map((customer) => (
                     <div
                       key={customer._id}
                       className="flex items-center justify-between p-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors"
@@ -420,8 +290,8 @@ export default function CustomerEntry() {
                           variant="outline"
                           className="text-xs bg-green-50 dark:bg-green-950 whitespace-nowrap"
                         >
-                          {customer.todayBottleCount}{" "}
-                          {customer.todayBottleCount === 1
+                          {customer.stats?.totalBottles}{" "}
+                          {customer.stats?.totalBottles === 1
                             ? "bottle"
                             : "bottles"}
                         </Badge>
@@ -465,8 +335,8 @@ export default function CustomerEntry() {
 
           {/* Empty State */}
           {!customers?.isLoading &&
-            pendingCustomers.length === 0 &&
-            doneCustomers.length === 0 && (
+            customers?.stats?.pending === 0 &&
+            customers?.stats?.completed === 0 && (
               <Card>
                 <CardHeader className="px-4 sm:p-6">
                   <CardTitle className="text-xl sm:text-2xl">
@@ -584,9 +454,9 @@ export default function CustomerEntry() {
                 <div className="flex items-center justify-center h-40">
                   <Skeleton className="h-full w-full" enableAnimation={true} />
                 </div>
-              ) : customerAllEntries.length > 0 ? (
+              ) : customerAllEntries?.length > 0 ? (
                 <div className="space-y-3">
-                  {customerAllEntries.map((entry, index) => {
+                  {customerAllEntries?.map((entry, index) => {
                     const entryDate = new Date(entry.delivery_date);
                     const isToday =
                       entryDate.toDateString() === new Date().toDateString();
