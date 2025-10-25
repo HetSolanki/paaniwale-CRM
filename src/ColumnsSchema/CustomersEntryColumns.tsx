@@ -43,10 +43,14 @@ const handleEntry = async (
           });
           queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
           queryClient.invalidateQueries({ queryKey: ["paymentdetails"] });
-          
+          queryClient.invalidateQueries({ queryKey: ["customersEntries"] });
+          queryClient.invalidateQueries({
+            queryKey: ["allCustomerEntries", customer._id],
+          });
+
           // Dispatch custom event to refresh CustomerEntry component
           window.dispatchEvent(new CustomEvent("customerEntryAdded"));
-          
+
           setCustomers((prev) => prev.filter((c) => c._id !== customer._id));
         } else {
           toast.error("Entry could not be added", {
@@ -81,10 +85,11 @@ const handleEntry = async (
       });
       queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
       queryClient.invalidateQueries({ queryKey: ["paymentdetails"] });
-      
+      queryClient.invalidateQueries({ queryKey: ["customersEntries"] });
+
       // Dispatch custom event to refresh CustomerEntry component
       window.dispatchEvent(new CustomEvent("customerEntryAdded"));
-      
+
       setCustomers((prev) => prev.filter((c) => c._id !== customer._id));
     } else {
       toast.error("Entry could not be added", {

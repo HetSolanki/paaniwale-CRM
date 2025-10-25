@@ -27,14 +27,15 @@ export const getAllCustomerEntry = async (req, res) => {
     const allCustomerEntry = await CustomerEntry.find({
       cid: req.params.id,
       uid: req.user.id,
-    }).populate("cid");
+    })
+      .populate("cid")
+      .sort({ delivery_date: -1 });
     if (!allCustomerEntry) {
       return res.json({
         message: "No Customer's Entry Found",
         status: "error",
       });
     }
-    // console.log(allCustomerEntry);
     res.json({ data: allCustomerEntry, status: "success" });
   } catch (error) {
     res.json({ message: error });
@@ -108,17 +109,26 @@ export const getAllCustomerEntryCurrentMonth = async (req, res) => {
 
 export const createCustomerEntry = async (req, res) => {
   try {
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
 
-    const todayEnd = new Date();
-    todayEnd.setHours(23, 59, 59, 999);
+    const parts = formatter.format(new Date());
+
+    const todayStart = new Date(parts);
+    todayStart.setHours(0, 0, 0, 0); // Set to start of day
+
+    const todayEnd = new Date(parts);
+    todayEnd.setHours(23, 59, 59, 999); // Set to end of day
 
     // console.log(todayStart, todayEnd);
     const newCustomerEntry = await CustomerEntry.findOneAndUpdate(
       {
         cid: req.body.cid,
-        createdAt: {
+        delivery_date: {
           $gte: todayStart,
           $lte: todayEnd,
         },
@@ -670,5 +680,126 @@ export const getDashboardData = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// Get today's entries with customer details
+export const getTodayEntries = async (req, res) => {
+  try {
+    const uid = req.user.id; // Get from auth middleware
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+
+    const parts = formatter.format(new Date());
+
+    const todayStart = new Date(parts);
+    todayStart.setHours(0, 0, 0, 0); // Set to start of day
+
+    const todayEnd = new Date(parts);
+    todayEnd.setHours(23, 59, 59, 999); // Set to end of day
+
+    // Single aggregation pipeline - MongoDB does the work!
+    const results = await Customer.aggregate([
+      // Match only active customers for this user
+      {
+        $match: {
+          uid: new mongoose.Types.ObjectId(uid),
+          status: "active",
+        },
+      },
+
+      // Lookup today's entries
+      {
+        $lookup: {
+          from: "customerentries",
+          let: { customerId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$cid", "$$customerId"] },
+                    { $gte: ["$delivery_date", todayStart] },
+                    { $lte: ["$delivery_date", todayEnd] },
+                  ],
+                },
+              },
+            },
+          ],
+          as: "todayEntry",
+        },
+      },
+
+      // Add computed fields
+      {
+        $addFields: {
+          hasEntryToday: { $gt: [{ $size: "$todayEntry" }, 0] },
+          todayEntryDetails: { $arrayElemAt: ["$todayEntry", 0] },
+        },
+      },
+
+      // Sort by delivery sequence
+      {
+        $sort: { delivery_sequence_number: 1 },
+      },
+
+      // Project only needed fields
+      {
+        $project: {
+          _id: 1,
+          cname: 1,
+          cphone_number: 1,
+          caddress: 1,
+          bottle_price: 1,
+          delivery_sequence_number: 1,
+          hasEntryToday: 1,
+          todayEntryDetails: {
+            _id: 1,
+            bottle_count: 1,
+            delivery_status: 1,
+            delivery_date: 1,
+          },
+        },
+      },
+    ]);
+
+    // Separate pending and completed
+    const pending = results.filter((r) => !r.hasEntryToday);
+    const completed = results.filter((r) => r.hasEntryToday);
+
+    // Calculate statistics
+    const stats = {
+      total: results.length,
+      pending: pending.length,
+      completed: completed.length,
+      totalBottles: completed.reduce(
+        (sum, c) => sum + (c.todayEntryDetails?.bottle_count || 0),
+        0
+      ),
+      totalRevenue: completed.reduce(
+        (sum, c) =>
+          sum + (c.todayEntryDetails?.bottle_count || 0) * c.bottle_price,
+        0
+      ),
+    };
+
+    res.json({
+      success: true,
+      data: {
+        pending,
+        completed,
+        stats,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching today entries:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
   }
 };
