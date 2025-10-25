@@ -72,7 +72,6 @@ function App() {
 
   return (
     <>
-      <PageTracker />
       <UserProvider>
         <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
           <SkeletonTheme
@@ -80,6 +79,7 @@ function App() {
             highlightColor={`${mediaQuery.matches ? "#525252" : ""}`}
           >
             <BrowserRouter>
+              <PageTracker />
               <Routes>
                 <Route
                   path="/"
