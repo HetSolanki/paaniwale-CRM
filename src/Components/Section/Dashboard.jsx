@@ -31,12 +31,11 @@ export function Dashboard() {
     retry: 1,
   });
 
-  console.log(data);
   useEffect(() => {
     if (!localStorage.getItem("token")) {
       navigate("/signin");
     }
-  }, [navigate]);
+  }, []);
 
   const transformedTopCustomers =
     data?.topCustomers?.map((customer, index) => ({

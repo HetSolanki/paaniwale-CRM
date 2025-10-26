@@ -259,7 +259,7 @@ export const getCustomerInvoice = async (req, res) => {
       },
       {
         $sort: {
-          createdAt: 1, // Sort by createdAt in descending order
+          delivery_date: 1,
         },
       },
       {
