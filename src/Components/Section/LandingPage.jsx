@@ -1765,8 +1765,7 @@ const LandingPage = () => {
             <div className="text-gray-400 text-sm mb-4 md:mb-0">
               <p>
                 &copy; {new Date().getFullYear()} Paani Wale™. All Rights
-                Reserved. | Built with ❤️ for Water Suppliers
-                Inc
+                Reserved. | Built with ❤️ for Water Suppliers Inc
               </p>
             </div>
             <div className="flex space-x-6 text-sm">

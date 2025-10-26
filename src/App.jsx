@@ -81,10 +81,6 @@ function App() {
             <BrowserRouter>
               <PageTracker />
               <Routes>
-                <Route
-                  path="/"
-                  element={<Navigate to={defaultRoute} replace />}
-                />
 
                 {/* User Routes */}
                 <Route path="/dashboard" element={<Dashboard />} />
@@ -141,7 +137,7 @@ function App() {
                 />
 
                 {/* Common Routes */}
-                <Route path="/mainpage" element={<LandingPage />} />
+                <Route path="/" element={<LandingPage />} />
                 <Route
                   path="/profile"
                   element={
@@ -183,7 +179,7 @@ function App() {
                   element={<UnderConstructionPage />}
                 />
 
-                <Route path="*" element={<Navigate to="/404" />} />
+                <Route path="*" element={<Error />} />
               </Routes>
             </BrowserRouter>
           </SkeletonTheme>
