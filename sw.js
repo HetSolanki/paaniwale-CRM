@@ -1,5 +1,5 @@
 const CACHE_NAME = "paaniwale-v1";
-const urlsToCache = ["/", "index.html", "icons/apple-icon-180.png"];
+const urlsToCache = ["/", "index.html", "/apple-icon-180.png"];
 
 // Install event - cache resources
 self.addEventListener("install", (event) => {
