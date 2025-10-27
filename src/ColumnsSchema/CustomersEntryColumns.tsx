@@ -1,12 +1,12 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, ClipboardCheckIcon, ClipboardXIcon } from "lucide-react";
+import { ArrowUpDown, Check, X, Plus, Minus } from "lucide-react";
 import { Button } from "../Components/UI/shadcn-UI/button";
 import { addcustomerEntry } from "../Handlers/AddcustomerEntryHandler";
 import { Input } from "@/Components/UI/shadcn-UI/input";
 import { toast, ToastContainer } from "react-toastify";
 import React from "react";
-import styled from "styled-components";
 import { useQueryClient } from "@tanstack/react-query";
+import { Badge } from "@/Components/UI/shadcn-UI/badge";
 
 export type Customer = {
   cname: string;
@@ -48,9 +48,7 @@ const handleEntry = async (
             queryKey: ["allCustomerEntries", customer._id],
           });
 
-          // Dispatch custom event to refresh CustomerEntry component
           window.dispatchEvent(new CustomEvent("customerEntryAdded"));
-
           setCustomers((prev) => prev.filter((c) => c._id !== customer._id));
         } else {
           toast.error("Entry could not be added", {
@@ -87,9 +85,7 @@ const handleEntry = async (
       queryClient.invalidateQueries({ queryKey: ["paymentdetails"] });
       queryClient.invalidateQueries({ queryKey: ["customersEntries"] });
 
-      // Dispatch custom event to refresh CustomerEntry component
       window.dispatchEvent(new CustomEvent("customerEntryAdded"));
-
       setCustomers((prev) => prev.filter((c) => c._id !== customer._id));
     } else {
       toast.error("Entry could not be added", {
@@ -104,59 +100,80 @@ export const columns: ColumnDef<Customer>[] = [
     accessorKey: "delivery_sequence_number",
     header: ({ column }) => {
       return (
-        <div className="text-left">
-          <Button
-            variant="ghost"
-            className="px-0"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Sr
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-1 sm:px-2 hover:bg-transparent hidden sm:flex"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          #
+          <ArrowUpDown className="ml-1 sm:ml-1.5 h-3.5 w-3.5" />
+        </Button>
       );
     },
     cell: ({ row }) => (
-      <div className="lowercase text-left">
+      <Badge
+        variant="outline"
+        className="font-mono text-xs hidden sm:inline-flex"
+      >
         {row.getValue("delivery_sequence_number")}
-      </div>
+      </Badge>
     ),
   },
 
   {
     accessorKey: "cname",
-    header: () => <div className="text-left">Customer Name</div>,
+    header: () => (
+      <div className="text-left font-semibold text-xs sm:text-sm">Customer</div>
+    ),
     cell: ({ row }) => (
-      <div className="capitalize text-left">{row.getValue("cname")}</div>
+      <div className="min-w-0 max-w-[120px] sm:max-w-none">
+        <div className="font-medium text-xs sm:text-base truncate">
+          {row.getValue("cname")}
+        </div>
+        {/* Show address on mobile beneath name */}
+        <div className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:hidden line-clamp-1">
+          {row.original.caddress}
+        </div>
+      </div>
     ),
   },
+
   {
     accessorKey: "caddress",
-    header: () => <div className="text-left">Address</div>,
+    header: () => (
+      <div className="text-left font-semibold hidden sm:table-cell">
+        Address
+      </div>
+    ),
     cell: ({ row }) => {
       return (
-        <div className="lowercase text-left">{row.getValue("caddress")}</div>
-      );
-    },
-  },
-  {
-    accessorKey: "bottle_price",
-    header: () => <div className="text-left">Bottle Price</div>,
-    cell: ({ row }) => {
-      return (
-        <div className="text-left">
-          <Input
-            value={row.getValue("bottle_price")}
-            className="w-20 text-center"
-            disabled
-          />
+        <div className="text-muted-foreground text-sm max-w-[200px] truncate hidden sm:table-cell">
+          {row.getValue("caddress")}
         </div>
       );
     },
   },
+
+  {
+    accessorKey: "bottle_price",
+    header: () => (
+      <div className="text-left font-semibold hidden sm:table-cell">Price</div>
+    ),
+    cell: ({ row }) => {
+      return (
+        <Badge variant="secondary" className="font-mono hidden sm:inline-flex">
+          ₹{row.getValue("bottle_price")}
+        </Badge>
+      );
+    },
+  },
+
   {
     header: () => {
-      return <div className="text-left pl-7">Quantity</div>;
+      return (
+        <div className="text-center font-semibold text-xs sm:text-sm">Qty</div>
+      );
     },
     accessorKey: "no_of_bottle",
     id: "no_of_bottle",
@@ -164,121 +181,90 @@ export const columns: ColumnDef<Customer>[] = [
     cell: ({ row }) => {
       const customer = row.original;
       return (
-        <>
-          <div className="flex items-center justify-start space-x-1">
-            <div
-              className="cursor-pointer"
-              onClick={() => {
-                const no_of_bottles = document.getElementById(customer._id);
-                if (no_of_bottles.value === "") {
-                  no_of_bottles.value = 0;
-                }
-                no_of_bottles.value = parseInt(no_of_bottles.value) - 1;
-                if (parseInt(no_of_bottles.value) < 0) {
-                  no_of_bottles.value = 0;
-                }
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="size-6"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm3 10.5a.75.75 0 0 0 0-1.5H9a.75.75 0 0 0 0 1.5h6Z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
+        <div className="flex items-center justify-center gap-0.5 sm:gap-1.5">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8 sm:h-8 sm:w-8 rounded-full shrink-0 active:scale-95 transition-transform"
+            onClick={() => {
+              const no_of_bottles = document.getElementById(customer._id);
+              if (no_of_bottles.value === "") {
+                no_of_bottles.value = 0;
+              }
+              no_of_bottles.value = Math.max(
+                0,
+                parseInt(no_of_bottles.value) - 1
+              );
+            }}
+          >
+            <Minus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+          </Button>
 
-            <Input
-              id={customer._id}
-              className="w-14 remove-arrow"
-              type="number"
-              step={1}
-              defaultValue={0}
-            />
-            <div
-              className="cursor-pointer"
-              onClick={() => {
-                const no_of_bottles = document.getElementById(customer._id);
-                if (no_of_bottles.value === "") {
-                  no_of_bottles.value = 0;
-                }
-                no_of_bottles.value = parseInt(no_of_bottles.value) + 1;
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="size-6"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-          </div>
+          <Input
+            id={customer._id}
+            className="w-10 sm:w-14 h-8 sm:h-8 text-center font-bold text-sm sm:text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            type="number"
+            step={1}
+            defaultValue={0}
+            inputMode="numeric"
+          />
+
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8 sm:h-8 sm:w-8 rounded-full shrink-0 active:scale-95 transition-transform"
+            onClick={() => {
+              const no_of_bottles = document.getElementById(customer._id);
+              if (no_of_bottles.value === "") {
+                no_of_bottles.value = 0;
+              }
+              no_of_bottles.value = parseInt(no_of_bottles.value) + 1;
+            }}
+          >
+            <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+          </Button>
           <ToastContainer />
-        </>
+        </div>
       );
     },
   },
+
   {
-    header: "Actions",
+    header: () => (
+      <div className="text-center font-semibold text-xs sm:text-sm">Action</div>
+    ),
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
       const [customers, setCustomers] = React.useState<Customer[]>([]);
       const queryClient = useQueryClient();
       const customer = row.original;
-      const ResponsiveStack = styled.div`
-        display: flex;
-        flex-direction: row;
-        gap: 8px;
 
-        @media (max-width: 600px) {
-          flex-direction: column;
-          margin-left: -10px;
-        }
-      `;
       return (
-        <>
-          <ResponsiveStack>
-            <Button
-              size="icon"
-              className="h-8 gap-1 inl"
-              onClick={() =>
-                handleEntry(customer, "Present", setCustomers, queryClient)
-              }
-            >
-              <ClipboardCheckIcon />
-            </Button>
-            <Button
-              size="icon"
-              className="h-8 gap-1"
-              onClick={() => {
-                handleEntry(customer, "Absent", setCustomers, queryClient);
-              }}
-            >
-              <ClipboardXIcon />
-            </Button>
-            {/* <Button
-              size="icon"
-              className="h-8 gap-1"
-              onClick={() => {
-                alert(customer.cname);
-              }}
-            >
-              <EyeIcon />
-            </Button> */}
-          </ResponsiveStack>
-        </>
+        <div className="flex flex-row items-center justify-center gap-1">
+          <Button
+            size="icon"
+            variant="default"
+            className="h-8 w-8 sm:h-8 sm:w-8 bg-green-600 hover:bg-green-700 active:scale-95 transition-transform"
+            onClick={() =>
+              handleEntry(customer, "Present", setCustomers, queryClient)
+            }
+            title="Mark as Present"
+          >
+            <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          </Button>
+          <Button
+            size="icon"
+            variant="destructive"
+            className="h-8 w-8 sm:h-8 sm:w-8 active:scale-95 transition-transform"
+            onClick={() => {
+              handleEntry(customer, "Absent", setCustomers, queryClient);
+            }}
+            title="Mark as Absent"
+          >
+            <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          </Button>
+        </div>
       );
     },
   },
