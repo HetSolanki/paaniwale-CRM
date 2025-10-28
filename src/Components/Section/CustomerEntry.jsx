@@ -19,6 +19,8 @@ import {
   Eye,
   Calendar,
   Package,
+  TrendingUp,
+  Users,
 } from "lucide-react";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import { useEffect, useState } from "react";
@@ -56,8 +58,8 @@ export default function CustomerEntry() {
   const { data: customers } = useQuery({
     queryKey: ["customersEntries"],
     queryFn: fetchTodaysEntries,
-    enabled: !!localStorage.getItem("token"), // Only fetch if token exists
-    staleTime: 3 * 60 * 1000, // 3 minutes
+    enabled: !!localStorage.getItem("token"),
+    staleTime: 3 * 60 * 1000,
     retry: 2,
   });
 
@@ -143,7 +145,7 @@ export default function CustomerEntry() {
     queryKey: ["allCustomerEntries", selectedCustomer?._id],
     queryFn: async () => await getAllCustomerEntries(selectedCustomer._id),
     enabled: viewEntriesDialogOpen && !!selectedCustomer?._id,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
   const handleViewAllEntries = async (customer) => {
@@ -156,241 +158,314 @@ export default function CustomerEntry() {
       baseColor={`${theme === "dark" ? "#1c1c1c" : ""}`}
       highlightColor={`${theme === "dark" ? "#525252" : ""}`}
     >
-      <div>
+      <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="p-2 py-4 sm:p-8">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardDescription className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  Pending Entries
-                </CardDescription>
-                <CardTitle className="text-3xl">
-                  {customers?.stats?.pending}
-                </CardTitle>
-              </CardHeader>
-            </Card>
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardDescription className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  Completed Today
-                </CardDescription>
-                <CardTitle className="text-3xl text-green-600">
-                  {customers?.stats?.completed}
-                </CardTitle>
-              </CardHeader>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardDescription>Total Bottles Delivered</CardDescription>
-                <CardTitle className="text-3xl">
-                  {customers?.stats?.totalBottles}
-                </CardTitle>
-              </CardHeader>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardDescription className="flex items-center gap-2">
-                  <Package className="h-4 w-4" />
-                  Quick Actions
-                </CardDescription>
-                <Button
-                  onClick={handleNavigate}
-                  className="w-full mt-2"
-                  variant="outline"
-                >
-                  View All Entries
-                  <ArrowUpRight className="h-4 w-4 ml-2" />
-                </Button>
-              </CardHeader>
-            </Card>
+        {/* Mobile-Optimized Container */}
+        <div className="pb-6 sm:pb-8">
+          {/* Header Section - Mobile Optimized */}
+          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b px-4 py-3 sm:px-6 sm:py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+                  Customer Entries
+                </h1>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                  {new Date().toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                onClick={handleNavigate}
+                className="h-9 px-3 sm:px-4 gap-1.5"
+              >
+                <span className="hidden sm:inline">View All</span>
+                <span className="sm:hidden">All</span>
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
 
-          {/* Pending Entries Section */}
-          {customers?.pending.length > 0 && (
-            <Card className="mb-6">
-              <CardHeader className="flex flex-row items-center px-4 sm:p-6">
-                <div className="grid gap-2">
-                  <CardTitle className="text-xl sm:text-2xl flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-orange-500" />
-                    Pending Customer Entries
-                    <Badge variant="secondary" className="ml-2">
-                      {customers?.pending.length}
-                    </Badge>
-                  </CardTitle>
-                  <CardDescription className="hidden sm:block">
-                    Customers waiting for today&apos;s delivery entry
-                  </CardDescription>
-                </div>
-                <Button
-                  size="sm"
-                  className="ml-auto gap-1 self-start"
-                  onClick={handleNavigate}
-                  disabled={customers?.isLoading}
-                >
-                  View All
-                  <ArrowUpRight className="h-4 w-4" />
-                </Button>
-              </CardHeader>
+          {/* Stats Cards - Mobile Grid */}
+          <div className="px-4 pt-4 sm:px-6 sm:pt-6">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 mb-4 sm:mb-6">
+              {/* Pending Card */}
+              <Card className="overflow-hidden">
+                <CardContent className="p-4 sm:p-5">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+                        <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <p className="text-xs sm:text-sm font-medium">
+                          Pending
+                        </p>
+                      </div>
+                      <p className="text-2xl sm:text-3xl font-bold tracking-tight">
+                        {customers?.stats?.pending || 0}
+                      </p>
+                    </div>
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
+                      <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-              <CardContent className="px-3 sm:p-6">
-                {customers?.isLoading ? (
-                  <Skeleton className="h-[300px]" enableAnimation={true} />
-                ) : (
-                  <DataTable data={customers?.pending} columns={columns} />
-                )}
-              </CardContent>
-            </Card>
-          )}
+              {/* Completed Card */}
+              <Card className="overflow-hidden">
+                <CardContent className="p-4 sm:p-5">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+                        <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <p className="text-xs sm:text-sm font-medium">Done</p>
+                      </div>
+                      <p className="text-2xl sm:text-3xl font-bold tracking-tight text-green-600">
+                        {customers?.stats?.completed || 0}
+                      </p>
+                    </div>
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+                      <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-          {/* Completed Entries Section */}
-          {customers?.completed.length > 0 && (
-            <Card>
-              <CardHeader className="flex flex-row items-center px-4 sm:p-6 bg-green-50 dark:bg-green-950">
-                <div className="grid gap-2">
-                  <CardTitle className="text-xl sm:text-2xl flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    Completed Entries Today
-                    <Badge variant="default" className="ml-2 bg-green-600">
-                      {customers?.completed.length}
-                    </Badge>
-                  </CardTitle>
-                  <CardDescription className="hidden sm:block">
-                    Customers with completed deliveries today
-                  </CardDescription>
-                </div>
-              </CardHeader>
+              {/* Total Bottles Card */}
+              <Card className="overflow-hidden">
+                <CardContent className="p-4 sm:p-5">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+                        <Package className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <p className="text-xs sm:text-sm font-medium">
+                          Bottles
+                        </p>
+                      </div>
+                      <p className="text-2xl sm:text-3xl font-bold tracking-tight text-blue-600">
+                        {customers?.stats?.totalBottles || 0}
+                      </p>
+                    </div>
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+                      <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-              <CardContent className="px-3 sm:p-6">
-                <div className="space-y-4">
-                  {customers?.completed.map((customer) => (
-                    <div
-                      key={customer._id}
-                      className="flex items-center justify-between p-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors"
+              {/* Total Customers Card */}
+              <Card className="overflow-hidden">
+                <CardContent className="p-4 sm:p-5">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+                        <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <p className="text-xs sm:text-sm font-medium">Total</p>
+                      </div>
+                      <p className="text-2xl sm:text-3xl font-bold tracking-tight text-purple-600">
+                        {(customers?.stats?.pending || 0) +
+                          (customers?.stats?.completed || 0)}
+                      </p>
+                    </div>
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center">
+                      <Users className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Pending Entries Section - Mobile Optimized */}
+            {customers?.pending?.length > 0 && (
+              <Card className="mb-4 sm:mb-6 overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950/50 dark:to-orange-900/30 border-b px-4 py-3 sm:px-6 sm:py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-orange-500 flex items-center justify-center">
+                        <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-base sm:text-lg font-semibold">
+                          Pending Deliveries
+                        </CardTitle>
+                        <CardDescription className="text-xs sm:text-sm mt-0.5">
+                          Awaiting today&apos;s entry
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <Badge
+                      variant="secondary"
+                      className="h-6 px-2 text-xs font-semibold"
                     >
-                      <div className="flex items-center gap-3 flex-1">
-                        <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm sm:text-base line-through">
-                            {customer.cname}
+                      {customers.pending.length}
+                    </Badge>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="p-0">
+                  {customers?.isLoading ? (
+                    <div className="p-4">
+                      <Skeleton className="h-[300px]" enableAnimation={true} />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="p-6">
+                        <DataTable data={customers.pending} columns={columns} />
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Completed Entries Section - Mobile Optimized */}
+            {customers?.completed?.length > 0 && (
+              <Card className="overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-100 dark:from-green-950/50 dark:to-emerald-900/30 border-b px-4 py-3 sm:px-6 sm:py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-green-600 flex items-center justify-center">
+                        <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-base sm:text-lg font-semibold text-green-700 dark:text-green-400">
+                          Completed Today
+                        </CardTitle>
+                        <CardDescription className="text-xs sm:text-sm mt-0.5">
+                          Successfully delivered
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <Badge className="h-6 px-2 text-xs font-semibold bg-green-600">
+                      {customers.completed.length}
+                    </Badge>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="p-0">
+                  <div className="divide-y">
+                    {customers.completed.map((customer) => (
+                      <div
+                        key={customer._id}
+                        className="p-4 hover:bg-accent/50 transition-colors active:bg-accent"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="mt-0.5">
+                            <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
                           </div>
-                          <div className="text-xs sm:text-sm text-muted-foreground truncate">
-                            {customer.caddress}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-medium text-sm line-through decoration-green-600/40 truncate">
+                                {customer.cname}
+                              </h3>
+                              <Badge
+                                variant="outline"
+                                className="text-xs shrink-0 bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800"
+                              >
+                                #{customer.delivery_sequence_number}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground line-clamp-1 mb-2">
+                              {customer.caddress}
+                            </p>
+                          </div>
+                          <div className="flex gap-1 shrink-0">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8"
+                              onClick={() => handleViewAllEntries(customer)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8"
+                              onClick={() => handleEditEntry(customer)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={() => handleDeleteEntry(customer)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant="outline"
-                          className="text-xs bg-green-50 dark:bg-green-950 whitespace-nowrap"
-                        >
-                          {customer.stats?.totalBottles}{" "}
-                          {customer.stats?.totalBottles === 1
-                            ? "bottle"
-                            : "bottles"}
-                        </Badge>
-                        <span className="hidden sm:inline text-xs text-muted-foreground whitespace-nowrap">
-                          #{customer.delivery_sequence_number}
-                        </span>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8"
-                          onClick={() => handleViewAllEntries(customer)}
-                          title="View all entries"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8"
-                          onClick={() => handleEditEntry(customer)}
-                          title="Edit today's entry"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                          onClick={() => handleDeleteEntry(customer)}
-                          title="Delete today's entry"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Empty State */}
-          {!customers?.isLoading &&
-            customers?.stats?.pending === 0 &&
-            customers?.stats?.completed === 0 && (
-              <Card>
-                <CardHeader className="px-4 sm:p-6">
-                  <CardTitle className="text-xl sm:text-2xl">
-                    Customer Entry
-                  </CardTitle>
-                  <CardDescription className="hidden sm:block">
-                    No customers found. Add customers to start tracking
-                    deliveries.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="px-3 sm:p-6">
-                  <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
-                    <Clock className="h-16 w-16 mb-4" />
-                    <p className="text-lg font-medium">No customers yet</p>
-                    <p className="text-sm">
-                      Add customers to start tracking entries
-                    </p>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
             )}
+
+            {/* Empty State - Mobile Optimized */}
+            {!customers?.isLoading &&
+              customers?.stats?.pending === 0 &&
+              customers?.stats?.completed === 0 && (
+                <Card className="overflow-hidden">
+                  <CardContent className="p-8 sm:p-12">
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-muted flex items-center justify-center mb-4">
+                        <Clock className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground" />
+                      </div>
+                      <h3 className="text-lg sm:text-xl font-semibold mb-2">
+                        No entries yet
+                      </h3>
+                      <p className="text-sm text-muted-foreground max-w-sm">
+                        Add customers to start tracking their daily deliveries
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+          </div>
         </div>
 
-        {/* Edit Entry Dialog */}
+        {/* Edit Entry Dialog - Mobile Optimized */}
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-          <DialogContent className="max-w-[95vw] sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Edit Customer Entry</DialogTitle>
-              <DialogDescription>
-                Update the bottle count for {selectedCustomer?.cname}
+          <DialogContent className="w-[calc(100%-2rem)] max-w-md rounded-lg">
+            <DialogHeader className="text-left">
+              <DialogTitle className="text-lg">Edit Entry</DialogTitle>
+              <DialogDescription className="text-sm">
+                Update bottle count for {selectedCustomer?.cname}
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="customer-name">Customer Name</Label>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="customer-name" className="text-sm font-medium">
+                  Customer Name
+                </Label>
                 <Input
                   id="customer-name"
                   value={selectedCustomer?.cname || ""}
                   disabled
-                  className="bg-muted"
+                  className="bg-muted h-10"
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="bottle-count">Bottle Count</Label>
+              <div className="space-y-2">
+                <Label htmlFor="bottle-count" className="text-sm font-medium">
+                  Bottle Count
+                </Label>
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
                     size="icon"
                     variant="outline"
+                    className="h-12 w-12 shrink-0"
                     onClick={() =>
                       setEditBottleCount((prev) => Math.max(0, prev - 1))
                     }
                   >
-                    -
+                    <span className="text-xl">−</span>
                   </Button>
                   <Input
                     id="bottle-count"
@@ -402,31 +477,32 @@ export default function CustomerEntry() {
                         Math.max(0, parseInt(e.target.value) || 0)
                       )
                     }
-                    className="text-center"
+                    className="text-center text-lg font-semibold h-12"
                   />
                   <Button
                     type="button"
                     size="icon"
                     variant="outline"
+                    className="h-12 w-12 shrink-0"
                     onClick={() => setEditBottleCount((prev) => prev + 1)}
                   >
-                    +
+                    <span className="text-xl">+</span>
                   </Button>
                 </div>
               </div>
             </div>
-            <DialogFooter className="gap-2 sm:gap-0">
+            <DialogFooter className="flex-col sm:flex-row gap-2">
               <Button
                 variant="outline"
                 onClick={() => setEditDialogOpen(false)}
-                className="w-full sm:w-auto"
+                className="w-full h-11"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleUpdateEntry}
                 disabled={editBottleCount < 0}
-                className="w-full sm:w-auto"
+                className="w-full h-11"
               >
                 Update Entry
               </Button>
@@ -434,29 +510,29 @@ export default function CustomerEntry() {
           </DialogContent>
         </Dialog>
 
-        {/* View All Entries Dialog */}
+        {/* View All Entries Dialog - Mobile Optimized */}
         <Dialog
           open={viewEntriesDialogOpen}
           onOpenChange={setViewEntriesDialogOpen}
         >
-          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[85vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
+          <DialogContent className="w-[calc(100%-2rem)] max-w-2xl max-h-[85vh] rounded-lg p-0">
+            <DialogHeader className="px-4 pt-4 sm:px-6 sm:pt-6 pb-4 border-b">
+              <DialogTitle className="flex items-center gap-2 text-lg">
                 <Package className="h-5 w-5" />
-                All Entries - {selectedCustomer?.cname}
+                Delivery History
               </DialogTitle>
-              <DialogDescription>
-                Complete delivery history for this customer
+              <DialogDescription className="text-sm">
+                {selectedCustomer?.cname}
               </DialogDescription>
             </DialogHeader>
-            <div className="py-4">
+            <div className="overflow-y-auto max-h-[calc(85vh-8rem)] px-4 sm:px-6 py-4">
               {loadingEntries ? (
                 <div className="flex items-center justify-center h-40">
                   <Skeleton className="h-full w-full" enableAnimation={true} />
                 </div>
               ) : customerAllEntries?.length > 0 ? (
-                <div className="space-y-3">
-                  {customerAllEntries?.map((entry, index) => {
+                <div className="space-y-2 sm:space-y-3">
+                  {customerAllEntries.map((entry, index) => {
                     const entryDate = new Date(entry.delivery_date);
                     const isToday =
                       entryDate.toDateString() === new Date().toDateString();
@@ -464,51 +540,62 @@ export default function CustomerEntry() {
                     return (
                       <div
                         key={entry._id || index}
-                        className={`p-4 border rounded-lg ${
+                        className={`p-3 sm:p-4 rounded-lg border transition-colors ${
                           isToday
-                            ? "bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800"
-                            : "bg-card"
+                            ? "bg-green-50 dark:bg-green-950/50 border-green-200 dark:border-green-800"
+                            : "bg-card hover:bg-accent/50"
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <div>
-                              <div className="font-medium text-sm">
-                                {entryDate.toLocaleDateString("en-US", {
-                                  weekday: "short",
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                })}
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                            <div
+                              className={`h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center shrink-0 ${
+                                isToday
+                                  ? "bg-green-100 dark:bg-green-900/30"
+                                  : "bg-muted"
+                              }`}
+                            >
+                              <Calendar
+                                className={`h-4 w-4 ${
+                                  isToday
+                                    ? "text-green-600"
+                                    : "text-muted-foreground"
+                                }`}
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <p className="font-medium text-sm truncate">
+                                  {entryDate.toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </p>
                                 {isToday && (
-                                  <Badge
-                                    variant="default"
-                                    className="ml-2 bg-green-600 text-xs"
-                                  >
+                                  <Badge className="bg-green-600 text-[10px] h-5 px-1.5">
                                     Today
                                   </Badge>
                                 )}
                               </div>
-                              <div className="text-xs text-muted-foreground mt-1">
-                                Status:{" "}
+                              <p className="text-xs text-muted-foreground">
                                 <span
                                   className={
                                     entry.delivery_status === "Present"
-                                      ? "text-green-600 font-medium"
-                                      : "text-orange-600 font-medium"
+                                      ? "text-green-600 dark:text-green-400 font-medium"
+                                      : "text-orange-600 dark:text-orange-400 font-medium"
                                   }
                                 >
                                   {entry.delivery_status}
                                 </span>
-                              </div>
+                              </p>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div className="font-semibold text-lg">
+                          <div className="text-right shrink-0">
+                            <div className="font-bold text-lg sm:text-xl">
                               {entry.bottle_count}
                             </div>
-                            <div className="text-xs text-muted-foreground">
+                            <div className="text-[10px] sm:text-xs text-muted-foreground">
                               {entry.bottle_count === 1 ? "bottle" : "bottles"}
                             </div>
                           </div>
@@ -519,16 +606,16 @@ export default function CustomerEntry() {
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
-                  <Package className="h-12 w-12 mb-2" />
+                  <Package className="h-12 w-12 mb-2 opacity-50" />
                   <p className="text-sm">No entries found</p>
                 </div>
               )}
             </div>
-            <DialogFooter>
+            <DialogFooter className="px-4 pb-4 sm:px-6 sm:pb-6 border-t pt-4">
               <Button
                 variant="outline"
                 onClick={() => setViewEntriesDialogOpen(false)}
-                className="w-full sm:w-auto"
+                className="w-full h-11"
               >
                 Close
               </Button>
