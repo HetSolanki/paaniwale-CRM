@@ -177,7 +177,7 @@ export const partyOrderColumns = [
         header: "Party Name",
         cell: ({ row }) => {
             return (
-                <div className="flex flex-col min-w-[50px] lg:min-w-[200px]">
+                <div className="flex flex-col min-w-[120px] lg:min-w-[200px]">
                     <span className="font-medium text-sm sm:text-base whitespace-nowrap">
                         {row.getValue("party_name")}
                     </span>
