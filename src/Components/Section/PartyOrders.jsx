@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTheme } from "@/Context/ThemeProviderContext ";
 import { useToast } from "@/Components/UI/shadcn-UI/use-toast";
@@ -30,6 +30,11 @@ const PartyOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showInvoice, setShowInvoice] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+
+  // Date filter states
+  const [dateFilter, setDateFilter] = useState("all");
+  const [customDate, setCustomDate] = useState(null);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   // Fetch party orders
   const {
@@ -130,16 +135,95 @@ const PartyOrders = () => {
     refetch();
   };
 
-  // Calculate stats
-  const orders = ordersData?.data || [];
-  const totalOrders = orders.length;
-  const totalBottles = orders.reduce(
+  // Filter orders based on date filter
+  const filteredOrders = useMemo(() => {
+    const orders = ordersData?.data || [];
+
+    if (dateFilter === "all") return orders;
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    return orders.filter((order) => {
+      // Handle both string and Date object formats
+      const orderDate = new Date(order.delivery_date);
+
+      // Check if date is valid
+      if (isNaN(orderDate.getTime())) {
+        return false;
+      }
+
+      const orderDay = new Date(
+        orderDate.getFullYear(),
+        orderDate.getMonth(),
+        orderDate.getDate()
+      );
+
+      switch (dateFilter) {
+        case "today": {
+          return orderDay.getTime() === today.getTime();
+        }
+        case "yesterday": {
+          const yesterday = new Date(today);
+          yesterday.setDate(yesterday.getDate() - 1);
+          return orderDay.getTime() === yesterday.getTime();
+        }
+        case "last7days": {
+          const sevenDaysAgo = new Date(today);
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+          return orderDay >= sevenDaysAgo && orderDay <= today;
+        }
+        case "thisMonth": {
+          return (
+            orderDate.getMonth() === now.getMonth() &&
+            orderDate.getFullYear() === now.getFullYear()
+          );
+        }
+        case "thisYear": {
+          return orderDate.getFullYear() === now.getFullYear();
+        }
+        case "custom": {
+          if (!customDate) return false;
+          const selectedDay = new Date(
+            customDate.getFullYear(),
+            customDate.getMonth(),
+            customDate.getDate()
+          );
+          return orderDay.getTime() === selectedDay.getTime();
+        }
+        default:
+          return true;
+      }
+    });
+  }, [ordersData, dateFilter, customDate]);
+
+  // Calculate stats based on filtered data
+  const totalOrders = filteredOrders.length;
+  const totalBottles = filteredOrders.reduce(
     (sum, order) => sum + (order.total_bottles || 0),
     0
   );
-  const pendingOrders = orders.filter(
+  const pendingOrders = filteredOrders.filter(
     (order) => order.status === "pending"
   ).length;
+
+  // Handle date filter change
+  const handleDateFilterChange = (value) => {
+    setDateFilter(value);
+    if (value !== "custom") {
+      setCustomDate(null);
+      setShowCalendar(false);
+    } else {
+      setShowCalendar(true);
+    }
+  };
+
+  // Reset filters
+  const resetFilters = () => {
+    setDateFilter("all");
+    setCustomDate(null);
+    setShowCalendar(false);
+  };
 
   return (
     <>
@@ -154,7 +238,7 @@ const PartyOrders = () => {
           <div className="pb-6">
             {/* Header Section - Mobile Optimized */}
             <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b px-4 py-3 sm:px-6 sm:py-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
                     <Package className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
@@ -164,6 +248,7 @@ const PartyOrders = () => {
                     Bulk orders for events
                   </p>
                 </div>
+                {/* Add Button for all screen sizes */}
                 <AddPartyOrder onSuccess={handleSuccess} />
               </div>
             </div>
@@ -257,7 +342,7 @@ const PartyOrders = () => {
                               enableAnimation={true}
                             />
                           </div>
-                        ) : orders.length === 0 ? (
+                        ) : (ordersData?.data || []).length === 0 ? (
                           <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-4">
                             <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-muted flex items-center justify-center mb-4">
                               <Package className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground" />
@@ -266,18 +351,24 @@ const PartyOrders = () => {
                               No party orders yet
                             </h3>
                             <p className="text-xs sm:text-sm text-muted-foreground text-center max-w-sm mb-4">
-                              Start by creating your first bulk order for
-                              marriages, functions, or parties
+                              Start by creating your first bulk order for marriages, functions, or parties
                             </p>
                             <AddPartyOrder onSuccess={handleSuccess} />
                           </div>
                         ) : (
                           <div className="p-3 sm:p-6">
                             <DataTable
-                              data={orders}
+                              data={filteredOrders}
                               columns={partyOrderColumns}
                               filterColumn="party_name"
                               filterPlaceholder="Search party name..."
+                              dateFilter={dateFilter}
+                              customDate={customDate}
+                              showCalendar={showCalendar}
+                              setShowCalendar={setShowCalendar}
+                              handleDateFilterChange={handleDateFilterChange}
+                              resetFilters={resetFilters}
+                              setCustomDate={setCustomDate}
                               meta={{
                                 onPreview: handlePreview,
                                 onEdit: handleEdit,
