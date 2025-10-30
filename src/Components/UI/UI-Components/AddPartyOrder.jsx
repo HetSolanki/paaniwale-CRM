@@ -118,7 +118,7 @@ export function AddPartyOrder({ onSuccess }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="h-9 gap-1 rounded-sm">
+        <Button size="sm" className="gap-1 rounded-sm">
           <Plus className="h-3.5 w-3.5" />
           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
             Add Party Order
