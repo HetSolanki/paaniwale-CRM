@@ -11,7 +11,7 @@ import { Tabs, TabsContent } from "@/Components/UI/shadcn-UI/tabs";
 import { TooltipProvider } from "@/Components/UI/shadcn-UI/tooltip";
 import Navbar from "./Navbar";
 import { Addcustomer } from "../UI/UI-Components/Addcustomer";
-import { DataTable } from "@/Components/DataTables/CustomerDataTable";
+import { DataTable } from "@/Components/UI/shadcn-UI/DataTable";
 import InvoiceAll from "./InvoiceAll";
 import ReportPDFGenarator from "./ReportPDFGenarator";
 
@@ -146,10 +146,34 @@ const Customers = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="py-3 px-2 sm:px-4">
-                        <DataTable
-                          data={customersData?.data || []}
-                          columns={columns}
-                        />
+                        {isLoading ? (
+                          <div className="p-4 sm:p-6">
+                            <Skeleton
+                              className="h-[300px]"
+                              enableAnimation={true}
+                            />
+                          </div>
+                        ) : (customersData?.data || []).length === 0 ? (
+                          <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-4">
+                            <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-muted flex items-center justify-center mb-4">
+                              <File className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground" />
+                            </div>
+                            <h3 className="text-base sm:text-lg font-semibold mb-2">
+                              No customers yet
+                            </h3>
+                            <p className="text-xs sm:text-sm text-muted-foreground text-center max-w-sm mb-4">
+                              Start by adding your first customer
+                            </p>
+                            <Addcustomer />
+                          </div>
+                        ) : (
+                          <DataTable
+                            data={customersData?.data || []}
+                            columns={columns}
+                            filterColumn="cname"
+                            filterPlaceholder="Search customer name..."
+                          />
+                        )}
                       </CardContent>
                     </Card>
                   </TabsContent>

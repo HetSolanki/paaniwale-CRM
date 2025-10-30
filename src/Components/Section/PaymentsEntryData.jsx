@@ -37,6 +37,13 @@ const PaymentsEntryData = () => {
   const navigate = useNavigate();
   const [paymentEntrys, setPaymentEntrys] = useState([...intialdata]);
 
+  // Date filter states
+  const [dateFilter, setDateFilter] = useState("all");
+  const [customDate, setCustomDate] = useState(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [receivedcheck, setReceivedcheck] = useState(false);
+  const [pendingcheck, setPendingcheck] = useState(false);
+
   useEffect(() => {
     if (intialdata === undefined || intialdata.length === 0) {
       navigate("/paymentdetails");
@@ -46,7 +53,85 @@ const PaymentsEntryData = () => {
     }
   }, [intialdata, navigate]);
 
-  const pdfdata = paymentEntrys.map((data) => {
+  // Filter payments based on date filter
+  const filteredPayments = useMemo(() => {
+    const payments = paymentEntrys || [];
+
+    if (dateFilter === "all") return payments;
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    return payments.filter((payment) => {
+      const paymentDate = new Date(payment.payment_date);
+
+      if (isNaN(paymentDate.getTime())) {
+        return false;
+      }
+
+      const paymentDay = new Date(
+        paymentDate.getFullYear(),
+        paymentDate.getMonth(),
+        paymentDate.getDate()
+      );
+
+      switch (dateFilter) {
+        case "today": {
+          return paymentDay.getTime() === today.getTime();
+        }
+        case "yesterday": {
+          const yesterday = new Date(today);
+          yesterday.setDate(yesterday.getDate() - 1);
+          return paymentDay.getTime() === yesterday.getTime();
+        }
+        case "last7days": {
+          const sevenDaysAgo = new Date(today);
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+          return paymentDay >= sevenDaysAgo && paymentDay <= today;
+        }
+        case "thisMonth": {
+          return (
+            paymentDate.getMonth() === now.getMonth() &&
+            paymentDate.getFullYear() === now.getFullYear()
+          );
+        }
+        case "thisYear": {
+          return paymentDate.getFullYear() === now.getFullYear();
+        }
+        case "custom": {
+          if (!customDate) return false;
+          const selectedDay = new Date(
+            customDate.getFullYear(),
+            customDate.getMonth(),
+            customDate.getDate()
+          );
+          return paymentDay.getTime() === selectedDay.getTime();
+        }
+        default:
+          return true;
+      }
+    });
+  }, [paymentEntrys, dateFilter, customDate]);
+
+  // Handle date filter change
+  const handleDateFilterChange = (value) => {
+    setDateFilter(value);
+    if (value !== "custom") {
+      setCustomDate(null);
+      setShowCalendar(false);
+    } else {
+      setShowCalendar(true);
+    }
+  };
+
+  // Reset filters
+  const resetFilters = () => {
+    setDateFilter("all");
+    setCustomDate(null);
+    setShowCalendar(false);
+  };
+
+  const pdfdata = filteredPayments.map((data) => {
     return {
       Customer_Name: data?.cid?.cname,
       Phone_Number: data?.cid?.cphone_number,
@@ -83,9 +168,6 @@ const PaymentsEntryData = () => {
       accessorKey: "Payment_Status",
     },
   ];
-
-  const [receivedcheck, setReceivedcheck] = useState(false);
-  const [pendingcheck, setPendingcheck] = useState(false);
 
   const getallfilteredcustomers = (status) => {
     if (status === "Received") {
@@ -218,7 +300,19 @@ const PaymentsEntryData = () => {
                     </CardHeader>
 
                     <CardContent>
-                      <DataTable data={paymentEntrys} columns={columns1} />
+                      <DataTable
+                        data={filteredPayments}
+                        columns={columns1}
+                        filterColumn="cid"
+                        filterPlaceholder="Search customer..."
+                        dateFilter={dateFilter}
+                        customDate={customDate}
+                        showCalendar={showCalendar}
+                        setShowCalendar={setShowCalendar}
+                        handleDateFilterChange={handleDateFilterChange}
+                        resetFilters={resetFilters}
+                        setCustomDate={setCustomDate}
+                      />
                     </CardContent>
 
                     {/* <CardFooter>
