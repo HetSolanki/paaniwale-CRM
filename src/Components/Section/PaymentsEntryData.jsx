@@ -1,4 +1,4 @@
-import { File, ListFilter } from "lucide-react";
+import { File, CheckCircle2, Clock } from "lucide-react";
 import { Button } from "@/Components/UI/shadcn-UI/button";
 import {
   Card,
@@ -7,15 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/Components/UI/shadcn-UI/card";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  // DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/Components/UI/shadcn-UI/dropdown-menu";
+import { Badge } from "@/Components/UI/shadcn-UI/badge";
 import { Tabs, TabsContent } from "@/Components/UI/shadcn-UI/tabs";
 import { TooltipProvider } from "@/Components/UI/shadcn-UI/tooltip";
 import Navbar from "./Navbar";
@@ -53,10 +45,22 @@ const PaymentsEntryData = () => {
     }
   }, [intialdata, navigate]);
 
-  // Filter payments based on date filter
+  // Combined filtering for both date and status
   const filteredPayments = useMemo(() => {
-    const payments = paymentEntrys || [];
+    let payments = paymentEntrys || [];
 
+    // Apply status filter first
+    if (receivedcheck && !pendingcheck) {
+      payments = payments.filter(
+        (payment) => payment.payment_status === "Received"
+      );
+    } else if (pendingcheck && !receivedcheck) {
+      payments = payments.filter(
+        (payment) => payment.payment_status === "Pending"
+      );
+    }
+
+    // Then apply date filter
     if (dateFilter === "all") return payments;
 
     const now = new Date();
@@ -111,7 +115,7 @@ const PaymentsEntryData = () => {
           return true;
       }
     });
-  }, [paymentEntrys, dateFilter, customDate]);
+  }, [paymentEntrys, dateFilter, customDate, receivedcheck, pendingcheck]);
 
   // Handle date filter change
   const handleDateFilterChange = (value) => {
@@ -171,17 +175,14 @@ const PaymentsEntryData = () => {
 
   const getallfilteredcustomers = (status) => {
     if (status === "Received") {
-      const receivedcustomers = intialdata.filter(
-        (customer) => customer.payment_status === "Received"
-      );
-      setPaymentEntrys(receivedcustomers);
+      setReceivedcheck(true);
+      setPendingcheck(false);
     } else if (status === "Pending") {
-      const pendingcustomers = intialdata.filter(
-        (customer) => customer.payment_status === "Pending"
-      );
-      setPaymentEntrys(pendingcustomers);
+      setPendingcheck(true);
+      setReceivedcheck(false);
     } else {
-      setPaymentEntrys(intialdata);
+      setReceivedcheck(false);
+      setPendingcheck(false);
     }
   };
 
@@ -197,63 +198,49 @@ const PaymentsEntryData = () => {
                   <Card x-chunk="dashboard-06-chunk-0">
                     <CardHeader>
                       <CardTitle className="flex-col sm:flex-row sm:flex sm:items-center sm:justify-between">
-                        <span
-                          className="
-                            text-xl
-                            font-semibold
-                            text-primary
-                            sm:text-2xl"
-                        >
+                        <span className="text-xl font-semibold text-primary sm:text-2xl">
                           Payment Entry Data
                         </span>
-                        <div className=" flex mt-5 sm:flex-row items-start sm:items-center gap-2 sm:gap-2">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 gap-1"
-                              >
-                                <ListFilter className="h-3.5 w-3.5" />
-                                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                  Filter
-                                </span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuCheckboxItem
-                                checked={receivedcheck}
-                                onClick={() => {
-                                  setReceivedcheck(!receivedcheck);
-                                  if (!receivedcheck === true) {
-                                    getallfilteredcustomers("Received");
-                                  } else {
-                                    getallfilteredcustomers("All");
-                                  }
-                                }}
-                              >
-                                Received
-                              </DropdownMenuCheckboxItem>
-                              <DropdownMenuCheckboxItem
-                                checked={pendingcheck}
-                                onClick={() => {
-                                  setPendingcheck(!pendingcheck);
-                                  if (!pendingcheck === true) {
-                                    getallfilteredcustomers("Pending");
-                                  } else {
-                                    getallfilteredcustomers("All");
-                                  }
-                                }}
-                              >
-                                Pending
-                              </DropdownMenuCheckboxItem>
-                              {/* <DropdownMenuCheckboxItem>
-                                Archived
-                              </DropdownMenuCheckboxItem> */}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                        <div className="flex mt-5 sm:flex-row items-start sm:items-center gap-2 sm:gap-2">
+                          {/* Status Filter Badges */}
+                          <div className="flex gap-2">
+                            <Badge
+                              variant={receivedcheck ? "default" : "outline"}
+                              className={`cursor-pointer ${
+                                receivedcheck
+                                  ? "bg-emerald-600 hover:bg-emerald-700"
+                                  : "hover:bg-emerald-50"
+                              }`}
+                              onClick={() => {
+                                if (receivedcheck) {
+                                  getallfilteredcustomers("All");
+                                } else {
+                                  getallfilteredcustomers("Received");
+                                }
+                              }}
+                            >
+                              <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                              Received
+                            </Badge>
+                            <Badge
+                              variant={pendingcheck ? "default" : "outline"}
+                              className={`cursor-pointer ${
+                                pendingcheck
+                                  ? "bg-orange-600 hover:bg-orange-700"
+                                  : "hover:bg-orange-50"
+                              }`}
+                              onClick={() => {
+                                if (pendingcheck) {
+                                  getallfilteredcustomers("All");
+                                } else {
+                                  getallfilteredcustomers("Pending");
+                                }
+                              }}
+                            >
+                              <Clock className="h-3.5 w-3.5 mr-1" />
+                              Pending
+                            </Badge>
+                          </div>
                           <PDFDownloadLink
                             document={
                               <ReportPDFGenarator

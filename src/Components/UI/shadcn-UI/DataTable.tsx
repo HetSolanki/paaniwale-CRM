@@ -110,7 +110,7 @@ export function DataTable({
                   <Button variant="outline" className="w-full sm:w-[180px] justify-start text-sm">
                     <Filter className="mr-2 h-4 w-4" />
                     {dateFilter === "all"
-                      ? "All Orders"
+                      ? "All"
                       : dateFilter === "today"
                         ? "Today"
                         : dateFilter === "yesterday"

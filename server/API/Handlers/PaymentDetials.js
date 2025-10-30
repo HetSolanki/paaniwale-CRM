@@ -81,36 +81,22 @@ export const getAllPaymentDetailsCurrentMonth = async (req, res) => {
 
 export const createPaymentEntry = async (req, res) => {
   try {
-    const year = req.body.year || new Date().getFullYear();
-    const month = req.body.month || new Date().getMonth();
+    // Create a new payment entry directly without checking for existing
+    const newPaymentEntry = new PaymentDetail({
+      cid: req.body.cid,
+      uid: req.user.id,
+      amount: req.body.amount,
+      payment_date: req.body.payment_date,
+      payment_status: req.body.payment_status,
+      payment_method: req.body.payment_method || "cash",
+    });
 
-    const monthStart = new Date(year, month, 1);
-    const monthEnd = new Date(year, month + 1, 0, 23, 59, 59, 999);
-
-    // console.log(monthStart, monthEnd);
-
-    const newPaymentEntry = await PaymentDetail.findOneAndUpdate(
-      {
-        cid: req.body.cid,
-        uid: req.user.id,
-        payment_date: {
-          $gte: monthStart.toISOString(),
-          $lte: monthEnd.toISOString(),
-        },
-      },
-      {
-        cid: req.body.cid,
-        uid: req.user.id,
-        amount: req.body.amount,
-        payment_date: req.body.payment_date,
-        payment_status: req.body.payment_status,
-      },
-      { upsert: true, new: true }
-    );
+    await newPaymentEntry.save();
 
     res.json({ data: newPaymentEntry, status: "success" });
   } catch (error) {
-    res.json({ error });
+    console.error("Error creating payment entry:", error);
+    res.json({ error: error.message, status: "error" });
   }
 };
 
