@@ -39,6 +39,10 @@ const customerSchema = new mongoose.Schema(
     notes: {
       type: String,
     },
+    phone_verification_status: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

@@ -13,6 +13,7 @@ import {
   getDashboardData,
   getAllCustomerInvoice,
   getAllCustomerEntryAdmin,
+  getTodayEntries,
 } from "../Handlers/CustomerEntry.js";
 import { inputErrorHandler } from "../Module/middleware.js";
 import cors from "cors";
@@ -80,5 +81,7 @@ router.get("/getCustomerInvoice/:id", protect, getCustomerInvoice);
 router.get("/getAllCustomerInvoice", protect, getAllCustomerInvoice);
 
 router.get("/getdashboarddata/", protect, getDashboardData);
+
+router.get("/getTodaysEntries/", protect, getTodayEntries);
 
 export default router;

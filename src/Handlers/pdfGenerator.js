@@ -87,15 +87,27 @@ export const pdfGenerator = (
 
   for (let i = 0; i < maxRows; i++) {
     if (firstPartCustomers?.[i]) {
-      pdf.text(firstPartCustomers[i].delivery_date, 15, yOffset);
+      pdf.text(
+        firstPartCustomers[i].delivery_date.toString().split("T")[0],
+        15,
+        yOffset
+      );
       pdf.text(String(firstPartCustomers[i].bottle_count), 45, yOffset);
     }
     if (secondPartCustomers?.[i]) {
-      pdf.text(secondPartCustomers[i].delivery_date, 85, yOffset);
+      pdf.text(
+        secondPartCustomers[i].delivery_date.toString().split("T")[0],
+        85,
+        yOffset
+      );
       pdf.text(String(secondPartCustomers[i].bottle_count), 115, yOffset);
     }
     if (thirdPartCustomers?.[i]) {
-      pdf.text(thirdPartCustomers[i].delivery_date, 145, yOffset);
+      pdf.text(
+        thirdPartCustomers[i].delivery_date.toString().split("T")[0],
+        145,
+        yOffset
+      );
       pdf.text(String(thirdPartCustomers[i].bottle_count), 175, yOffset);
     }
     yOffset += 7;

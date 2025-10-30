@@ -69,8 +69,8 @@ export const createCustomer = async (req, res) => {
       caddress: req.body.caddress,
       bottle_price: req.body.bottle_price,
       delivery_sequence_number: req.body.delivery_sequence_number,
+      phone_verification_status: req?.body?.phone_verification_status || false,
     });
-
     res.json({ data: newCustomer, status: "success" });
   } catch (error) {
     res.json({ error });
@@ -86,6 +86,7 @@ export const updateCustomer = async (req, res) => {
       caddress: req.body.caddress,
       bottle_price: req.body.bottle_price,
       delivery_sequence_number: req.body.delivery_sequence_number,
+      phone_verification_status: req.body.phone_verification_status
     },
     { new: true }
   );
