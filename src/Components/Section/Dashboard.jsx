@@ -88,10 +88,6 @@ export function Dashboard() {
     })) || [];
 
   // Log dashboard data for debugging
-  console.log("Dashboard Data:", data);
-  console.log("Pending Payment Customers:", data?.pendingPaymentCustomers);
-  console.log("Total Due Amount:", data?.totalDueAmount);
-  console.log("Pending Count:", data?.pendingPaymentCustomersCount);
 
   // Calculate additional stats
   const totalPaidAmount =
