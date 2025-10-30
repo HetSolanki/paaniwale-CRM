@@ -1,4 +1,4 @@
-import { File, ListFilter } from "lucide-react";
+import { File, CheckCircle2, Clock } from "lucide-react";
 import { Button } from "@/Components/UI/shadcn-UI/button";
 import {
   Card,
@@ -7,22 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/Components/UI/shadcn-UI/card";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  // DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/Components/UI/shadcn-UI/dropdown-menu";
+import { Badge } from "@/Components/UI/shadcn-UI/badge";
 import { Tabs, TabsContent } from "@/Components/UI/shadcn-UI/tabs";
 import { TooltipProvider } from "@/Components/UI/shadcn-UI/tooltip";
 import Navbar from "./Navbar";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useEffect, useState } from "react";
-import { DataTable } from "@/Components/DataTables/PaymentEntryDatatable";
+import { useEffect, useState, useMemo } from "react";
+import { DataTable } from "@/Components/UI/shadcn-UI/DataTable";
 import { columns1 } from "@/ColumnsSchema/PaymentsEntryDataColumns";
 import { useLocation, useNavigate } from "react-router-dom";
 import { PDFDownloadLink } from "@react-pdf/renderer";
@@ -37,6 +29,13 @@ const PaymentsEntryData = () => {
   const navigate = useNavigate();
   const [paymentEntrys, setPaymentEntrys] = useState([...intialdata]);
 
+  // Date filter states
+  const [dateFilter, setDateFilter] = useState("all");
+  const [customDate, setCustomDate] = useState(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [receivedcheck, setReceivedcheck] = useState(false);
+  const [pendingcheck, setPendingcheck] = useState(false);
+
   useEffect(() => {
     if (intialdata === undefined || intialdata.length === 0) {
       navigate("/paymentdetails");
@@ -46,7 +45,97 @@ const PaymentsEntryData = () => {
     }
   }, [intialdata, navigate]);
 
-  const pdfdata = paymentEntrys.map((data) => {
+  // Combined filtering for both date and status
+  const filteredPayments = useMemo(() => {
+    let payments = paymentEntrys || [];
+
+    // Apply status filter first
+    if (receivedcheck && !pendingcheck) {
+      payments = payments.filter(
+        (payment) => payment.payment_status === "Received"
+      );
+    } else if (pendingcheck && !receivedcheck) {
+      payments = payments.filter(
+        (payment) => payment.payment_status === "Pending"
+      );
+    }
+
+    // Then apply date filter
+    if (dateFilter === "all") return payments;
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    return payments.filter((payment) => {
+      const paymentDate = new Date(payment.payment_date);
+
+      if (isNaN(paymentDate.getTime())) {
+        return false;
+      }
+
+      const paymentDay = new Date(
+        paymentDate.getFullYear(),
+        paymentDate.getMonth(),
+        paymentDate.getDate()
+      );
+
+      switch (dateFilter) {
+        case "today": {
+          return paymentDay.getTime() === today.getTime();
+        }
+        case "yesterday": {
+          const yesterday = new Date(today);
+          yesterday.setDate(yesterday.getDate() - 1);
+          return paymentDay.getTime() === yesterday.getTime();
+        }
+        case "last7days": {
+          const sevenDaysAgo = new Date(today);
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+          return paymentDay >= sevenDaysAgo && paymentDay <= today;
+        }
+        case "thisMonth": {
+          return (
+            paymentDate.getMonth() === now.getMonth() &&
+            paymentDate.getFullYear() === now.getFullYear()
+          );
+        }
+        case "thisYear": {
+          return paymentDate.getFullYear() === now.getFullYear();
+        }
+        case "custom": {
+          if (!customDate) return false;
+          const selectedDay = new Date(
+            customDate.getFullYear(),
+            customDate.getMonth(),
+            customDate.getDate()
+          );
+          return paymentDay.getTime() === selectedDay.getTime();
+        }
+        default:
+          return true;
+      }
+    });
+  }, [paymentEntrys, dateFilter, customDate, receivedcheck, pendingcheck]);
+
+  // Handle date filter change
+  const handleDateFilterChange = (value) => {
+    setDateFilter(value);
+    if (value !== "custom") {
+      setCustomDate(null);
+      setShowCalendar(false);
+    } else {
+      setShowCalendar(true);
+    }
+  };
+
+  // Reset filters
+  const resetFilters = () => {
+    setDateFilter("all");
+    setCustomDate(null);
+    setShowCalendar(false);
+  };
+
+  const pdfdata = filteredPayments.map((data) => {
     return {
       Customer_Name: data?.cid?.cname,
       Phone_Number: data?.cid?.cphone_number,
@@ -84,22 +173,16 @@ const PaymentsEntryData = () => {
     },
   ];
 
-  const [receivedcheck, setReceivedcheck] = useState(false);
-  const [pendingcheck, setPendingcheck] = useState(false);
-
   const getallfilteredcustomers = (status) => {
     if (status === "Received") {
-      const receivedcustomers = intialdata.filter(
-        (customer) => customer.payment_status === "Received"
-      );
-      setPaymentEntrys(receivedcustomers);
+      setReceivedcheck(true);
+      setPendingcheck(false);
     } else if (status === "Pending") {
-      const pendingcustomers = intialdata.filter(
-        (customer) => customer.payment_status === "Pending"
-      );
-      setPaymentEntrys(pendingcustomers);
+      setPendingcheck(true);
+      setReceivedcheck(false);
     } else {
-      setPaymentEntrys(intialdata);
+      setReceivedcheck(false);
+      setPendingcheck(false);
     }
   };
 
@@ -115,63 +198,49 @@ const PaymentsEntryData = () => {
                   <Card x-chunk="dashboard-06-chunk-0">
                     <CardHeader>
                       <CardTitle className="flex-col sm:flex-row sm:flex sm:items-center sm:justify-between">
-                        <span
-                          className="
-                            text-xl
-                            font-semibold
-                            text-primary
-                            sm:text-2xl"
-                        >
+                        <span className="text-xl font-semibold text-primary sm:text-2xl">
                           Payment Entry Data
                         </span>
-                        <div className=" flex mt-5 sm:flex-row items-start sm:items-center gap-2 sm:gap-2">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 gap-1"
-                              >
-                                <ListFilter className="h-3.5 w-3.5" />
-                                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                  Filter
-                                </span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuCheckboxItem
-                                checked={receivedcheck}
-                                onClick={() => {
-                                  setReceivedcheck(!receivedcheck);
-                                  if (!receivedcheck === true) {
-                                    getallfilteredcustomers("Received");
-                                  } else {
-                                    getallfilteredcustomers("All");
-                                  }
-                                }}
-                              >
-                                Received
-                              </DropdownMenuCheckboxItem>
-                              <DropdownMenuCheckboxItem
-                                checked={pendingcheck}
-                                onClick={() => {
-                                  setPendingcheck(!pendingcheck);
-                                  if (!pendingcheck === true) {
-                                    getallfilteredcustomers("Pending");
-                                  } else {
-                                    getallfilteredcustomers("All");
-                                  }
-                                }}
-                              >
-                                Pending
-                              </DropdownMenuCheckboxItem>
-                              {/* <DropdownMenuCheckboxItem>
-                                Archived
-                              </DropdownMenuCheckboxItem> */}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                        <div className="flex mt-5 sm:flex-row items-start sm:items-center gap-2 sm:gap-2">
+                          {/* Status Filter Badges */}
+                          <div className="flex gap-2">
+                            <Badge
+                              variant={receivedcheck ? "default" : "outline"}
+                              className={`cursor-pointer ${
+                                receivedcheck
+                                  ? "bg-emerald-600 hover:bg-emerald-700"
+                                  : "hover:bg-emerald-50"
+                              }`}
+                              onClick={() => {
+                                if (receivedcheck) {
+                                  getallfilteredcustomers("All");
+                                } else {
+                                  getallfilteredcustomers("Received");
+                                }
+                              }}
+                            >
+                              <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                              Received
+                            </Badge>
+                            <Badge
+                              variant={pendingcheck ? "default" : "outline"}
+                              className={`cursor-pointer ${
+                                pendingcheck
+                                  ? "bg-orange-600 hover:bg-orange-700"
+                                  : "hover:bg-orange-50"
+                              }`}
+                              onClick={() => {
+                                if (pendingcheck) {
+                                  getallfilteredcustomers("All");
+                                } else {
+                                  getallfilteredcustomers("Pending");
+                                }
+                              }}
+                            >
+                              <Clock className="h-3.5 w-3.5 mr-1" />
+                              Pending
+                            </Badge>
+                          </div>
                           <PDFDownloadLink
                             document={
                               <ReportPDFGenarator
@@ -218,7 +287,19 @@ const PaymentsEntryData = () => {
                     </CardHeader>
 
                     <CardContent>
-                      <DataTable data={paymentEntrys} columns={columns1} />
+                      <DataTable
+                        data={filteredPayments}
+                        columns={columns1}
+                        filterColumn="cid"
+                        filterPlaceholder="Search customer..."
+                        dateFilter={dateFilter}
+                        customDate={customDate}
+                        showCalendar={showCalendar}
+                        setShowCalendar={setShowCalendar}
+                        handleDateFilterChange={handleDateFilterChange}
+                        resetFilters={resetFilters}
+                        setCustomDate={setCustomDate}
+                      />
                     </CardContent>
 
                     {/* <CardFooter>

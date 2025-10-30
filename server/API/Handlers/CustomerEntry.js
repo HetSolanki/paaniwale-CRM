@@ -195,6 +195,37 @@ export const deleteCustomerEntry = async (req, res) => {
 
 export const getCustomerForPayment = async (req, res) => {
   try {
+    const currentDate = new Date();
+    const monthStart = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      1
+    );
+    const monthEnd = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999
+    );
+
+    // First, get all customers with completed payments this month
+    const completedPayments = await mongoose.connection.db
+      .collection("paymentdetails")
+      .find({
+        uid: new mongoose.Types.ObjectId(req.user.id),
+        payment_status: { $in: ["completed", "Received"] },
+        payment_date: {
+          $gte: monthStart.toISOString(),
+          $lte: monthEnd.toISOString(),
+        },
+      })
+      .toArray();
+
+    const completedCustomerIds = completedPayments.map((p) => p.cid.toString());
+
     const allCustomers = await CustomerEntry.aggregate([
       {
         $match: {
@@ -229,10 +260,15 @@ export const getCustomerForPayment = async (req, res) => {
       },
     ]);
 
-    // console.log(allCustomers);
-    return res.json({ message: allCustomers, status: "success" });
+    // Filter out customers with completed payments
+    const pendingCustomers = allCustomers.filter(
+      (customer) => !completedCustomerIds.includes(customer.cid.toString())
+    );
+
+    return res.json({ message: pendingCustomers, status: "success" });
   } catch (error) {
-    res.json({ message: "Error" });
+    console.error("Error in getCustomerForPayment:", error);
+    res.json({ message: "Error", status: "error" });
   }
 };
 
@@ -633,24 +669,76 @@ export const getDashboardData = async (req, res) => {
       uid: userId,
     });
 
-    // Pending Payment Details
-    const pendingPaymentCustomersResult = await PaymentDetail.aggregate([
-      { $match: { uid: userId, payment_status: "Pending" } },
+    // Pending Payment Details - Get customers with deliveries but no completed payment this month
+    const currentDate = new Date();
+    const monthStart = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      1
+    );
+    const monthEnd = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999
+    );
+
+    // Get customers who have completed payments this month
+    const completedPayments = await PaymentDetail.aggregate([
       {
-        $group: {
-          _id: "$cid",
-          totalDue: { $sum: "$amount" },
+        $match: {
+          uid: userId,
+          payment_status: { $in: ["completed", "Received"] },
+          payment_date: {
+            $gte: monthStart.toISOString(),
+            $lte: monthEnd.toISOString(),
+          },
         },
       },
       {
+        $group: {
+          _id: "$cid",
+        },
+      },
+    ]);
+
+    const completedCustomerIds = completedPayments.map((p) => p._id);
+
+    // Get all customers with deliveries but exclude those with completed payments
+    const pendingPaymentCustomersResult = await CustomerEntry.aggregate([
+      { $match: { uid: userId } },
+      {
         $lookup: {
           from: "customers",
-          localField: "_id",
+          localField: "cid",
           foreignField: "_id",
           as: "customerDetails",
         },
       },
       { $unwind: "$customerDetails" },
+      {
+        $addFields: {
+          revenue: {
+            $multiply: ["$bottle_count", "$customerDetails.bottle_price"],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$cid",
+          totalBottle: { $sum: "$bottle_count" },
+          totalDue: { $sum: "$revenue" },
+          customerDetails: { $first: "$customerDetails" },
+        },
+      },
+      {
+        $match: {
+          _id: { $nin: completedCustomerIds },
+        },
+      },
       {
         $project: {
           _id: 0,
@@ -659,6 +747,7 @@ export const getDashboardData = async (req, res) => {
           customerDetails: 1,
         },
       },
+      { $sort: { totalDue: -1 } },
     ]);
 
     const totalDueAmount = pendingPaymentCustomersResult.reduce(

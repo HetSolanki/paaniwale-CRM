@@ -17,6 +17,7 @@ export const addpaymententry = async (data, cid) => {
           amount: data.amount,
           payment_date: data.payment_date,
           payment_status: data.payment_status,
+          payment_method: data.payment_method || "cash",
         }),
       }
     );

@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/Components/UI/shadcn-UI/dialog";
-import { Loader2, FileText, Send } from "lucide-react";
+import { Loader2, FileText, Send, Download } from "lucide-react";
 import { config } from "@/Data/config";
 
 export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
@@ -51,177 +51,331 @@ export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
 
   const generatePDF = () => {
     const pdf = new jsPDF();
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
 
-    // Shop details
-    pdf.setFontSize(24);
-    pdf.setFont("Helvetica-Bold", "bold");
-    pdf.text(`${user?.shop_name || "Shop Name"}`, 15, 15);
-    pdf.setFontSize(16);
-    pdf.setFont("Helvetica-Bold", "bold");
-    pdf.text("Address:", 15, 25);
-    pdf.setFont("Helvetica", "normal");
-    pdf.text(`${user?.shop_address || "Shop Address"}`, 38, 25);
+    // ============ HEADER SECTION ============
+    // Blue header background
+    pdf.setFillColor(37, 99, 235); // Blue-600
+    pdf.rect(0, 0, pageWidth, 40, "F");
+
+    // Company name and logo
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(22);
+    pdf.setFont("helvetica", "bold");
+    pdf.text(user?.shop_name || "Your Shop Name", 15, 15);
+
+    pdf.setFontSize(10);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(user?.shop_address || "Shop Address", 15, 23);
+    pdf.text("Phone: " + (user?.uid?.phone_number || "N/A"), 15, 29);
 
     // Logo
-    const logo = new Image();
-    logo.src = `https://res.cloudinary.com/${config.cloud.name}/image/upload/v1722239069/Dhandha-Assests/paniwala-1300x1300_xks3or.png`;
-    pdf.addImage(logo, "png", 180, 10, 20, 20);
+    try {
+      const logo = new Image();
+      logo.src = `https://res.cloudinary.com/${config.cloud.name}/image/upload/v1722239069/Dhandha-Assests/paniwala-1300x1300_xks3or.png`;
+      pdf.setFillColor(255, 255, 255);
+      pdf.circle(pageWidth - 20, 20, 12, "F");
+      pdf.addImage(logo, "PNG", pageWidth - 28, 12, 16, 16);
+    } catch (error) {
+      console.log("Logo loading error:", error);
+    }
 
-    // Invoice type
-    pdf.setFontSize(20);
-    pdf.setFont("helvetica", "bold");
-    pdf.setTextColor(0, 102, 204);
-    pdf.text("EVENT ORDER INVOICE", 15, 40);
+    // Reset text color
     pdf.setTextColor(0, 0, 0);
 
-    // Invoice details
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Invoice #", 145, 45);
-    pdf.setFont("helvetica", "normal");
-    const invoiceNum = `PO-${order._id.slice(-8).toUpperCase()}`;
-    pdf.text(invoiceNum, 145, 52);
+    // ============ INVOICE TITLE ============
+    let yPos = 50;
 
-    // Party details
-    pdf.setFontSize(16);
+    pdf.setFontSize(18);
     pdf.setFont("helvetica", "bold");
-    pdf.text("Bill to:", 15, 55);
-    pdf.setFontSize(14);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(`${order.party_name}`, 15, 62);
-    pdf.text(`Event: ${order.event_type}`, 15, 69);
-    pdf.text(`${order.party_address}`, 15, 76);
-    if (order.party_location) {
-      pdf.text(`${order.party_location}`, 15, 83);
-    }
-    pdf.text(`${order.party_phone}`, 15, order.party_location ? 90 : 83);
+    pdf.text("PARTY ORDER INVOICE", 15, yPos);
 
-    // Invoice dates
+    // Invoice number box
+    pdf.setDrawColor(200, 200, 200);
+    pdf.setLineWidth(0.5);
+    pdf.rect(pageWidth - 65, yPos - 7, 50, 20);
+
+    pdf.setFontSize(8);
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(100, 100, 100);
+    pdf.text("Invoice Number", pageWidth - 62, yPos - 2);
+
+    pdf.setFontSize(10);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(0, 0, 0);
+    const invoiceNum = "PO-" + order._id.slice(-8).toUpperCase();
+    pdf.text(invoiceNum, pageWidth - 62, yPos + 5);
+
+    // Dates
     const currentDate = new Date();
     const deliveryDate = new Date(order.delivery_date);
 
-    pdf.setFontSize(12);
+    pdf.setFontSize(8);
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(100, 100, 100);
     pdf.text(
-      `Invoice date: ${currentDate.getDate()}-${
-        months[currentDate.getMonth()]
-      }-${currentDate.getFullYear()}`,
-      145,
-      59
-    );
-    pdf.text(
-      `Delivery date: ${deliveryDate.getDate()}-${
-        months[deliveryDate.getMonth()]
-      }-${deliveryDate.getFullYear()}`,
-      145,
-      66
+      "Date: " +
+        currentDate.getDate() +
+        " " +
+        months[currentDate.getMonth()] +
+        " " +
+        currentDate.getFullYear(),
+      pageWidth - 62,
+      yPos + 10
     );
 
-    // Order Details Table
-    let yOffset = 105;
-    pdf.setFontSize(14);
+    // ============ CUSTOMER DETAILS ============
+    yPos = 75;
+
+    // Bill To Section
+    pdf.setDrawColor(220, 220, 220);
+    pdf.setLineWidth(0.3);
+    pdf.rect(15, yPos, 85, 35);
+
+    pdf.setFontSize(9);
     pdf.setFont("helvetica", "bold");
-    pdf.text("Order Details:", 15, yOffset);
-    yOffset += 10;
+    pdf.setTextColor(37, 99, 235);
+    pdf.text("BILL TO", 18, yPos + 6);
 
-    // Table headers
-    pdf.setFontSize(12);
+    pdf.setFontSize(11);
     pdf.setFont("helvetica", "bold");
-    pdf.text("Item", 15, yOffset);
-    pdf.text("Quantity", 100, yOffset);
-    pdf.text("Price/Unit", 130, yOffset);
-    pdf.text("Amount", 170, yOffset);
-
-    yOffset += 7;
-    pdf.setLineWidth(0.5);
-    pdf.line(15, yOffset, 195, yOffset);
-    yOffset += 7;
-
-    // Cold Bottles
-    if (order.cold_bottle_quantity > 0) {
-      pdf.setFont("helvetica", "normal");
-      pdf.text("Cold Bottles", 15, yOffset);
-      pdf.text(order.cold_bottle_quantity.toString(), 100, yOffset);
-      pdf.text(`₹${order.cold_bottle_price}`, 130, yOffset);
-      const coldTotal = order.cold_bottle_quantity * order.cold_bottle_price;
-      pdf.text(`₹${coldTotal}`, 170, yOffset);
-      yOffset += 7;
-    }
-
-    // Normal Bottles
-    if (order.normal_bottle_quantity > 0) {
-      pdf.setFont("helvetica", "normal");
-      pdf.text("Normal Bottles", 15, yOffset);
-      pdf.text(order.normal_bottle_quantity.toString(), 100, yOffset);
-      pdf.text(`₹${order.normal_bottle_price}`, 130, yOffset);
-      const normalTotal =
-        order.normal_bottle_quantity * order.normal_bottle_price;
-      pdf.text(`₹${normalTotal}`, 170, yOffset);
-      yOffset += 7;
-    }
-
-    yOffset += 5;
-    pdf.setLineWidth(0.5);
-    pdf.line(15, yOffset, 195, yOffset);
-    yOffset += 10;
-
-    // Total section
-    pdf.setFontSize(14);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Total Bottles:", 15, yOffset);
-    const totalBottles =
-      (order.cold_bottle_quantity || 0) + (order.normal_bottle_quantity || 0);
-    pdf.text(totalBottles.toString(), 100, yOffset);
-    yOffset += 10;
-
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Grand Total:", 15, yOffset);
-    pdf.setTextColor(0, 128, 0);
-    pdf.text(`Rs. ${order.total_amount}`, 170, yOffset);
     pdf.setTextColor(0, 0, 0);
-    yOffset += 15;
+    pdf.text(order.party_name || "N/A", 18, yPos + 13);
 
-    // Notes
-    if (order.notes) {
-      pdf.setFontSize(12);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Special Instructions:", 15, yOffset);
-      yOffset += 7;
-      pdf.setFont("helvetica", "normal");
-      const splitNotes = pdf.splitTextToSize(order.notes, 180);
-      pdf.text(splitNotes, 15, yOffset);
-      yOffset += splitNotes.length * 7 + 10;
-    }
+    pdf.setFontSize(9);
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(60, 60, 60);
+    pdf.text("Event: " + (order.event_type || "N/A"), 18, yPos + 19);
 
-    // Footer
-    yOffset = Math.max(yOffset, 240);
-    pdf.setFontSize(12);
+    // Address handling with text wrapping
+    const addressLines = pdf.splitTextToSize(order.party_address || "N/A", 75);
+    pdf.text(addressLines, 18, yPos + 24);
+
+    const addressHeight = addressLines.length * 4;
+    pdf.text(
+      "Ph: " + (order.party_phone || "N/A"),
+      18,
+      yPos + 24 + addressHeight
+    );
+
+    // Event Details Section
+    pdf.rect(pageWidth - 70, yPos, 55, 35);
+
+    pdf.setFontSize(9);
     pdf.setFont("helvetica", "bold");
-    pdf.text("Thank you for your business!", 15, yOffset);
-    yOffset += 7;
+    pdf.setTextColor(37, 99, 235);
+    pdf.text("EVENT DETAILS", pageWidth - 67, yPos + 6);
+
+    pdf.setFontSize(8);
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(60, 60, 60);
+    pdf.text("Delivery Date:", pageWidth - 67, yPos + 13);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(
+      deliveryDate.getDate() +
+        " " +
+        months[deliveryDate.getMonth()] +
+        " " +
+        deliveryDate.getFullYear(),
+      pageWidth - 67,
+      yPos + 18
+    );
 
     pdf.setFont("helvetica", "normal");
-    pdf.setTextColor(0, 0, 0, 0.5);
-    pdf.text("For any queries, please contact us:", 15, yOffset);
+    pdf.setTextColor(60, 60, 60);
+    pdf.text("Status:", pageWidth - 67, yPos + 24);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(order.status || "Pending", pageWidth - 67, yPos + 29);
 
-    // QR or Shop image
-    const img = new Image();
-    img.src = user?.image_url || "";
-    if (user?.image_url) {
-      pdf.addImage(img, "png", 130, yOffset + 5, 50, 50);
+    // ============ ORDER ITEMS TABLE ============
+    yPos = 120;
+
+    pdf.setFontSize(12);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(0, 0, 0);
+    pdf.text("Order Details", 15, yPos);
+
+    yPos += 6;
+
+    // Table header
+    pdf.setFillColor(37, 99, 235);
+    pdf.rect(15, yPos, pageWidth - 30, 8, "F");
+
+    pdf.setFontSize(9);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(255, 255, 255);
+    pdf.text("ITEM DESCRIPTION", 18, yPos + 5.5);
+    pdf.text("QTY", pageWidth / 2 - 10, yPos + 5.5);
+    pdf.text("RATE", pageWidth / 2 + 20, yPos + 5.5);
+    pdf.text("AMOUNT", pageWidth - 35, yPos + 5.5);
+
+    yPos += 8;
+    pdf.setTextColor(0, 0, 0);
+
+    // Table border
+    pdf.setDrawColor(220, 220, 220);
+    pdf.setLineWidth(0.3);
+
+    // Cold Bottles Row
+    if (order.cold_bottle_quantity > 0) {
+      pdf.line(15, yPos, pageWidth - 15, yPos);
+
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "normal");
+      pdf.text("Cold Water Bottles (Chilled)", 18, yPos + 5);
+      pdf.text(
+        String(order.cold_bottle_quantity),
+        pageWidth / 2 - 10,
+        yPos + 5
+      );
+      pdf.text(
+        "Rs. " + String(order.cold_bottle_price),
+        pageWidth / 2 + 20,
+        yPos + 5
+      );
+
+      const coldTotal = order.cold_bottle_quantity * order.cold_bottle_price;
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Rs. " + String(coldTotal), pageWidth - 35, yPos + 5);
+
+      yPos += 8;
     }
 
-    pdf.setTextColor(0, 0, 0);
-    pdf.setFontSize(12);
-    yOffset += 10;
-    pdf.text(`${user?.uid?.phone_number || ""}`, 15, yOffset);
-    yOffset += 7;
-    pdf.text(`${user?.uid?.email || ""}`, 15, yOffset);
-    yOffset += 15;
+    // Normal Bottles Row
+    if (order.normal_bottle_quantity > 0) {
+      pdf.line(15, yPos, pageWidth - 15, yPos);
 
-    pdf.setTextColor(0, 0, 0, 0.5);
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "normal");
+      pdf.text("Normal Water Bottles (Room Temp)", 18, yPos + 5);
+      pdf.text(
+        String(order.normal_bottle_quantity),
+        pageWidth / 2 - 10,
+        yPos + 5
+      );
+      pdf.text(
+        "Rs. " + String(order.normal_bottle_price),
+        pageWidth / 2 + 20,
+        yPos + 5
+      );
+
+      const normalTotal =
+        order.normal_bottle_quantity * order.normal_bottle_price;
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Rs. " + String(normalTotal), pageWidth - 35, yPos + 5);
+
+      yPos += 8;
+    }
+
+    // Table bottom border
+    pdf.setDrawColor(200, 200, 200);
+    pdf.setLineWidth(0.5);
+    pdf.line(15, yPos, pageWidth - 15, yPos);
+
+    // ============ TOTALS SECTION ============
+    yPos += 8;
+
+    // Subtotal calculations
+    const totalBottles =
+      (order.cold_bottle_quantity || 0) + (order.normal_bottle_quantity || 0);
+    const subtotal = order.total_amount || 0;
+
+    // Total bottles
+    pdf.setFontSize(10);
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(60, 60, 60);
+    pdf.text("Total Bottles:", pageWidth - 75, yPos);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(String(totalBottles), pageWidth - 35, yPos);
+
+    yPos += 8;
+
+    // Grand Total
+    pdf.setDrawColor(34, 197, 94);
+    pdf.setLineWidth(1);
+    pdf.rect(pageWidth - 80, yPos - 4, 65, 10);
+
+    pdf.setFontSize(12);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(0, 0, 0);
+    pdf.text("GRAND TOTAL:", pageWidth - 77, yPos + 3);
+
+    pdf.setFontSize(13);
+    pdf.setTextColor(22, 163, 74); // Green-600
+    pdf.text("Rs. " + String(subtotal), pageWidth - 35, yPos + 3);
+
+    // ============ SPECIAL INSTRUCTIONS ============
+    if (order.notes && order.notes.trim()) {
+      yPos += 18;
+
+      pdf.setDrawColor(251, 191, 36);
+      pdf.setLineWidth(0.5);
+      pdf.rect(15, yPos, pageWidth - 30, 25);
+
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(161, 98, 7);
+      pdf.text("SPECIAL INSTRUCTIONS", 18, yPos + 6);
+
+      pdf.setFontSize(8);
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(80, 80, 80);
+      const notesLines = pdf.splitTextToSize(order.notes, pageWidth - 40);
+      pdf.text(notesLines, 18, yPos + 12);
+
+      yPos += 25;
+    }
+
+    // ============ FOOTER ============
+    yPos = pageHeight - 40;
+
+    pdf.setDrawColor(220, 220, 220);
+    pdf.setLineWidth(0.3);
+    pdf.line(15, yPos, pageWidth - 15, yPos);
+
+    yPos += 6;
+
+    // Thank you message
+    pdf.setFontSize(11);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(34, 197, 94);
+    pdf.text("Thank you for your business!", 15, yPos);
+
+    yPos += 8;
+
+    // Contact information
+    pdf.setFontSize(8);
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(100, 100, 100);
+    pdf.text("For any queries, please contact:", 15, yPos);
+
+    yPos += 5;
+    pdf.setFontSize(8);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(0, 0, 0);
+    pdf.text("Email: " + (user?.uid?.email || "contact@example.com"), 15, yPos);
+    pdf.text("Phone: " + (user?.uid?.phone_number || "N/A"), 15, yPos + 5);
+
+    // Company branding
+    pdf.setFontSize(7);
     pdf.setFont("helvetica", "italic");
-    pdf.text("http://128.199.19.208:3000/", 15, yOffset);
+    pdf.setTextColor(150, 150, 150);
+    pdf.text("Powered by PaaaniWale", pageWidth / 2 - 25, pageHeight - 8);
+
+    // QR Code or shop image
+    if (user?.image_url) {
+      try {
+        const img = new Image();
+        img.src = user.image_url;
+        pdf.addImage(img, "PNG", pageWidth - 35, yPos - 6, 20, 20);
+      } catch (error) {
+        console.log("QR image error:", error);
+      }
+    }
 
     return pdf;
   };
@@ -280,6 +434,29 @@ export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
         variant: "destructive",
         title: "Error",
         description: error.message || "Failed to generate preview",
+      });
+    }
+  };
+
+  const handleDownload = () => {
+    try {
+      const pdf = generatePDF();
+      const fileName = `Invoice-${order.party_name.replace(
+        /\s+/g,
+        "-"
+      )}-${order._id.slice(-8)}.pdf`;
+      pdf.save(fileName);
+
+      toast({
+        title: "Download Started",
+        description: "Invoice PDF is being downloaded",
+      });
+    } catch (error) {
+      console.error("❌ Error downloading PDF:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to download PDF",
       });
     }
   };
@@ -506,56 +683,99 @@ export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle>Party Order Invoice</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="max-w-[95vw] sm:max-w-5xl max-h-[95vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="px-4 py-3 sm:px-6 sm:py-4 border-b bg-muted/50 shrink-0">
+          <DialogTitle className="text-base sm:text-lg">
+            Party Order Invoice
+          </DialogTitle>
+          <DialogDescription className="text-xs sm:text-sm">
             Preview and send invoice for {order.party_name}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto p-3 sm:p-6 bg-muted/10">
           {pdfUrl ? (
-            <iframe
-              src={pdfUrl}
-              className="w-full h-[500px] border rounded"
-              title="Invoice Preview"
-            />
+            <div className="mx-auto max-w-4xl">
+              <div className="relative rounded-lg overflow-hidden border-2 border-border shadow-2xl bg-white">
+                <iframe
+                  src={`${pdfUrl}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`}
+                  className="w-full h-[500px] sm:h-[600px] lg:h-[700px]"
+                  title="Invoice Preview"
+                  style={{ border: "none" }}
+                />
+              </div>
+            </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-[500px] border rounded bg-muted/30">
-              <FileText className="h-16 w-16 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">
-                Click &quot;Preview&quot; to generate invoice
-              </p>
+            <div className="flex flex-col items-center justify-center h-[500px] sm:h-[600px] border-2 border-dashed rounded-lg bg-background">
+              <div className="flex flex-col items-center gap-4 p-6 text-center max-w-md">
+                <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
+                  <FileText className="h-10 w-10 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    Generate Invoice Preview
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Click the &quot;Preview&quot; button below to generate and
+                    view the professionally formatted invoice PDF
+                  </p>
+                </div>
+              </div>
             </div>
           )}
         </div>
 
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={onClose} disabled={loading}>
-            Close
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={handlePreview}
-            disabled={loading}
-          >
-            <FileText className="mr-2 h-4 w-4" />
-            Preview
-          </Button>
-          <Button onClick={handleSendInvoice} disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Sending...
-              </>
-            ) : (
-              <>
-                <Send className="mr-2 h-4 w-4" />
-                Send via WhatsApp
-              </>
-            )}
-          </Button>
+        <DialogFooter className="px-4 py-3 sm:px-6 sm:py-4 border-t bg-muted/30 gap-2 shrink-0">
+          <div className="flex flex-col sm:flex-row gap-2 w-full">
+            <div className="flex gap-2 flex-1">
+              <Button
+                variant="outline"
+                onClick={onClose}
+                disabled={loading}
+                className="flex-1 sm:flex-none"
+              >
+                Close
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleDownload}
+                disabled={!pdfUrl || loading}
+                className="flex-1 sm:flex-none"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download
+              </Button>
+            </div>
+
+            <div className="flex gap-2 flex-1">
+              <Button
+                variant="secondary"
+                onClick={handlePreview}
+                disabled={loading}
+                className="flex-1"
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                {pdfUrl ? "Refresh" : "Preview"}
+              </Button>
+              <Button
+                onClick={handleSendInvoice}
+                disabled={loading}
+                className="flex-1"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Send WhatsApp
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

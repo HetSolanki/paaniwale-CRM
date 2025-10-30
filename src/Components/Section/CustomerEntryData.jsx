@@ -3,7 +3,6 @@ import { Button } from "@/Components/UI/shadcn-UI/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/Components/UI/shadcn-UI/card";
@@ -20,11 +19,10 @@ import { TooltipProvider } from "@/Components/UI/shadcn-UI/tooltip";
 import Navbar from "./Navbar";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { DatePickerForm } from "../UI/UI-Components/Datepicker";
 import { useEffect, useMemo, useState } from "react";
 import { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { DataTable } from "@/Components/DataTables/CustomerEntryDatadatatable";
+import { DataTable } from "@/Components/UI/shadcn-UI/DataTable";
 import { columns1 } from "@/ColumnsSchema/CustomersEntryDataColums";
 import { useNavigate } from "react-router-dom";
 import { PDFDownloadLink } from "@react-pdf/renderer";
@@ -33,7 +31,6 @@ import { useUser } from "@/Context/UserContext";
 import logo from "@/assets/paniwalalogo.png";
 import { useQuery } from "@tanstack/react-query";
 import { config } from "@/Data/config";
-import { format } from "date-fns";
 
 const CustomerEntryData = () => {
   const { user } = useUser();
@@ -43,6 +40,11 @@ const CustomerEntryData = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [presentcheck, setPresentcheck] = useState(false);
   const [absentcheck, setAbsentcheck] = useState(false);
+
+  // Date filter states
+  const [dateFilter, setDateFilter] = useState("all");
+  const [customDate, setCustomDate] = useState(null);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   const { data: customersQuery } = useQuery({
     queryKey: ["customerEntryData"],
@@ -70,14 +72,85 @@ const CustomerEntryData = () => {
 
   const filteredCustomers = useMemo(() => {
     if (!customers) return [];
-    if (!selectedDate) return customers;
-    return customers.filter((c) => {
-      return (
-        format(c.delivery_date, "yyyy-MM-dd") ===
-        format(selectedDate, "yyyy-MM-dd")
-      );
-    });
-  }, [customers, selectedDate]);
+
+    let result = customers;
+
+    // Apply date filter
+    if (dateFilter !== "all") {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      result = result.filter((c) => {
+        const deliveryDate = new Date(c.delivery_date);
+
+        if (isNaN(deliveryDate.getTime())) {
+          return false;
+        }
+
+        const deliveryDay = new Date(
+          deliveryDate.getFullYear(),
+          deliveryDate.getMonth(),
+          deliveryDate.getDate()
+        );
+
+        switch (dateFilter) {
+          case "today": {
+            return deliveryDay.getTime() === today.getTime();
+          }
+          case "yesterday": {
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            return deliveryDay.getTime() === yesterday.getTime();
+          }
+          case "last7days": {
+            const sevenDaysAgo = new Date(today);
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            return deliveryDay >= sevenDaysAgo && deliveryDay <= today;
+          }
+          case "thisMonth": {
+            return (
+              deliveryDate.getMonth() === now.getMonth() &&
+              deliveryDate.getFullYear() === now.getFullYear()
+            );
+          }
+          case "thisYear": {
+            return deliveryDate.getFullYear() === now.getFullYear();
+          }
+          case "custom": {
+            if (!customDate) return false;
+            const selectedDay = new Date(
+              customDate.getFullYear(),
+              customDate.getMonth(),
+              customDate.getDate()
+            );
+            return deliveryDay.getTime() === selectedDay.getTime();
+          }
+          default:
+            return true;
+        }
+      });
+    }
+
+    return result;
+  }, [customers, dateFilter, customDate]);
+
+  // Handle date filter change
+  const handleDateFilterChange = (value) => {
+    setDateFilter(value);
+    if (value !== "custom") {
+      setCustomDate(null);
+      setShowCalendar(false);
+    } else {
+      setShowCalendar(true);
+    }
+  };
+
+  // Reset filters
+  const resetFilters = () => {
+    setDateFilter("all");
+    setCustomDate(null);
+    setShowCalendar(false);
+  };
 
   useEffect(() => {
     if (!localStorage.getItem("token")) {
@@ -241,17 +314,20 @@ const CustomerEntryData = () => {
                             </Button>
                           </div>
                         </CardTitle>
-                        <CardDescription className="hidden sm:block">
-                          <div className=" mt-4 flex items-center gap-1 float-end">
-                            <DatePickerForm setSelectedDate={setSelectedDate} />
-                          </div>
-                          List of all the customers and their entries
-                        </CardDescription>
                       </CardHeader>
                       <CardContent className="">
                         <DataTable
                           data={filteredCustomers || []}
                           columns={columns1}
+                          filterColumn="cid"
+                          filterPlaceholder="Search customer..."
+                          dateFilter={dateFilter}
+                          customDate={customDate}
+                          showCalendar={showCalendar}
+                          setShowCalendar={setShowCalendar}
+                          handleDateFilterChange={handleDateFilterChange}
+                          resetFilters={resetFilters}
+                          setCustomDate={setCustomDate}
                         />
                       </CardContent>
                     </Card>

@@ -12,5 +12,7 @@ export const GetdashboardData = async () => {
     }
   );
 
-  return data.json();
+  const response = await data.json();
+
+  return response;
 };
