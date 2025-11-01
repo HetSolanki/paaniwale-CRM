@@ -12,31 +12,42 @@ import { Label } from "@/Components/UI/shadcn-UI/label";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { Switch } from "@/Components/UI/shadcn-UI/switch";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
+const formSchema = z
+  .object({
+    currentPassword: z.string().min(6, "Current password is required"),
+    newPassword: z
+      .string()
+      .min(8, "New password must be at least 8 characters"),
+    confirmPassword: z.string().min(8, "Please confirm your new password"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"], // show error under confirmPassword field
+  });
 export default function SettingsSecurityPage() {
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [twoFactorAuth, setTwoFactorAuth] = useState(false);
   const [loginAlerts, setLoginAlerts] = useState(true);
 
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
   const handleChangePassword = (e) => {
     e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match", {
-        position: "bottom-right",
-        autoClose: 2000,
-      });
-      return;
-    }
     // TODO: Implement password change
     toast.success("Password updated successfully", {
       position: "bottom-right",
       autoClose: 2000,
     });
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
+    form.reset();
   };
 
   return (
@@ -68,7 +79,7 @@ export default function SettingsSecurityPage() {
               </h3>
             </div>
             <form
-              onSubmit={handleChangePassword}
+              onSubmit={form.handleSubmit(handleChangePassword)}
               className="space-y-4 ml-0 sm:ml-7"
             >
               <div className="space-y-2">
@@ -76,33 +87,42 @@ export default function SettingsSecurityPage() {
                 <Input
                   id="current-password"
                   type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  {...form.register("currentPassword")}
                   placeholder="Enter current password"
-                  required
                 />
+                {form.formState.errors.currentPassword && (
+                  <p style={{ color: "red" }}>
+                    {form.formState.errors.currentPassword.message}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="new-password">New Password</Label>
                 <Input
                   id="new-password"
                   type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
+                  {...form.register("newPassword")}
                   placeholder="Enter new password"
-                  required
                 />
+                {form.formState.errors.newPassword && (
+                  <p style={{ color: "red" }}>
+                    {form.formState.errors.newPassword.message}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirm-password">Confirm New Password</Label>
                 <Input
                   id="confirm-password"
                   type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  {...form.register("confirmPassword")}
                   placeholder="Confirm new password"
-                  required
                 />
+                {form.formState.errors.confirmPassword && (
+                  <p style={{ color: "red" }}>
+                    {form.formState.errors.confirmPassword.message}
+                  </p>
+                )}
               </div>
               <Button type="submit" className="w-full sm:w-auto">
                 Update Password
