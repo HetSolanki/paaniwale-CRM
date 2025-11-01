@@ -38,16 +38,15 @@ export const columns: ColumnDef<Customer>[] = [
     header: ({ column }) => (
       <Button
         variant="ghost"
-        className="px-0 text-center sm:text-left"
+        className="px-0 text-center sm:text-left hidden sm:inline-flex"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Sequence <br />
-        Number
+        Sequence <br /> Number
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
     cell: ({ row }) => (
-      <span className="lowercase text-left">
+      <span className="lowercase text-left hidden sm:inline">
         {row.getValue("delivery_sequence_number")}
       </span>
     ),
@@ -70,7 +69,7 @@ export const columns: ColumnDef<Customer>[] = [
     header: ({ column }) => (
       <Button
         variant="ghost"
-        className="px-0 text-center sm:text-left w-10"
+        className="px-0 text-center sm:text-left w-10 hidden sm:inline-flex"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Phone <br /> Number
@@ -78,7 +77,7 @@ export const columns: ColumnDef<Customer>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <span className="capitalize text-left">
+      <span className="capitalize text-left hidden sm:inline">
         {row.getValue("cphone_number")}
       </span>
     ),
@@ -87,16 +86,16 @@ export const columns: ColumnDef<Customer>[] = [
   // Address Column
   {
     accessorKey: "caddress",
-    header: () => <span className="text-center sm:text-left">Address</span>,
+    header: () => <span className="text-center sm:text-left hidden sm:inline">Address</span>,
     cell: ({ row }) => (
-      <span className="lowercase text-left">{row.getValue("caddress")}</span>
+      <span className="lowercase text-left hidden sm:inline">{row.getValue("caddress")}</span>
     ),
   },
 
   // Bottle Price Column
   {
     accessorKey: "bottle_price",
-    header: () => <span>Bottle Price</span>,
+    header: () => <span className="hidden sm:inline">Bottle Price</span>,
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("bottle_price"));
       const formatted = new Intl.NumberFormat("en-IN", {
@@ -104,7 +103,7 @@ export const columns: ColumnDef<Customer>[] = [
         currency: "INR",
       }).format(amount);
 
-      return <span className="font-medium">{formatted}</span>;
+      return <span className="font-medium hidden sm:inline">{formatted}</span>;
     },
   },
 
