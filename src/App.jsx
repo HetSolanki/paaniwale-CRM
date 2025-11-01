@@ -1,11 +1,5 @@
 /* eslint-disable react/no-children-prop */
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import SignIn from "./Components/UI/UI-Components/SignIn";
 import SignUp from "./Components/UI/UI-Components/SignUp";
 import { Dashboard } from "./Components/Section/Dashboard";
@@ -13,13 +7,15 @@ import Customers from "./Components/Section/Customers";
 import SettingsProfilePage from "./Components/Section/forms/MainPage";
 import SettingsLayout from "./Components/Section/forms/layout";
 import SettingsShopDetailsPage from "./Components/Section/forms/shopdeatis/page";
-import SettingsSettingsDisplayPage from "./Components/Section/forms/display/page";
+import SettingsBankDetailsPage from "./Components/Section/forms/bankdetails/page";
+import SettingsNotificationsPage from "./Components/Section/forms/notifications/page";
+import SettingsAppearancePage from "./Components/Section/forms/appearance/page";
+import SettingsSecurityPage from "./Components/Section/forms/security/page";
 import CustomerEntry from "./Components/Section/CustomerEntry";
 import CustomerEntryData from "./Components/Section/CustomerEntryData";
 import { ThemeProvider } from "./Context/ThemeProviderContext ";
 import Invoice from "./Components/Section/Invoice";
-import { useEffect, useState } from "react";
-import SettingsNotificationsPage from "./Components/Section/forms/notifications/page";
+import { useEffect } from "react";
 import Error from "./Components/Section/404";
 import ComingSoonPage from "./Components/Section/ComingSoonPage";
 import UnderConstructionPage from "./Components/Section/UnderConstructionPage";
@@ -61,14 +57,7 @@ function PageTracker() {
 }
 
 function App() {
-  const [defaultRoute, setDefaultRoute] = useState("/mainpage");
   const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-  useEffect(() => {
-    const savedDefaultRoute = localStorage.getItem("defaultRoute");
-    if (savedDefaultRoute) {
-      setDefaultRoute(savedDefaultRoute);
-    }
-  }, []);
 
   return (
     <>
@@ -81,7 +70,6 @@ function App() {
             <BrowserRouter>
               <PageTracker />
               <Routes>
-
                 {/* User Routes */}
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/signin" element={<SignIn />} />
@@ -145,31 +133,33 @@ function App() {
                   }
                 />
                 <Route
-                  path="/notifications-settings"
-                  element={
-                    <SettingsLayout children={<SettingsNotificationsPage />} />
-                  }
-                />
-                {/* <Route
-              path="/bankdetails"
-              element={<SettingsLayout children={<SettingsBankDetailsPage />} />}
-            /> */}
-                <Route
                   path="/shopdetails"
                   element={
                     <SettingsLayout children={<SettingsShopDetailsPage />} />
                   }
                 />
                 <Route
-                  path="/displaydetails"
+                  path="/bankdetails"
                   element={
-                    <SettingsLayout
-                      children={
-                        <SettingsSettingsDisplayPage
-                          setDefaultRoute={setDefaultRoute}
-                        />
-                      }
-                    />
+                    <SettingsLayout children={<SettingsBankDetailsPage />} />
+                  }
+                />
+                <Route
+                  path="/notifications-settings"
+                  element={
+                    <SettingsLayout children={<SettingsNotificationsPage />} />
+                  }
+                />
+                <Route
+                  path="/appearance"
+                  element={
+                    <SettingsLayout children={<SettingsAppearancePage />} />
+                  }
+                />
+                <Route
+                  path="/security"
+                  element={
+                    <SettingsLayout children={<SettingsSecurityPage />} />
                   }
                 />
                 <Route path="/404" element={<Error />} />

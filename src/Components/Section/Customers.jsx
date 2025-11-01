@@ -41,10 +41,7 @@ const Customers = () => {
   }, [navigate]);
 
   // Fetch customers data
-  const {
-    data: customersData,
-    isLoading,
-  } = useQuery({
+  const { data: customersData, isLoading } = useQuery({
     queryKey: ["customers"],
     queryFn: fetchCustomers,
     enabled: !!localStorage.getItem("token"), // Only fetch if token exists
@@ -65,11 +62,19 @@ const Customers = () => {
   // Calculate stats
   const stats = {
     totalCustomers: customersData?.data?.length || 0,
-    totalAddresses: new Set(customersData?.data?.map(c => c.caddress)).size || 0,
-    totalPhones: customersData?.data?.filter(c => c.cphone_number).length || 0,
-    avgBottlePrice: customersData?.data?.length > 0 
-      ? Math.round(customersData.data.reduce((sum, c) => sum + (c.bottle_price || 0), 0) / customersData.data.length)
-      : 0,
+    totalAddresses:
+      new Set(customersData?.data?.map((c) => c.caddress)).size || 0,
+    totalPhones:
+      customersData?.data?.filter((c) => c.cphone_number).length || 0,
+    avgBottlePrice:
+      customersData?.data?.length > 0
+        ? Math.round(
+            customersData.data.reduce(
+              (sum, c) => sum + (c.bottle_price || 0),
+              0
+            ) / customersData.data.length
+          )
+        : 0,
   };
 
   const pdfColumns = [
@@ -103,7 +108,7 @@ const Customers = () => {
       >
         <div className="min-h-screen bg-background">
           <Navbar />
-          
+
           {/* Mobile-Optimized Container */}
           <div className="pb-6 sm:pb-8">
             {/* Header Section - Mobile Optimized */}
@@ -165,7 +170,11 @@ const Customers = () => {
                           </p>
                         </div>
                         <p className="text-2xl sm:text-3xl font-bold tracking-tight">
-                          {isLoading ? <Skeleton width={40} /> : stats.totalCustomers}
+                          {isLoading ? (
+                            <Skeleton width={40} />
+                          ) : (
+                            stats.totalCustomers
+                          )}
                         </p>
                       </div>
                       <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
@@ -187,7 +196,11 @@ const Customers = () => {
                           </p>
                         </div>
                         <p className="text-2xl sm:text-3xl font-bold tracking-tight text-green-600">
-                          {isLoading ? <Skeleton width={40} /> : stats.totalAddresses}
+                          {isLoading ? (
+                            <Skeleton width={40} />
+                          ) : (
+                            stats.totalAddresses
+                          )}
                         </p>
                       </div>
                       <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
@@ -209,7 +222,11 @@ const Customers = () => {
                           </p>
                         </div>
                         <p className="text-2xl sm:text-3xl font-bold tracking-tight text-purple-600">
-                          {isLoading ? <Skeleton width={40} /> : stats.totalPhones}
+                          {isLoading ? (
+                            <Skeleton width={40} />
+                          ) : (
+                            stats.totalPhones
+                          )}
                         </p>
                       </div>
                       <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center">
@@ -276,10 +293,7 @@ const Customers = () => {
                 <CardContent className="p-0">
                   {isLoading ? (
                     <div className="p-4 sm:p-6">
-                      <Skeleton
-                        className="h-[300px]"
-                        enableAnimation={true}
-                      />
+                      <Skeleton className="h-[300px]" enableAnimation={true} />
                     </div>
                   ) : (customersData?.data || []).length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-4">
