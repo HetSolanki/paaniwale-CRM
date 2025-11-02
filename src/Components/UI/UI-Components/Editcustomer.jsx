@@ -94,6 +94,7 @@ export function Editcustomer({ id }) {
         customerDetails.data.data.phone_verification_status || false
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customerDetails.data]);
 
   const [click, setClick] = useState(false);
@@ -167,10 +168,17 @@ export function Editcustomer({ id }) {
       setOtpSent(false);
       setOtp("");
     } else {
-      // If phone number changed, require verification
-      setIsVerified(false);
-      setOtpSent(false);
-      setOtp("");
+      // If phone number changed and customer was verified, require re-verification
+      if (is_phone_verified) {
+        setIsVerified(false);
+        setOtpSent(false);
+        setOtp("");
+      } else {
+        // If customer was not verified originally, keep unverified state
+        setIsVerified(false);
+        setOtpSent(false);
+        setOtp("");
+      }
     }
   };
 
@@ -308,8 +316,42 @@ export function Editcustomer({ id }) {
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
-                {/* Warning Alert for Unverified Phone */}
-                {!isVerified && !phoneChanged && (
+                {/* Warning Alert for Phone Change - Only show if customer was verified and changed phone */}
+                {phoneChanged && is_phone_verified && !isVerified && (
+                  <Alert
+                    variant="destructive"
+                    className="border-orange-500 bg-orange-50 text-orange-800"
+                  >
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription className="ml-2">
+                      Phone number changed. Please re-verify the new number.
+                      <Button
+                        type="button"
+                        variant="link"
+                        size="sm"
+                        className="px-1 h-auto text-orange-800 underline"
+                        onClick={async () => {
+                          const valid = await form.trigger("cphone_number");
+                          if (valid) {
+                            handleSendOtp(form.getValues("cphone_number"));
+                          } else {
+                            toast({
+                              variant: "destructive",
+                              title: "Invalid Phone",
+                              description: "Enter valid phone number first.",
+                            });
+                          }
+                        }}
+                        disabled={sendingOtp}
+                      >
+                        {sendingOtp ? "Sending..." : "Click to verify"}
+                      </Button>
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Warning Alert for Unverified Phone - Only show if customer was never verified */}
+                {!is_phone_verified && !phoneChanged && !isVerified && (
                   <Alert
                     variant="destructive"
                     className="border-yellow-500 bg-yellow-50 text-yellow-800"
@@ -547,7 +589,10 @@ export function Editcustomer({ id }) {
                   <Button
                     type="submit"
                     className="font-semibold"
-                    disabled={phoneChanged && !isVerified}
+                    disabled={
+                      // Disable if phone changed and customer was verified but not re-verified yet
+                      phoneChanged && is_phone_verified && !isVerified
+                    }
                   >
                     Update Customer
                   </Button>

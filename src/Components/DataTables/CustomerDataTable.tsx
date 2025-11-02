@@ -56,34 +56,48 @@ export function DataTable({ data, columns }: DataTableProps) {
   React.useEffect(() => {
     const handleResponsiveColumns = () => {
       const isMobile = window.innerWidth <= 768;
-      
-      setColumnVisibility({
-        bottle_price: !isMobile,
-        delivery_sequence_number: !isMobile,
-        cname: true, // Always visible
-        caddress: !isMobile,
-        actions: true, // Always visible
-      });
+
+      if (isMobile) {
+        // On mobile, show only name (with address below) and actions
+        setColumnVisibility({
+          delivery_sequence_number: false,
+          cname: true,
+          cphone_number: false,
+          caddress: false,
+          bottle_price: false,
+          actions: true,
+        });
+      } else {
+        // On desktop, show all columns
+        setColumnVisibility({
+          delivery_sequence_number: true,
+          cname: true,
+          cphone_number: true,
+          caddress: true,
+          bottle_price: true,
+          actions: true,
+        });
+      }
     };
 
     // Set initial visibility and listen for window resizes
     handleResponsiveColumns();
     window.addEventListener("resize", handleResponsiveColumns);
-    
+
     return () => window.removeEventListener("resize", handleResponsiveColumns);
   }, []);
 
   return (
     <div className="w-full">
       {/* Search Filter */}
-      <div className="flex items-center py-4">
+      <div className="flex items-center py-3 sm:py-4">
         <Input
-          placeholder="Filter Customers..."
+          placeholder="Search customers by name..."
           value={(table.getColumn("cname")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("cname")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className="max-w-full sm:max-w-sm"
         />
       </div>
 
@@ -95,13 +109,13 @@ export function DataTable({ data, columns }: DataTableProps) {
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className="text-xs sm:text-sm">
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -115,9 +129,10 @@ export function DataTable({ data, columns }: DataTableProps) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className="hover:bg-muted/50"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="py-3">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -130,9 +145,9 @@ export function DataTable({ data, columns }: DataTableProps) {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-center text-muted-foreground"
                 >
-                  No results.
+                  No customers found.
                 </TableCell>
               </TableRow>
             )}
@@ -141,11 +156,18 @@ export function DataTable({ data, columns }: DataTableProps) {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 py-4">
+        <div className="text-xs sm:text-sm text-muted-foreground order-2 sm:order-1">
+          {table.getRowModel().rows?.length > 0 ? (
+            <>
+              Page {table.getState().pagination.pageIndex + 1} of{" "}
+              {table.getPageCount()} ({table.getRowModel().rows.length} customers)
+            </>
+          ) : (
+            "No customers"
+          )}
         </div>
-        <div className="space-x-2">
+        <div className="flex space-x-2 order-1 sm:order-2">
           <Button
             variant="outline"
             size="sm"

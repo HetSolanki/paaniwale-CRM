@@ -23,41 +23,30 @@ export type Customer = {
 
 export const columns1: ColumnDef<Customer>[] = [
   {
-    accessorKey: "cid",
-    header: () => <div className="text-center sm:text-left">Customer Name</div>,
-    cell: ({ row }) => {
-      const cid = row.getValue("cid") as any;
-      return <div className="capitalize">{cid?.cname || "N/A"}</div>;
-    },
-  },
-  {
     accessorKey: "delivery_date",
-    header: () => <div className="text-center sm:text-left">Delivery Date</div>,
+    header: () => <div className="text-left">Delivery Date</div>,
     cell: ({ row }) => (
-      <div className="capitalize">
-        {format(row.getValue("delivery_date").toString(), "yyyy-M-dd") ||
-          "N/A"}
+      <div className="font-medium">
+        {format(new Date(row.getValue("delivery_date")), "MMM dd, yyyy")}
       </div>
     ),
   },
   {
     accessorKey: "bottle_count",
-    header: () => <div className="text-center sm:text-left">Bottle Count</div>,
+    header: () => <div className="text-left">Bottles</div>,
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("bottle_count") || 0}</div>
+      <div className="font-medium">{row.getValue("bottle_count") || 0}</div>
     ),
   },
   {
     accessorKey: "delivery_status",
-    header: () => (
-      <div className="text-center sm:text-left">Delivery Status</div>
-    ),
+    header: () => <div className="text-left">Status</div>,
     cell: ({ row }) => (
       <>
         {row.getValue("delivery_status") === "Present" ? (
-          <Badge variant="default">Present</Badge>
+          <Badge variant="default" className="text-xs">Present</Badge>
         ) : (
-          <Badge variant="destructive">Absent</Badge>
+          <Badge variant="destructive" className="text-xs">Absent</Badge>
         )}
       </>
     ),
