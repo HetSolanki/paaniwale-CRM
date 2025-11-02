@@ -25,16 +25,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    bank_details: {
-      branch_ifsc_code: {
-        type: String,
-      },
-      account_number: {
-        type: Number,
-      },
-      benificiary_name: {
-        type: String,
-      },
+    // Bank detail fields
+    branch_ifsc_code: {
+      type: String,
+    },
+    account_number: {
+      type: String,
+    },
+    benificiary_name: {
+      type: String,
     },
     is_admin: {
       type: Boolean,

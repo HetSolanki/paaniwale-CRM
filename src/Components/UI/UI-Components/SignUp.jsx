@@ -85,6 +85,7 @@ const shopSchema = z.object({
   shop_name: z
     .string({ message: "Shop name is required" })
     .min(1, { message: "Shop name is required" }),
+  gst_number: z.string().optional(),
 });
 
 export default function SignUp() {
@@ -432,6 +433,31 @@ export default function SignUp() {
                                       ? "border-red-500"
                                       : ""
                                   }
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <FormField
+                          control={shopForm.control}
+                          name="gst_number"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Label
+                                htmlFor="gst_number"
+                                className="font-semibold"
+                              >
+                                GST Number (Optional)
+                              </Label>
+                              <FormControl>
+                                <Input
+                                  id="gst_number"
+                                  type="text"
+                                  placeholder="GST Number"
+                                  {...field}
                                 />
                               </FormControl>
                               <FormMessage />

@@ -15,6 +15,9 @@ export const updateUser = async (data, uid) => {
         lname: data.lname,
         phone_number: data.phone_number,
         email: data.email,
+        branch_ifsc_code: data.branch_ifsc_code,
+        account_number: data.account_number,
+        benificiary_name: data.benificiary_name,
       }),
     });
 

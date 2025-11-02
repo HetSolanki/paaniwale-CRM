@@ -30,10 +30,11 @@ const ShopFormSchema = z.object({
     .max(30, {
       message: "Address must not be longer than 30 characters.",
     }),
+  gst_number: z.string().optional(),
 });
 
 export function ShopForm() {
-  const { user, updateUserContext } = useUser();
+  const { user, refetchUser } = useUser();
 
   const form = useForm({
     resolver: zodResolver(ShopFormSchema),
@@ -44,7 +45,7 @@ export function ShopForm() {
   async function onSubmit(data) {
     const res = await uploadFileCloudinary(file);
     const updatedUser = await updateshop(data, res.secure_url);
-    updateUserContext();
+    refetchUser();
     if (updatedUser.status === "success") {
       toast.success("Shop Details Updated Successfully", {
         position: "bottom-right",
@@ -52,7 +53,7 @@ export function ShopForm() {
         theme: "light",
         draggable: true,
       });
-      await updateUserContext();
+      await refetchUser();
     }
   }
 
@@ -106,6 +107,28 @@ export function ShopForm() {
 
             <FormField
               control={form.control}
+              name="gst_number"
+              defaultValue={user?.gst_number || ""}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>GST Number (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="GST Number"
+                      {...field}
+                      className="w-80"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Enter your GST number if applicable.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="payment_qr_code"
               render={({ field }) => (
                 <FormItem>
@@ -114,7 +137,7 @@ export function ShopForm() {
                     <img
                       src={user?.image_url}
                       alt="QR Code"
-                      className="w-20 h-20 rounded-md cursor-pointer  hover:scale-150 transition-transform duration-200"                     
+                      className="w-20 h-20 rounded-md cursor-pointer  hover:scale-150 transition-transform duration-200"
                     />
                   </div>
                   {file && (

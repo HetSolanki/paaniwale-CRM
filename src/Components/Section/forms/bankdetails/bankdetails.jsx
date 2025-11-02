@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useEffect } from "react";
 import {
   Form,
   FormControl,
@@ -22,18 +23,34 @@ const bankdetailsFormSchema = z.object({
 });
 
 export function BankdetailsForm() {
-  const { user, updateUserContext } = useUser();
+  const { user, refetchUser, loading } = useUser();
 
   const form = useForm({
     resolver: zodResolver(bankdetailsFormSchema),
+    defaultValues: {
+      branch_ifsc_code: "",
+      account_number: "",
+      benificiary_name: "",
+    },
   });
+
+  // Update form when user data changes
+  useEffect(() => {
+    if (user?.uid) {
+      form.reset({
+        branch_ifsc_code: user.uid.branch_ifsc_code || "",
+        account_number: user.uid.account_number || "",
+        benificiary_name: user.uid.benificiary_name || "",
+      });
+    }
+  }, [user, form]);
 
   async function formSubmit(data) {
     const uid = user.uid._id;
     const updatedUser = await updateUser(data, uid);
     if (updatedUser.status === "success") {
-      await updateUserContext();
-      toast.success("User Updated Successfully", {
+      await refetchUser();
+      toast.success("Bank Details Updated Successfully", {
         position: "bottom-right",
         autoClose: 1000,
         theme: "light",
@@ -42,69 +59,70 @@ export function BankdetailsForm() {
     }
   }
 
-  return (
-    user && (
-      <>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(formSubmit)} className="space-y-8">
-            <FormField
-              control={form.control}
-              name="branch_ifsc_code"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Branch IFSC Code</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Branch IFSC Code
-"
-                      {...field}
-                      className="w-80"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="account_number"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Account Number</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Account Number
-"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="benificiary_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Beneficiary Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Beneficiary Name"
-                      {...field}
-                      className="w-80"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+  if (loading) {
+    return <div className="text-center py-8">Loading...</div>;
+  }
 
-            <Button type="submit">Request For Verify Bank Details</Button>
-          </form>
-        </Form>
-        <ToastContainer />
-      </>
-    )
+  if (!user) {
+    return <div className="text-center py-8">No user data found</div>;
+  }
+
+  return (
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(formSubmit)} className="space-y-8">
+          <FormField
+            control={form.control}
+            name="branch_ifsc_code"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Branch IFSC Code</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Branch IFSC Code"
+                    {...field}
+                    className="w-80"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="account_number"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Account Number</FormLabel>
+                <FormControl>
+                  <Input placeholder="Account Number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="benificiary_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Beneficiary Name</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Beneficiary Name"
+                    {...field}
+                    className="w-80"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit">Request For Verify Bank Details</Button>
+        </form>
+      </Form>
+      <ToastContainer />
+    </>
   );
 }

@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import Navbar from "../Navbar";
 import { SidebarNav } from "./components/sidebar-nav";
-import { User, Store, Bell, Shield, Palette, CreditCard } from "lucide-react";
+import { User, Store, Shield, Palette, CreditCard } from "lucide-react";
 
 const sidebarNavItems = [
   {
@@ -22,12 +22,12 @@ const sidebarNavItems = [
     icon: CreditCard,
     description: "Configure payment methods",
   },
-  {
-    title: "Notifications",
-    href: "/notifications-settings",
-    icon: Bell,
-    description: "Manage notification preferences",
-  },
+  // {
+  //   title: "Notifications",
+  //   href: "/notifications-settings",
+  //   icon: Bell,
+  //   description: "Manage notification preferences",
+  // },
   {
     title: "Appearance",
     href: "/appearance",

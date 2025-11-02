@@ -7,8 +7,7 @@ import {
   updateUser,
   deleteUser,
   signIn,
-  updateBankDetails,
-  getAdmindashboardData
+  getAdmindashboardData,
 } from "../Handlers/User.js";
 import { inputErrorHandler } from "../Module/middleware.js";
 import { protect, requireRole } from "../Module/auth.js";
@@ -18,7 +17,6 @@ import { protect, requireRole } from "../Module/auth.js";
 // import twilio from "twilio";
 
 // const client = twilio(accountSid, authToken);
-
 
 const router = Router();
 
@@ -30,7 +28,7 @@ router.get("/", (req, res) => {
 });
 
 // Get All the Users
-router.get("/userall",protect,requireRole(true),getAllUser);
+router.get("/userall", protect, requireRole(true), getAllUser);
 
 // Get User by it's id
 router.get("/user/:id", getOneUser);
@@ -64,19 +62,7 @@ router.put(
 );
 
 // Delete User
-router.delete("/user/:id",protect,requireRole(true) ,deleteUser);
-
-// Bank Details
-router.put(
-  "/user/bankdetails/:id",
-  [
-    body("branch_ifsc_code").exists(),
-    body("account_number").exists(),
-    body("benificiary_name").exists(),
-  ],
-  inputErrorHandler,
-  updateBankDetails
-);
+router.delete("/user/:id", protect, requireRole(true), deleteUser);
 
 // signin user
 router.post(
@@ -86,7 +72,11 @@ router.post(
   signIn
 );
 
-router.get("/admin/admindashboardData",protect,requireRole(true), getAdmindashboardData);
-
+router.get(
+  "/admin/admindashboardData",
+  protect,
+  requireRole(true),
+  getAdmindashboardData
+);
 
 export default router;
