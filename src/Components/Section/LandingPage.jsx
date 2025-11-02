@@ -7,6 +7,7 @@ import { Button } from "../UI/shadcn-UI/button";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../UI/shadcn-UI/card";
 import { Badge } from "../UI/shadcn-UI/badge";
+import CustomerPortalDialog from "./CustomerPortalDialog";
 
 // Inquiry Form Component
 const InquiryForm = () => {
@@ -320,6 +321,7 @@ const InquiryForm = () => {
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const [customerPortalOpen, setCustomerPortalOpen] = useState(false);
   const [stats, setStats] = useState({
     totalClients: 0,
     invoicesSent: 0,
@@ -376,12 +378,6 @@ const LandingPage = () => {
         paymentData = await paymentsResponse.json();
         paymentCount = paymentData.data.count || paymentCount;
       }
-
-      console.log("API Responses:", {
-        clientsResponse: clientData,
-        invoicesResponse: invoiceData,
-        paymentsResponse: paymentData,
-      });
 
       setStats({
         totalClients: clientCount,
@@ -463,6 +459,13 @@ const LandingPage = () => {
                 </Button>
               ) : (
                 <>
+                  <Button
+                    variant="outline"
+                    className="border-green-600 text-green-600 hover:bg-green-50 font-medium px-4 py-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
+                    onClick={() => setCustomerPortalOpen(true)}
+                  >
+                    📱 Customer Portal
+                  </Button>
                   <Button
                     variant="outline"
                     className="border-blue-600 text-blue-600 hover:bg-blue-50 font-medium px-6 py-2 rounded-full transition-all duration-200"
@@ -583,6 +586,15 @@ const LandingPage = () => {
                   onClick={() => window.open("tel:+916355459412")}
                 >
                   📞 Call Sales
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto border-2 border-green-600 text-green-600 hover:bg-green-50 font-semibold px-8 py-4 rounded-full transition-all duration-200 text-lg"
+                  onClick={() => setCustomerPortalOpen(true)}
+                >
+                  🎯 Customer Login
                 </Button>
               </div>
               {/* Trust Indicators */}
@@ -717,6 +729,174 @@ const LandingPage = () => {
             <div className="text-center">
               <div className="text-2xl font-bold text-gray-900">24/7</div>
               <div className="text-sm text-gray-600">Available</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Customer Portal Section - Easy & Friendly */}
+      <section className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <Badge className="bg-green-100 text-green-800 hover:bg-green-200 mb-4 text-sm px-4 py-2">
+              ✨ For Customers
+            </Badge>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Easy Customer Portal 🎯
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Your customers can now check their account details, delivery
+              history, and outstanding balance anytime - Simple, Fast, and
+              Secure!
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Features List */}
+            <div className="space-y-8">
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center">
+                    <span className="text-3xl">📱</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      Quick OTP Login
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      No passwords to remember! Just enter your phone number,
+                      receive OTP, and you're in. Takes less than 30 seconds.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
+                    <span className="text-3xl">📊</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      View Everything
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      See your complete delivery history, bottle counts, pending
+                      amounts, and account details all in one place.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl flex items-center justify-center">
+                    <span className="text-3xl">🔒</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      100% Secure
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      Your data is encrypted and secure. Only you can access
+                      your account with OTP verification.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center lg:text-left">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-bold px-10 py-6 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-200 text-lg"
+                  onClick={() => setCustomerPortalOpen(true)}
+                >
+                  🚀 Try Customer Portal Now
+                  <svg
+                    className="ml-3 w-6 h-6"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </Button>
+              </div>
+            </div>
+
+            {/* Right: Visual Mockup */}
+            <div className="relative">
+              <div className="relative bg-white rounded-3xl shadow-2xl p-8 border-4 border-green-200">
+                <div className="space-y-6">
+                  {/* Portal Header */}
+                  <div className="text-center pb-6 border-b-2 border-gray-100">
+                    <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center mb-4">
+                      <span className="text-3xl">🎯</span>
+                    </div>
+                    <h4 className="text-2xl font-bold text-gray-900">
+                      Customer Portal
+                    </h4>
+                    <p className="text-gray-600 mt-2">
+                      Access your account in seconds
+                    </p>
+                  </div>
+
+                  {/* Sample Stats */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 text-center">
+                      <div className="text-3xl font-bold text-blue-600">45</div>
+                      <div className="text-sm text-blue-800">Total Bottles</div>
+                    </div>
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 text-center">
+                      <div className="text-3xl font-bold text-green-600">
+                        ₹900
+                      </div>
+                      <div className="text-sm text-green-800">Amount</div>
+                    </div>
+                  </div>
+
+                  {/* Sample Delivery Entry */}
+                  <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                    <div className="font-semibold text-gray-900">
+                      Recent Delivery
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Nov 1, 2025</span>
+                      <Badge className="bg-green-100 text-green-800">
+                        Delivered
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Bottles: 5</span>
+                      <span className="font-semibold">₹100</span>
+                    </div>
+                  </div>
+
+                  {/* Features badges */}
+                  <div className="flex flex-wrap gap-2 pt-4 border-t-2 border-gray-100">
+                    <Badge className="bg-blue-100 text-blue-800 text-xs">
+                      📱 OTP Login
+                    </Badge>
+                    <Badge className="bg-green-100 text-green-800 text-xs">
+                      ✓ Instant Access
+                    </Badge>
+                    <Badge className="bg-purple-100 text-purple-800 text-xs">
+                      🔒 Secure
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating Elements */}
+              <div className="absolute -top-6 -right-6 bg-yellow-400 text-yellow-900 font-bold px-6 py-3 rounded-full shadow-lg transform rotate-12 animate-bounce">
+                Easy to Use! 🎉
+              </div>
+              <div className="absolute -bottom-6 -left-6 bg-green-400 text-green-900 font-bold px-6 py-3 rounded-full shadow-lg transform -rotate-12">
+                No App Needed! 📲
+              </div>
             </div>
           </div>
         </div>
@@ -1791,6 +1971,12 @@ const LandingPage = () => {
           </div>
         </div>
       </footer>
+
+      {/* Customer Portal Dialog */}
+      <CustomerPortalDialog
+        open={customerPortalOpen}
+        onClose={() => setCustomerPortalOpen(false)}
+      />
     </>
   );
 };

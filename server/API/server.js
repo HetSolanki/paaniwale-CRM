@@ -13,6 +13,7 @@ import activitylog_api from "./routes/activityLog_route.js";
 import adminStats_api from "./routes/adminStats_route.js";
 import settings_api from "./routes/settings_route.js";
 import reports_api from "./routes/reports_route.js";
+import customerportal_api from "./routes/customerPortal_route.js";
 import cors from "cors";
 import process from "process";
 
@@ -80,6 +81,7 @@ app.get("/health", (req, res) => {
 app.use("/api/auth", user_api);
 app.use("/api/customers", customer_api);
 app.use("/api/customer", customer_api);
+app.use("/api/customerportal", customerportal_api); // Customer portal routes
 app.use("/api/customerentry", customerentry_api);
 app.use("/api/shop", shop_api);
 app.use("/api/paymentlink", payment_link_api);

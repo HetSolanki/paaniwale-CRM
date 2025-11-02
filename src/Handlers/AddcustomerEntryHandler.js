@@ -83,7 +83,7 @@ export const deleteCustomerEntry = async (entryId) => {
 
 export const getAllCustomerEntries = async (customerId) => {
   try {
-    console.log(customerId);
+    // console.log(customerId);
     const response = await fetch(
       `${DOMAIN_NAME}/api/customerentry/getallcustomerentry/${customerId}`,
       {
@@ -95,7 +95,7 @@ export const getAllCustomerEntries = async (customerId) => {
     );
 
     const data = await handleFetchResponse(response);
-    console.log(data);
+    // console.log(data);
     return data.data;
   } catch (error) {
     console.error("Error fetching customer entries:", error);

@@ -9,8 +9,6 @@ router.post("/send", async (req, res) => {
   const { phone } = req.body;
   const otp = Math.floor(100000 + Math.random() * 900000);
   otpStore[phone] = otp;
-  console.log("OTP stored for phone:", phone, "OTP:", otp);
-  console.log("Generated OTP:", otp);
 
   const authKey = process.env.MSG91_AUTH_KEY;
   const templateId = process.env.MSG91_TEMPLATE_ID;

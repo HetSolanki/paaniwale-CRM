@@ -102,7 +102,7 @@ export default function EnhancedUserManagement() {
     try {
       setLoading(true);
       const response = await GetAllUsers();
-      console.log(response);
+
       if (response?.data) {
         setUsers(response.data);
       }

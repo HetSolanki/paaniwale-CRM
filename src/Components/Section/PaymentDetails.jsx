@@ -108,7 +108,6 @@ export default function PaymentDetails() {
         return isReceived && isThisMonth;
       })
       .map((payment, index) => {
-        console.log("Received payment data:", payment); // Debug log
         return {
           _id: payment._id,
           id: index + 1,
@@ -125,17 +124,6 @@ export default function PaymentDetails() {
           payment_status: payment.payment_status,
         };
       }) || [];
-
-  console.log(
-    "Pending Payments:",
-    pendingPaymentsData.length,
-    pendingPaymentsData
-  );
-  console.log(
-    "Received Payments:",
-    receivedPaymentsData.length,
-    receivedPaymentsData
-  );
 
   // Calculate stats
   const stats = {

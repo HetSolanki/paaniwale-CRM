@@ -114,11 +114,10 @@ export function CustomerInvoicePreview({ customerId, open, onClose }) {
           resolve(null);
           return;
         }
-        console.log("Loading QR code from:", user.user.image_url);
+
         const img = new Image();
         img.crossOrigin = "anonymous";
         img.onload = () => {
-          console.log("QR code loaded successfully");
           resolve(img);
         };
         img.onerror = (error) => {
@@ -127,9 +126,6 @@ export function CustomerInvoicePreview({ customerId, open, onClose }) {
         };
         img.src = user.user.image_url;
       });
-
-      console.log("Logo loaded:", !!logoImage);
-      console.log("QR code loaded:", !!userImage);
 
       // Generate PDF
       const pdf = pdfGenerator(

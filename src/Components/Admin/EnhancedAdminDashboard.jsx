@@ -78,8 +78,6 @@ export default function EnhancedAdminDashboard() {
       setLoading(true);
       const response = await getadmindashborddata();
 
-      console.log("Dashboard data response:", response);
-
       // Handle nested response structure: response.data.data
       const data = response?.data?.data || response?.data || {};
 
@@ -97,15 +95,6 @@ export default function EnhancedAdminDashboard() {
           customerGrowth: data.customerGrowth || 0,
           orderGrowth: data.orderGrowth || 0,
           userGrowth: data.userGrowth || 0,
-        });
-
-        console.log("Dashboard state updated:", {
-          totalRevenue: data.totalRevenue,
-          totalUsers: data.totalUsers,
-          totalCustomers: data.totalCustomers,
-          totalOrders: data.totalOrders,
-          topCustomers: data.topCustomers?.length,
-          recentUsers: data.recentUsers?.length,
         });
 
         // Generate sample data for charts (in real app, get from backend)

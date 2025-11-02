@@ -23,11 +23,6 @@ export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [pdfUrl, setPdfUrl] = useState(null);
 
-  console.log("🔵 PartyOrderInvoice component rendered");
-  console.log("Props - order:", order);
-  console.log("Props - open:", open);
-  console.log("User context:", user);
-
   // Validate order prop
   if (!order) {
     console.error("❌ PartyOrderInvoice: order prop is required");
@@ -381,10 +376,6 @@ export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
   };
 
   const handlePreview = () => {
-    console.log("🔍 Preview button clicked");
-    console.log("Order data:", order);
-    console.log("User data:", user);
-
     try {
       if (!order) {
         console.error("❌ No order data");
@@ -406,21 +397,17 @@ export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
         return;
       }
 
-      console.log("✅ Validation passed, generating PDF...");
       const pdf = generatePDF();
-      console.log("✅ PDF generated successfully");
 
       const pdfBlob = pdf.output("blob");
-      console.log("✅ PDF blob created, size:", pdfBlob.size);
 
       // Revoke old URL if it exists
       if (pdfUrl) {
         URL.revokeObjectURL(pdfUrl);
-        console.log("🗑️ Old PDF URL revoked");
       }
 
       const url = URL.createObjectURL(pdfBlob);
-      console.log("✅ New blob URL created:", url);
+
       setPdfUrl(url);
 
       toast({
@@ -462,10 +449,6 @@ export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
   };
 
   const handleSendInvoice = async () => {
-    console.log("📤 Send Invoice button clicked");
-    console.log("Order data:", order);
-    console.log("User data:", user);
-
     if (!order) {
       console.error("❌ No order data");
       toast({
@@ -496,15 +479,13 @@ export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
       return;
     }
 
-    console.log("✅ Validation passed, starting send process...");
     setLoading(true);
 
     try {
       // Generate PDF
-      console.log("Generating PDF for order:", order._id);
+
       const pdf = generatePDF();
       const pdfBlob = pdf.output("blob");
-      console.log("PDF generated, size:", pdfBlob.size);
 
       // Convert to base64
       const base64data = await new Promise((resolve, reject) => {
@@ -516,15 +497,12 @@ export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
         reader.readAsDataURL(pdfBlob);
       });
 
-      console.log("PDF converted to base64");
-
       // Upload to Cloudinary
       const formData = new FormData();
       formData.append("file", `data:application/pdf;base64,${base64data}`);
       formData.append("upload_preset", config.cloud.uploadPreset);
       formData.append("folder", "Paaniwale-Party-Invoices");
 
-      console.log("Uploading to Cloudinary...");
       const uploadResponse = await fetch(
         `https://api.cloudinary.com/v1_1/${config.cloud.name}/image/upload`,
         { method: "POST", body: formData }
@@ -537,7 +515,6 @@ export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
       }
 
       const uploadData = await uploadResponse.json();
-      console.log("PDF uploaded successfully:", uploadData.secure_url);
 
       // DISABLED: Create payment link
       // let paymentLinkUrl = "";
@@ -566,7 +543,6 @@ export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
 
       // Send WhatsApp invoice
       const whatsappDate = new Date();
-      console.log("Sending WhatsApp invoice to:", order.party_phone);
 
       const invoiceResponse = await fetch(
         `https://graph.facebook.com/${config.whatsapp.version}/${config.whatsapp.phoneNumberId}/messages`,
@@ -622,7 +598,6 @@ export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
       }
 
       const invoiceResult = await invoiceResponse.json();
-      console.log("Invoice sent successfully:", invoiceResult);
 
       // DISABLED: Send payment link if available
       // if (paymentLinkUrl) {
@@ -658,7 +633,6 @@ export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
       // }
 
       // Update invoice status
-      console.log("Updating invoice status...");
       await updatePartyOrderInvoice(order._id, ""); // No payment link
 
       toast({

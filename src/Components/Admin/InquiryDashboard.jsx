@@ -20,7 +20,6 @@ const InquiryDashboard = () => {
           "Content-Type": "application/json",
         },
       });
-      console.log("Stats response:", await response.json());
       if (response.ok) {
         const data = await response.json();
         setStats(data.data);

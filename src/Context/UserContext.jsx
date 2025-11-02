@@ -33,7 +33,7 @@ export default function UserProvider({ children }) {
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
       const data = await res.json();
-      console.log("Fetched user data:", data);  
+      // console.log("Fetched user data:", data);
       if (data.status !== "success" || !data.data)
         throw new Error(data.message || "Failed to fetch user");
 
