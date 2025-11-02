@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { EyeIcon, File, PlusCircle } from "lucide-react";
+import { EyeIcon, PlusCircle } from "lucide-react"; // File removed - button disabled
 import {
   Sheet,
   SheetDescription,
@@ -16,7 +16,7 @@ import { fetchCustomer } from "@/Hooks/fetchCustomer";
 import { InvoiceX } from "@/Components/Section/Invoicex";
 import Skeleton from "react-loading-skeleton";
 import { Button } from "../shadcn-UI/button";
-import { createPaymentLink } from "@/Handlers/CreatepaymentLinkHandler";
+// import { createPaymentLink } from "@/Handlers/CreatepaymentLinkHandler"; // DISABLED - No Razorpay
 import { PDFDownloadLink } from "@react-pdf/renderer";
 
 export default function GetInvoice({ cid }) {
@@ -28,40 +28,41 @@ export default function GetInvoice({ cid }) {
     shorturl: "",
   });
 
-  const sendinvoicelink = async () => {
-    alert("Sending Invoice Link");
-    // console.log(invoicedata);
-    const cname = invoicedata.data.cname;
-    const cphone_number = invoicedata.data.cphone_number;
-    const amount = invoicedata.data.bottle_price * invoicedata.total_bottles;
-    // console.log(amount, cname, cphone_number);
-    const data = {
-      amount: amount,
-      description: "Payment for Bottles",
-      customer_name: cname,
-      customer_phone: cphone_number,
-      customer_email: "",
-      smsnotify: true,
-      emailnotify: false,
-      reminder_enable: false,
-    };
-    // console.log("Data to be sent");
-    // console.log(data);
-    const newpaymentlink = await createPaymentLink(data);
+  // DISABLED - No Razorpay payment links
+  // const sendinvoicelink = async () => {
+  //   alert("Sending Invoice Link");
+  //   // console.log(invoicedata);
+  //   const cname = invoicedata.data.cname;
+  //   const cphone_number = invoicedata.data.cphone_number;
+  //   const amount = invoicedata.data.bottle_price * invoicedata.total_bottles;
+  //   // console.log(amount, cname, cphone_number);
+  //   const data = {
+  //     amount: amount,
+  //     description: "Payment for Bottles",
+  //     customer_name: cname,
+  //     customer_phone: cphone_number,
+  //     customer_email: "",
+  //     smsnotify: true,
+  //     emailnotify: false,
+  //     reminder_enable: false,
+  //   };
+  //   // console.log("Data to be sent");
+  //   // console.log(data);
+  //   const newpaymentlink = await createPaymentLink(data);
 
-    if (newpaymentlink.status === "success") {
-      alert("Payment Link Created");
-      // console.log(newpaymentlink);
-      // console.log(newpaymentlink.data.short_url);
+  //   if (newpaymentlink.status === "success") {
+  //     alert("Payment Link Created");
+  //     // console.log(newpaymentlink);
+  //     // console.log(newpaymentlink.data.short_url);
 
-      setInvoicedata({
-        ...invoicedata,
-        shorturl: newpaymentlink.data.short_url,
-      });
-    } else {
-      // console.log(newpaymentlink);
-    }
-  };
+  //     setInvoicedata({
+  //       ...invoicedata,
+  //       shorturl: newpaymentlink.data.short_url,
+  //     });
+  //   } else {
+  //     // console.log(newpaymentlink);
+  //   }
+  // };
 
   return (
     <div className="cursor-pointer w-5 h-5">
@@ -119,6 +120,7 @@ export default function GetInvoice({ cid }) {
                   </div>
                   <div className="ml-auto flex items-center gap-2 float-start m-3">
                     <InvoiceX cid={cid} />
+                    {/* DISABLED - No Razorpay
                     <Button
                       size="sm"
                       variant="outline"
@@ -132,6 +134,7 @@ export default function GetInvoice({ cid }) {
                         Send Invoice Link
                       </span>
                     </Button>
+                    */}
                     <Button
                       size="sm"
                       variant="outline"

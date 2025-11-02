@@ -265,10 +265,10 @@ const CustomerActions = ({ customer }: { customer: Customer }) => {
             <Send className="mr-2 h-4 w-4" />
             Send Invoice
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleSendPaymentLink} disabled={loading}>
+          {/* <DropdownMenuItem onClick={handleSendPaymentLink} disabled={loading}>
             <CreditCard className="mr-2 h-4 w-4" />
             Send Payment Link
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
         </DropdownMenuContent>
       </DropdownMenu>
 

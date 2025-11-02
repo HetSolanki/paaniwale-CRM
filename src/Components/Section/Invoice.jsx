@@ -2,7 +2,7 @@
 
 import InvoiceDataContext from "@/Context/InvoiceDataContext";
 import { useUser } from "@/Context/UserContext";
-import { createPaymentLink } from "@/Handlers/CreatepaymentLinkHandler";
+// import { createPaymentLink } from "@/Handlers/CreatepaymentLinkHandler"; // DISABLED - Not used
 import { GetCustomerInvoice } from "@/Handlers/GetCustomerInvoice";
 import React, { useContext, useEffect, useState } from "react";
 import { useReactToPrint } from "react-to-print";
@@ -14,7 +14,7 @@ const Invoice = React.forwardRef((props, ref) => {
   const [secondPartCustomers, setSecondPartCustomers] = useState([]);
   const [thirdPartCustomers, setThirdPartCustomers] = useState([]);
   const { invoicedata, setInvoicedata } = useContext(InvoiceDataContext);
-  
+
   let totalBottles = 0;
 
   const user = useUser();
@@ -34,7 +34,6 @@ const Invoice = React.forwardRef((props, ref) => {
     },
   ]);
 
- 
   useEffect(() => {
     const date = new Date(Date.now()).toISOString().split("T")[0];
     getdeliverydateData(date);
@@ -58,10 +57,9 @@ const Invoice = React.forwardRef((props, ref) => {
     );
     const res = await customers.json();
     if (res.status === "success") {
-     
       const currentMonth = new Date().getMonth();
-     const currentYear = new Date().getFullYear();
-     const selectedCustomers = res.data.filter((customer) => {
+      const currentYear = new Date().getFullYear();
+      const selectedCustomers = res.data.filter((customer) => {
         const deliveryDate = new Date(customer.delivery_date);
         return (
           deliveryDate.getMonth() === currentMonth &&
@@ -78,14 +76,14 @@ const Invoice = React.forwardRef((props, ref) => {
         0
       );
 
-      const customerData = GetCustomerInvoice()
+      const customerData = GetCustomerInvoice();
       const thirdIndex = Math.ceil(sortedCustomers.length / 3);
       setFirstPartCustomers(sortedCustomers.slice(0, thirdIndex));
       setSecondPartCustomers(sortedCustomers.slice(thirdIndex, thirdIndex * 2));
       setThirdPartCustomers(sortedCustomers.slice(thirdIndex * 2));
 
       setCustomers(sortedCustomers);
-     
+
       return sortedCustomers[0];
     } else {
       return null;
@@ -101,7 +99,6 @@ const Invoice = React.forwardRef((props, ref) => {
         shorturl: "",
       });
       alert("Data Fetched");
-     
     }
   };
 
@@ -120,7 +117,6 @@ const Invoice = React.forwardRef((props, ref) => {
   futureDate.setDate(date.getDate() + 5);
   // Format the date as needed (e.g., YYYY-MM-DD)
   const formattedDate = futureDate.toISOString().split("T")[0];
-
 
   const handleprint = useReactToPrint({
     content: () => componentRef.current,
