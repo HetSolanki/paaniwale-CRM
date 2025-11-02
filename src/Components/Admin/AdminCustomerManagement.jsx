@@ -109,8 +109,6 @@ export default function AdminCustomerManagement() {
         }
       );
 
-      console.log("Customers fetched successfully:", response.data);
-
       if (response.data?.data) {
         setCustomers(response.data.data);
       }
@@ -136,8 +134,6 @@ export default function AdminCustomerManagement() {
         }
       );
 
-      console.log("Customer stats:", response.data);
-
       if (response.data?.data) {
         setStats(response.data.data);
       }
@@ -158,8 +154,6 @@ export default function AdminCustomerManagement() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
-      console.log("Customer entries:", response.data);
 
       if (response.data?.data) {
         setCustomerEntries(response.data.data);

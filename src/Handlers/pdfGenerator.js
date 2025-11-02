@@ -186,9 +186,9 @@ export const pdfGenerator = (
     margin: { left: 15, right: 15 },
   });
 
-  console.log(
-    `PDF generated with ${totalEntries} total entries (${maxRows} rows)`
-  );
+  // console.log(
+  //   `PDF generated with ${totalEntries} total entries (${maxRows} rows)`
+  // );
 
   let yOffset = pdf.lastAutoTable.finalY + 12;
 

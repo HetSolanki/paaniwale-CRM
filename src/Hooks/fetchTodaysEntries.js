@@ -25,7 +25,7 @@ export const fetchTodaysEntries = async () => {
       throw new Error(data.error || "Failed to fetch customers entries");
     }
 
-    console.log(data);  
+    // console.log(data);
     return data.data;
   } catch (e) {
     console.log(e.message);

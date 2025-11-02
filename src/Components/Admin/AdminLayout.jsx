@@ -39,7 +39,6 @@ export default function AdminLayout() {
   }, [navigate]);
 
   const handlePageChange = (page) => {
-    console.log(`admin/${page}`);
     setActivePage(page);
     navigate(`/admin/${page}`);
   };

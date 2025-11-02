@@ -134,8 +134,6 @@ export default function ActivityLogs() {
         }
       );
 
-      console.log("Stats fetched successfully:", response.data.data);
-
       if (response.data?.data) {
         setStats({
           total: response.data.data.totalActivities,

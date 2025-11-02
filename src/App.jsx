@@ -37,6 +37,7 @@ import UserProvider from "./Context/UserContext";
 import AdminCustomerManagement from "./Components/Admin/AdminCustomerManagement";
 import ReactGA from "react-ga4";
 import { config } from "./Data/config";
+import CustomerDashboard from "./Components/Section/CustomerDashboard";
 
 // Initialize Google Analytics
 const GA_TRACKING_ID = config.GA_tracking_id;
@@ -89,6 +90,13 @@ function App() {
                   element={<InquiryDashboard />}
                 />
                 <Route path="/partyorders" element={<PartyOrders />} />
+
+                {/* Customer Portal Routes */}
+                <Route
+                  path="/customerportal/dashboard"
+                  element={<CustomerDashboard />}
+                />
+
                 {/* Admin Routes */}
                 <Route path="/admin/" element={<AdminLayout />}>
                   <Route
