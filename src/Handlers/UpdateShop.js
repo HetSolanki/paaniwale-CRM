@@ -13,6 +13,7 @@ export const updateshop = async (data, image_url) => {
       body: JSON.stringify({
         shop_name: data.shop_name,
         shop_address: data.shop_address,
+        gst_number: data.gst_number,
         image_url,
       }),
     });

@@ -8,6 +8,9 @@ export const shopSchema = new mongoose.Schema({
   shop_address: {
     type: String,
   },
+  gst_number: {
+    type: String,
+  },
   uid: {
     type: mongoose.Schema.ObjectId,
     ref: "User",
@@ -16,5 +19,5 @@ export const shopSchema = new mongoose.Schema({
     type: String,
   },
 });
-    
+
 export default mongoose.model("Shop", shopSchema);

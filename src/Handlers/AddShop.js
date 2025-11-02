@@ -9,6 +9,7 @@ export const createShop = async (data) => {
     },
     body: JSON.stringify({
       shop_name: data.shop_name,
+      gst_number: data.gst_number,
     }),
   });
 

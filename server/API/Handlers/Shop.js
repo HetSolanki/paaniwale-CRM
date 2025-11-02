@@ -14,6 +14,7 @@ export const createShop = async (req, res) => {
   try {
     const newShop = await Shop.create({
       shop_name: req.body.shop_name,
+      gst_number: req.body.gst_number,
       uid: req.user.id,
     });
 
@@ -30,6 +31,7 @@ export const updateShop = async (req, res) => {
     {
       shop_name: req.body.shop_name,
       shop_address: req.body.shop_address,
+      gst_number: req.body.gst_number,
       image_url: req.body.image_url,
     },
     { new: true }

@@ -53,20 +53,24 @@ export function DataTable({ data, columns }) {
       sorting,
       columnFilters,
       columnVisibility,
-      rowSelection,    
+      rowSelection,
     },
   });
 
   React.useEffect(() => {
     function handleResize() {
-      if (window.innerWidth <= 768) {
-        setColumnVisibility({          
+      const isMobile = window.innerWidth <= 768;
+
+      if (isMobile) {
+        setColumnVisibility({
+          cid: false, // Hide customer name on mobile (already shown in header)
           bottle_count: true,
-         delivery_date: true,
+          delivery_date: true,
           delivery_status: true
         });
       } else {
         setColumnVisibility({
+          cid: false, // Hide customer name (already shown in header)
           bottle_count: true,
           delivery_date: true,
           delivery_status: true
@@ -81,58 +85,32 @@ export function DataTable({ data, columns }) {
 
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
+      <div className="flex items-center py-3 sm:py-4">
         <Input
-          placeholder="Filter Entry By Date..."
+          placeholder="Filter by date (YYYY-MM-DD)..."
           value={
             (table.getColumn("delivery_date")?.getFilterValue() as string) ?? ""
           }
           onChange={(event) =>
             table.getColumn("delivery_date")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className="max-w-full sm:max-w-sm text-sm"
         />
-        {/* <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu> */}
       </div>
-      <div className="rounded-md border h-96 overflow-y-auto">
-        <Table >
-          <TableHeader>
+      <div className="rounded-md border max-h-[400px] overflow-y-auto">
+        <Table>
+          <TableHeader className="sticky top-0 bg-background z-10">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}  >
+              <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} >
+                    <TableHead key={header.id} className="text-xs sm:text-sm">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   );
                 })}
@@ -147,7 +125,7 @@ export function DataTable({ data, columns }) {
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="text-xs sm:text-sm py-3">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -160,20 +138,27 @@ export function DataTable({ data, columns }) {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-center text-muted-foreground"
                 >
-                  No results.
+                  No delivery entries found.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 py-4">
+        <div className="text-xs sm:text-sm text-muted-foreground">
+          {table.getRowModel().rows?.length > 0 ? (
+            <>
+              Showing page {table.getState().pagination.pageIndex + 1} of{" "}
+              {table.getPageCount()} ({table.getRowModel().rows.length} entries)
+            </>
+          ) : (
+            "No entries"
+          )}
         </div>
-        <div className="space-x-2">
+        <div className="flex space-x-2">
           <Button
             variant="outline"
             size="sm"

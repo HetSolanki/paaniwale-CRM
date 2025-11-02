@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { jsPDF } from "jspdf";
 import { useUser } from "@/Context/UserContext";
 import { GetAllCustomerInvoice } from "@/Handlers/GetAllCustomerInvoice";
-import { createPaymentLink } from "@/Handlers/CreatepaymentLinkHandler";
+// import { createPaymentLink } from "@/Handlers/CreatepaymentLinkHandler"; // DISABLED - No Razorpay
 import { Button } from "../UI/shadcn-UI/button";
 import { Loader2, Send, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { useToast } from "../UI/shadcn-UI/use-toast";
@@ -100,7 +100,7 @@ export const InvoiceAll = () => {
       phone: customer.customerDetails?.cphone_number || "N/A",
       status: "pending", // pending, processing, success, failed
       message: "Waiting...",
-      paymentLink: null, // Store payment link URL
+      // paymentLink: null, // DISABLED - No Razorpay
       phone_verification_status:
         customer.customerDetails?.phone_verification_status || false,
     }));
@@ -344,63 +344,63 @@ export const InvoiceAll = () => {
 
         const uploadData = await uploadResponse.json();
 
-        // Update status to creating payment link
-        setSendingStatus((prev) =>
-          prev.map((item, i) =>
-            i === index
-              ? { ...item, message: "Creating payment link..." }
-              : item
-          )
-        );
+        // DISABLED: Update status to creating payment link
+        // setSendingStatus((prev) =>
+        //   prev.map((item, i) =>
+        //     i === index
+        //       ? { ...item, message: "Creating payment link..." }
+        //       : item
+        //   )
+        // );
 
-        // Create payment link
-        let paymentLinkUrl = "";
-        try {
-          const paymentLinkData = await createPaymentLink({
-            amount: total_amount,
-            description: `Invoice for ${
-              months[new Date().getMonth()]
-            } ${new Date().getFullYear()}`,
-            customer_email: customer?.customerDetails?.cemail || "",
-            customer_name: customer?.customerDetails?.cname || "",
-            customer_phone: customer?.customerDetails?.cphone_number || "",
-            smsnotify: true,
-            emailnotify: false,
-            reminder_enable: true,
-            account_number: user?.user?.account_number || "",
-          });
+        // DISABLED: Create payment link
+        // let paymentLinkUrl = "";
+        // try {
+        //   const paymentLinkData = await createPaymentLink({
+        //     amount: total_amount,
+        //     description: `Invoice for ${
+        //       months[new Date().getMonth()]
+        //     } ${new Date().getFullYear()}`,
+        //     customer_email: customer?.customerDetails?.cemail || "",
+        //     customer_name: customer?.customerDetails?.cname || "",
+        //     customer_phone: customer?.customerDetails?.cphone_number || "",
+        //     smsnotify: true,
+        //     emailnotify: false,
+        //     reminder_enable: true,
+        //     account_number: user?.user?.account_number || "",
+        //   });
 
-          if (paymentLinkData?.data?.short_url) {
-            paymentLinkUrl = paymentLinkData.data.short_url;
+        //   if (paymentLinkData?.data?.short_url) {
+        //     paymentLinkUrl = paymentLinkData.data.short_url;
 
-            // Update status with payment link
-            setSendingStatus((prev) =>
-              prev.map((item, i) =>
-                i === index
-                  ? {
-                      ...item,
-                      paymentLink: paymentLinkUrl,
-                      message: "Payment link created, sending WhatsApp...",
-                    }
-                  : item
-              )
-            );
-          }
-        } catch (paymentError) {
-          console.error("Payment link creation failed:", paymentError);
+        //     // Update status with payment link
+        //     setSendingStatus((prev) =>
+        //       prev.map((item, i) =>
+        //         i === index
+        //           ? {
+        //               ...item,
+        //               paymentLink: paymentLinkUrl,
+        //               message: "Payment link created, sending WhatsApp...",
+        //             }
+        //           : item
+        //       )
+        //     );
+        //   }
+        // } catch (paymentError) {
+        //   console.error("Payment link creation failed:", paymentError);
 
-          // Update status to show payment link failed but continuing
-          setSendingStatus((prev) =>
-            prev.map((item, i) =>
-              i === index
-                ? {
-                    ...item,
-                    message: "Payment link failed, sending invoice only...",
-                  }
-                : item
-            )
-          );
-        }
+        //   // Update status to show payment link failed but continuing
+        //   setSendingStatus((prev) =>
+        //     prev.map((item, i) =>
+        //       i === index
+        //         ? {
+        //             ...item,
+        //             message: "Payment link failed, sending invoice only...",
+        //           }
+        //         : item
+        //     )
+        //   );
+        // }
 
         // Update status to sending
         setSendingStatus((prev) =>
@@ -473,34 +473,34 @@ export const InvoiceAll = () => {
           );
         }
 
-        // Send payment link as separate text message if available
-        if (paymentLinkUrl) {
-          await new Promise((resolve) => setTimeout(resolve, 1000)); // Small delay
+        // DISABLED: Send payment link as separate text message if available
+        // if (paymentLinkUrl) {
+        //   await new Promise((resolve) => setTimeout(resolve, 1000)); // Small delay
 
-          const paymentMessageResponse = await fetch(
-            `https://graph.facebook.com/${config.whatsapp.version}/${config.whatsapp.phoneNumberId}/messages`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: config.whatsapp.authorization,
-              },
-              body: JSON.stringify({
-                messaging_product: "whatsapp",
-                recipient_type: "individual",
-                to: `91${customer?.customerDetails?.cphone_number}`,
-                type: "text",
-                text: {
-                  body: `💳 *Payment Link*\n\nPay online: ${paymentLinkUrl}\n\nAmount: ₹${total_amount}\n\nThank you for your business! 🙏`,
-                },
-              }),
-            }
-          );
+        //   const paymentMessageResponse = await fetch(
+        //     `https://graph.facebook.com/${config.whatsapp.version}/${config.whatsapp.phoneNumberId}/messages`,
+        //     {
+        //       method: "POST",
+        //       headers: {
+        //         "Content-Type": "application/json",
+        //         Authorization: config.whatsapp.authorization,
+        //       },
+        //       body: JSON.stringify({
+        //         messaging_product: "whatsapp",
+        //         recipient_type: "individual",
+        //         to: `91${customer?.customerDetails?.cphone_number}`,
+        //         type: "text",
+        //         text: {
+        //           body: `💳 *Payment Link*\n\nPay online: ${paymentLinkUrl}\n\nAmount: ₹${total_amount}\n\nThank you for your business! 🙏`,
+        //         },
+        //       }),
+        //     }
+        //   );
 
-          if (!paymentMessageResponse.ok) {
-            console.error("Failed to send payment link message");
-          }
-        }
+        //   if (!paymentMessageResponse.ok) {
+        //     console.error("Failed to send payment link message");
+        //   }
+        // }
 
         // Update status to success
         setSendingStatus((prev) =>
@@ -509,9 +509,7 @@ export const InvoiceAll = () => {
               ? {
                   ...item,
                   status: "success",
-                  message: paymentLinkUrl
-                    ? "Invoice & payment link sent!"
-                    : "Invoice sent successfully!",
+                  message: "Invoice sent successfully!",
                 }
               : item
           )
@@ -653,6 +651,7 @@ export const InvoiceAll = () => {
                     >
                       {status.message}
                     </p>
+                    {/* DISABLED: Payment Link Display
                     {status.paymentLink && (
                       <div className="mt-2 p-2 bg-muted rounded text-xs">
                         <p className="font-medium text-primary mb-1">
@@ -668,6 +667,7 @@ export const InvoiceAll = () => {
                         </a>
                       </div>
                     )}
+                    */}
                   </div>
                 </div>
               ))}

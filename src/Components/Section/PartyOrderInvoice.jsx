@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { jsPDF } from "jspdf";
 import { useUser } from "@/Context/UserContext";
 import { useToast } from "@/Components/UI/shadcn-UI/use-toast";
-import { createPaymentLink } from "@/Handlers/CreatepaymentLinkHandler";
+// import { createPaymentLink } from "@/Handlers/CreatepaymentLinkHandler"; // DISABLED - No Razorpay
 import { updatePartyOrderInvoice } from "@/Handlers/PartyOrderHandler";
 import { Button } from "@/Components/UI/shadcn-UI/button";
 import {
@@ -539,30 +539,30 @@ export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
       const uploadData = await uploadResponse.json();
       console.log("PDF uploaded successfully:", uploadData.secure_url);
 
-      // Create payment link
-      let paymentLinkUrl = "";
-      try {
-        const currentDate = new Date();
-        const paymentLinkData = await createPaymentLink({
-          amount: order.total_amount,
-          description: `Party Order - ${order.event_type} - ${
-            months[currentDate.getMonth()]
-          } ${currentDate.getFullYear()}`,
-          customer_email: "",
-          customer_name: order.party_name,
-          customer_phone: order.party_phone,
-          smsnotify: true,
-          emailnotify: false,
-          reminder_enable: true,
-          account_number: user?.account_number || "",
-        });
+      // DISABLED: Create payment link
+      // let paymentLinkUrl = "";
+      // try {
+      //   const currentDate = new Date();
+      //   const paymentLinkData = await createPaymentLink({
+      //     amount: order.total_amount,
+      //     description: `Party Order - ${order.event_type} - ${
+      //       months[currentDate.getMonth()]
+      //     } ${currentDate.getFullYear()}`,
+      //     customer_email: "",
+      //     customer_name: order.party_name,
+      //     customer_phone: order.party_phone,
+      //     smsnotify: true,
+      //     emailnotify: false,
+      //     reminder_enable: true,
+      //     account_number: user?.account_number || "",
+      //   });
 
-        if (paymentLinkData?.data?.short_url) {
-          paymentLinkUrl = paymentLinkData.data.short_url;
-        }
-      } catch (paymentError) {
-        console.error("Payment link creation failed:", paymentError);
-      }
+      //   if (paymentLinkData?.data?.short_url) {
+      //     paymentLinkUrl = paymentLinkData.data.short_url;
+      //   }
+      // } catch (paymentError) {
+      //   console.error("Payment link creation failed:", paymentError);
+      // }
 
       // Send WhatsApp invoice
       const whatsappDate = new Date();
@@ -624,48 +624,46 @@ export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
       const invoiceResult = await invoiceResponse.json();
       console.log("Invoice sent successfully:", invoiceResult);
 
-      // Send payment link if available
-      if (paymentLinkUrl) {
-        console.log("Sending payment link:", paymentLinkUrl);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+      // DISABLED: Send payment link if available
+      // if (paymentLinkUrl) {
+      //   console.log("Sending payment link:", paymentLinkUrl);
+      //   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        const paymentResponse = await fetch(
-          `https://graph.facebook.com/${config.whatsapp.version}/${config.whatsapp.phoneNumberId}/messages`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: config.whatsapp.authorization,
-            },
-            body: JSON.stringify({
-              messaging_product: "whatsapp",
-              recipient_type: "individual",
-              to: `91${order.party_phone}`,
-              type: "text",
-              text: {
-                body: `💳 *Payment Link*\n\nPay online: ${paymentLinkUrl}\n\nAmount: ₹${order.total_amount}\n\nThank you for your business! 🙏`,
-              },
-            }),
-          }
-        );
+      //   const paymentResponse = await fetch(
+      //     `https://graph.facebook.com/${config.whatsapp.version}/${config.whatsapp.phoneNumberId}/messages`,
+      //     {
+      //       method: "POST",
+      //       headers: {
+      //         "Content-Type": "application/json",
+      //         Authorization: config.whatsapp.authorization,
+      //       },
+      //       body: JSON.stringify({
+      //         messaging_product: "whatsapp",
+      //         recipient_type: "individual",
+      //         to: `91${order.party_phone}`,
+      //         type: "text",
+      //         text: {
+      //           body: `💳 *Payment Link*\n\nPay online: ${paymentLinkUrl}\n\nAmount: ₹${order.total_amount}\n\nThank you for your business! 🙏`,
+      //         },
+      //       }),
+      //     }
+      //   );
 
-        if (!paymentResponse.ok) {
-          console.error("Payment link send failed, but continuing...");
-        } else {
-          const paymentResult = await paymentResponse.json();
-          console.log("Payment link sent successfully:", paymentResult);
-        }
-      }
+      //   if (!paymentResponse.ok) {
+      //     console.error("Payment link send failed, but continuing...");
+      //   } else {
+      //     const paymentResult = await paymentResponse.json();
+      //     console.log("Payment link sent successfully:", paymentResult);
+      //   }
+      // }
 
       // Update invoice status
       console.log("Updating invoice status...");
-      await updatePartyOrderInvoice(order._id, paymentLinkUrl);
+      await updatePartyOrderInvoice(order._id, ""); // No payment link
 
       toast({
         title: "Success",
-        description: paymentLinkUrl
-          ? "Invoice & payment link sent successfully!"
-          : "Invoice sent successfully!",
+        description: "Invoice sent successfully!",
       });
 
       if (onSuccess) onSuccess();
@@ -757,7 +755,8 @@ export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
                 <FileText className="mr-2 h-4 w-4" />
                 {pdfUrl ? "Refresh" : "Preview"}
               </Button>
-              <Button
+              {/* Disabled temporarily */}
+              {/* <Button
                 onClick={handleSendInvoice}
                 disabled={loading}
                 className="flex-1"
@@ -773,7 +772,7 @@ export function PartyOrderInvoice({ order, open, onClose, onSuccess }) {
                     Send WhatsApp
                   </>
                 )}
-              </Button>
+              </Button> */}
             </div>
           </div>
         </DialogFooter>

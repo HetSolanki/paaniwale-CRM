@@ -47,34 +47,28 @@ export const createUser = async (req, res) => {
 };
 
 export const updateUser = async (req, res) => {
-  const updatedUser = await User.findByIdAndUpdate(
-    req.params.id,
-    {
-      fname: req.body.fname,
-      lname: req.body.lname,
-      phone_number: req.body.phone_number,
-      email: req.body.email,
-      // password: await hashPassword(req.body.password),
-    },
-    { new: true }
-  );
+  const updateData = {
+    fname: req.body.fname,
+    lname: req.body.lname,
+    phone_number: req.body.phone_number,
+    email: req.body.email,
+  };
+
+  // Add bank details if provided
+  if (
+    req.body.branch_ifsc_code ||
+    req.body.account_number ||
+    req.body.benificiary_name
+  ) {
+    updateData.branch_ifsc_code = req.body.branch_ifsc_code;
+    updateData.account_number = req.body.account_number;
+    updateData.benificiary_name = req.body.benificiary_name;
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, {
+    new: true,
+  });
   res.json({ data: updatedUser, status: "success" });
-};
-
-export const updateBankDetails = async (req, res) => {
-  const updated = await User.findByIdAndUpdate(
-    req.params.id,
-    {
-      bank_details: {
-        branch_ifsc_code: req.body.branch_ifsc_code,
-        account_number: req.body.account_number,
-        benificiary_name: req.body.benificiary_name,
-      },
-    },
-    { new: true }
-  );
-
-  res.json({ data: updated, status: "success" });
 };
 
 export const deleteUser = async (req, res) => {
