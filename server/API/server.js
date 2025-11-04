@@ -14,8 +14,10 @@ import adminStats_api from "./routes/adminStats_route.js";
 import settings_api from "./routes/settings_route.js";
 import reports_api from "./routes/reports_route.js";
 import customerportal_api from "./routes/customerPortal_route.js";
+import autoInvoice_api from "./routes/autoInvoice_route.js";
 import cors from "cors";
 import process from "process";
+import { initAutoInvoiceScheduler } from "./Handlers/AutoInvoice.js";
 
 const app = express();
 
@@ -95,6 +97,10 @@ app.use("/api/activity-log", activitylog_api);
 app.use("/api/admin/stats", adminStats_api);
 app.use("/api/settings", settings_api);
 app.use("/api/reports", reports_api);
+app.use("/api/auto-invoice", autoInvoice_api);
+
+// Initialize auto invoice scheduler
+initAutoInvoiceScheduler();
 
 app.use((err, req, res, next) => {
   if (res.headersSent) {

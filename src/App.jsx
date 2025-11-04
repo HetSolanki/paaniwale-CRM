@@ -38,6 +38,7 @@ import AdminCustomerManagement from "./Components/Admin/AdminCustomerManagement"
 import ReactGA from "react-ga4";
 import { config } from "./Data/config";
 import CustomerDashboard from "./Components/Section/CustomerDashboard";
+import AutoInvoiceSettings from "./Components/Section/AutoInvoiceSettings";
 
 // Initialize Google Analytics
 const GA_TRACKING_ID = config.GA_tracking_id;
@@ -168,6 +169,12 @@ function App() {
                   path="/security"
                   element={
                     <SettingsLayout children={<SettingsSecurityPage />} />
+                  }
+                />
+                <Route
+                  path="/auto-invoice"
+                  element={
+                    <SettingsLayout children={<AutoInvoiceSettings />} />
                   }
                 />
                 <Route path="/404" element={<Error />} />

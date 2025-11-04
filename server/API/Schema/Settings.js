@@ -111,6 +111,25 @@ const settingsSchema = new mongoose.Schema(
       type: Number,
       default: 10,
     },
+
+    // Auto Invoice Settings
+    auto_invoice_enabled: {
+      type: Boolean,
+      default: false,
+    },
+    auto_invoice_day: {
+      type: Number,
+      default: 1, // Day of month (1-31)
+      min: 1,
+      max: 31,
+    },
+    auto_invoice_time: {
+      type: String,
+      default: "09:00", // HH:MM format (24-hour)
+    },
+    last_auto_invoice_run: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );

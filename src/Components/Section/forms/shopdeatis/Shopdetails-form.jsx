@@ -15,45 +15,70 @@ import {
 } from "@/Components/UI/shadcn-UI/form";
 import { Input } from "@/Components/UI/shadcn-UI/input";
 import { useUser } from "@/Context/UserContext";
-import { ToastContainer, toast } from "react-toastify";
+import { useToast } from "@/Components/UI/shadcn-UI/use-toast";
 import { updateshop } from "@/Handlers/UpdateShop";
 import { useState } from "react";
 import { uploadFileCloudinary } from "@/Handlers/uploadFileCloudinary";
 
 const ShopFormSchema = z.object({
-  shop_name: z.string(),
+  shop_name: z.string().min(1, "Shop name is required"),
   shop_address: z
     .string()
     .min(2, {
       message: "Address must be at least 2 characters.",
     })
-    .max(30, {
-      message: "Address must not be longer than 30 characters.",
+    .max(100, {
+      message: "Address must not be longer than 100 characters.",
     }),
   gst_number: z.string().optional(),
 });
 
 export function ShopForm() {
   const { user, refetchUser } = useUser();
+  const { toast } = useToast();
 
   const form = useForm({
     resolver: zodResolver(ShopFormSchema),
+    defaultValues: {
+      shop_name: user?.shop_name || "",
+      shop_address: user?.shop_address || "",
+      gst_number: user?.gst_number || "",
+    },
   });
 
   const [file, setFile] = useState(null);
 
   async function onSubmit(data) {
-    const res = await uploadFileCloudinary(file);
-    const updatedUser = await updateshop(data, res.secure_url);
-    refetchUser();
-    if (updatedUser.status === "success") {
-      toast.success("Shop Details Updated Successfully", {
-        position: "bottom-right",
-        autoClose: 1000,
-        theme: "light",
-        draggable: true,
+    try {
+      let imageUrl = user?.image_url; // Keep existing image by default
+
+      // Only upload new image if file is selected
+      if (file) {
+        const res = await uploadFileCloudinary(file);
+        imageUrl = res.secure_url;
+      }
+
+      const updatedUser = await updateshop(data, imageUrl);
+
+      if (updatedUser.status === "success") {
+        toast({
+          title: "Success",
+          description: "Shop Details Updated Successfully",
+        });
+        await refetchUser();
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update shop details",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred while updating",
+        variant: "destructive",
       });
-      await refetchUser();
     }
   }
 
@@ -65,7 +90,6 @@ export function ShopForm() {
             <FormField
               control={form.control}
               name="shop_name"
-              defaultValue={user?.shop_name}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Shop Name</FormLabel>
@@ -86,7 +110,6 @@ export function ShopForm() {
             <FormField
               control={form.control}
               name="shop_address"
-              defaultValue={user?.shop_address}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Shop Address</FormLabel>
@@ -108,7 +131,6 @@ export function ShopForm() {
             <FormField
               control={form.control}
               name="gst_number"
-              defaultValue={user?.gst_number || ""}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>GST Number (Optional)</FormLabel>
@@ -165,7 +187,6 @@ export function ShopForm() {
             <Button type="submit">Update Shop Details</Button>
           </form>
         </Form>
-        <ToastContainer />
       </>
     )
   );
