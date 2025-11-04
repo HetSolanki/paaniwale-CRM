@@ -1,5 +1,5 @@
 import { Button } from "@/Components/UI/shadcn-UI/button";
-import { ToastContainer, toast } from "react-toastify";
+import { useToast } from "@/Components/UI/shadcn-UI/use-toast";
 import {
   Popover,
   PopoverContent,
@@ -39,17 +39,17 @@ const Pages = [
 
 export function DisplayForm({ setDefaultRoute }) {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
 
   const dropbox = document.getElementById("DefaulPage");
   const checkvalidation = () => {
     if (dropbox.outerText === "Select Default Page...") {
-      toast.error("Please select a Default Page", {
-        position: "bottom-right",
-        autoClose: 1000,
-        theme: "light",
-        draggable: true,
+      toast({
+        title: "Error",
+        description: "Please select a Default Page",
+        variant: "destructive",
       });
       dropbox.focus();
       dropbox.style.border = "1px solid red";
@@ -68,11 +68,9 @@ export function DisplayForm({ setDefaultRoute }) {
       localStorage.setItem("defaultRoute", newDefaultRoute);
       setDefaultRoute(newDefaultRoute);
 
-      toast.success("Default Page Updated Successfully", {
-        position: "bottom-right",
-        autoClose: 1000,
-        theme: "light",
-        draggable: true,
+      toast({
+        title: "Success",
+        description: "Default Page Updated Successfully",
       });
     }
   };
@@ -123,11 +121,13 @@ export function DisplayForm({ setDefaultRoute }) {
           </Command>
         </PopoverContent>
       </Popover>
-      <div className="
+      <div
+        className="
         flex
         space-x-4
         mt-4
-      ">
+      "
+      >
         <Button type="submit" onClick={handledisplaysubmit}>
           Set DefaltPage
         </Button>
@@ -135,8 +135,6 @@ export function DisplayForm({ setDefaultRoute }) {
           Go to DefaltPage
         </Button>
       </div>
-
-      <ToastContainer />
     </>
   );
 }

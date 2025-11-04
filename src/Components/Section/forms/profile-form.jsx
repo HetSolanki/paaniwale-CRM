@@ -16,7 +16,7 @@ import {
 import { Input } from "../../UI/shadcn-UI/input";
 import { useUser } from "@/Context/UserContext";
 import { updateUser } from "@/Handlers/UpdateUser";
-import { toast, ToastContainer } from "react-toastify";
+import { useToast } from "@/Components/UI/shadcn-UI/use-toast";
 
 const profileFormSchema = z.object({
   phone_number: z
@@ -43,6 +43,7 @@ const profileFormSchema = z.object({
 
 export function ProfileForm() {
   const { user, refetchUser } = useUser();
+  const { toast } = useToast();
 
   const form = useForm({
     resolver: zodResolver(profileFormSchema),
@@ -53,11 +54,9 @@ export function ProfileForm() {
     const updatedUser = await updateUser(data, uid);
     if (updatedUser.status === "success") {
       await refetchUser();
-      toast.success("User Updated Successfully", {
-        position: "bottom-right",
-        autoClose: 1000,
-        theme: "light",
-        draggable: true,
+      toast({
+        title: "Success",
+        description: "User Updated Successfully",
       });
     }
   }
@@ -147,7 +146,6 @@ export function ProfileForm() {
           </form>
         </Form>
       )}
-      <ToastContainer />
     </>
   );
 }

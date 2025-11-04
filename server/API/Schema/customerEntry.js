@@ -26,4 +26,5 @@ const customerEntrySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("CustomerEntry", customerEntrySchema);
+export default mongoose.models.CustomerEntry ||
+  mongoose.model("CustomerEntry", customerEntrySchema);

@@ -11,7 +11,7 @@ import {
   FormMessage,
 } from "@/Components/UI/shadcn-UI/form";
 import { Input } from "@/Components/UI/shadcn-UI/input";
-import { toast, ToastContainer } from "react-toastify";
+import { useToast } from "@/Components/UI/shadcn-UI/use-toast";
 import { useUser } from "@/Context/UserContext";
 import { Button } from "@/Components/UI/shadcn-UI/button";
 import { updateUser } from "@/Handlers/UpdateUser";
@@ -24,6 +24,7 @@ const bankdetailsFormSchema = z.object({
 
 export function BankdetailsForm() {
   const { user, refetchUser, loading } = useUser();
+  const { toast } = useToast();
 
   const form = useForm({
     resolver: zodResolver(bankdetailsFormSchema),
@@ -50,11 +51,9 @@ export function BankdetailsForm() {
     const updatedUser = await updateUser(data, uid);
     if (updatedUser.status === "success") {
       await refetchUser();
-      toast.success("Bank Details Updated Successfully", {
-        position: "bottom-right",
-        autoClose: 1000,
-        theme: "light",
-        draggable: true,
+      toast({
+        title: "Success",
+        description: "Bank Details Updated Successfully",
       });
     }
   }
@@ -122,7 +121,6 @@ export function BankdetailsForm() {
           <Button type="submit">Request For Verify Bank Details</Button>
         </form>
       </Form>
-      <ToastContainer />
     </>
   );
 }

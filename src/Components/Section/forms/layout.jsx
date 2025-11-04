@@ -1,7 +1,15 @@
 /* eslint-disable react/prop-types */
 import Navbar from "../Navbar";
 import { SidebarNav } from "./components/sidebar-nav";
-import { User, Store, Shield, Palette, CreditCard } from "lucide-react";
+import {
+  User,
+  Store,
+  Shield,
+  Palette,
+  CreditCard,
+  CalendarClock,
+} from "lucide-react";
+import { Toaster } from "../../UI/shadcn-UI/toaster";
 
 const sidebarNavItems = [
   {
@@ -21,6 +29,12 @@ const sidebarNavItems = [
     href: "/bankdetails",
     icon: CreditCard,
     description: "Configure payment methods",
+  },
+  {
+    title: "Auto Invoice",
+    href: "/auto-invoice",
+    icon: CalendarClock,
+    description: "Schedule automatic invoice sending",
   },
   // {
   //   title: "Notifications",
@@ -78,6 +92,7 @@ export default function SettingsLayout({ children }) {
           </div>
         </div>
       </div>
+      <Toaster />
     </>
   );
 }
