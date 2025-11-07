@@ -43,6 +43,8 @@ const allowedOrigins = [
   "https://www.paaniwale.hetsolanki.tech",
   "https://api.paaniwale.hetsolanki.tech",
   "https://preview.api.paaniwale.hetsolanki.tech",
+  "https://paaniwale.tech",
+  "https://api.paaniwale.tech",
 ];
 
 // CORS configuration for both development and production
