@@ -1,49 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="https://res.cloudinary.com/fdgj4xhhgq/image/upload/v1722239069/Dhandha-Assests/paniwala-1300x1300_xks3or.png"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paaniwale</title>
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/png"
-    href="https://res.cloudinary.com/fdgj4xhhgq/image/upload/v1722239069/Dhandha-Assests/paniwala-1300x1300_xks3or.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Paaniwale</title>
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Paaniwale" />
+    <meta
+      property="og:description"
+      content="Our application provides an efficient solution for tracking daily water bottle sales. Designed with ease of use in mind, it allows shop owners and managers to record and monitor sales activity in real-time. Features include comprehensive sales analytics, inventory management, and customizable reports to help you make informed business decisions."
+    />
+    <meta
+      property="og:image"
+      content="https://res.cloudinary.com/fdgj4xhhgq/image/upload/v1722239069/Dhandha-Assests/paniwala-1300x1300_xks3or.png"
+    />
+    <meta property="og:url" content="https://paaniwale.dhruvprajapati.tech" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Paaniwale.dhruvprajapati.tech" />
+    <meta property="og:locale" content="en_US" />
 
-  <!-- Open Graph Meta Tags -->
-  <meta property="og:title" content="Paaniwale" />
-  <meta property="og:description"
-    content="Our application provides an efficient solution for tracking daily water bottle sales. Designed with ease of use in mind, it allows shop owners and managers to record and monitor sales activity in real-time. Features include comprehensive sales analytics, inventory management, and customizable reports to help you make informed business decisions." />
-  <meta property="og:image"
-    content="https://res.cloudinary.com/fdgj4xhhgq/image/upload/v1722239069/Dhandha-Assests/paniwala-1300x1300_xks3or.png" />
-  <meta property="og:url" content="https://paaniwale.dhruvprajapati.tech" />
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="Paaniwale.dhruvprajapati.tech" />
-  <meta property="og:locale" content="en_US" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#2196F3" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Paaniwale" />
+    <link rel="apple-touch-icon" href="/apple-icon-180.png" />
+  </head>
 
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#2196F3">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Paaniwale">
-  <link rel="apple-touch-icon" href="/apple-icon-180.png">
-</head>
-
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.jsx"></script>
-  <script src="https://unpkg.com/flowbite@1.4.7/dist/flowbite.js"></script>
-</body>
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then((registration) => {
-          console.log('Service Worker registered successfully:', registration.scope);
-        })
-        .catch((error) => {
-          console.log('Service Worker registration failed:', error);
-        });
-    });
-  }
-</script>
-
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <script src="https://unpkg.com/flowbite@1.4.7/dist/flowbite.js"></script>
+    <!-- Service Worker is automatically registered by vite-plugin-pwa -->
+  </body>
 </html>

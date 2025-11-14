@@ -7,12 +7,18 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+# Environment Variables
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production
+.env.production.local
+.env.*.local
+envKeys.js
+
+# Node modules
+node_modules
 dist
 dist-ssr
 *.local
@@ -27,6 +33,74 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-envKeys.js
+
+# Build outputs
+build
+.cache
+.parcel-cache
+
+# Testing
+coverage
+.nyc_output
+
+# Misc
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# OS Files
+Thumbs.db
+.DS_Store
+
+# PWA
+dev-dist
+sw.js.map
+workbox-*.js
+workbox-*.js.map
+
+# Database
 server/API/Schema/db/
+*.sqlite
+*.sqlite3
+*.db
+data/
+
+# Testing & Development
 test.http
+*.test.js
+*.spec.js
+
+# Dependencies
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# IDE
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# SSL Certificates
+*.pem
+*.key
+*.crt
+*.cer
+
+# Vercel
+.vercel
+
+# Sentry
+.sentryclirc

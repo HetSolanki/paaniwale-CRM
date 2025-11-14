@@ -15,7 +15,7 @@ import CustomerEntry from "./Components/Section/CustomerEntry";
 import CustomerEntryData from "./Components/Section/CustomerEntryData";
 import { ThemeProvider } from "./Context/ThemeProviderContext ";
 import Invoice from "./Components/Section/Invoice";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Error from "./Components/Section/404";
 import ComingSoonPage from "./Components/Section/ComingSoonPage";
 import UnderConstructionPage from "./Components/Section/UnderConstructionPage";
@@ -39,6 +39,7 @@ import ReactGA from "react-ga4";
 import { config } from "./Data/config";
 import CustomerDashboard from "./Components/Section/CustomerDashboard";
 import AutoInvoiceSettings from "./Components/Section/AutoInvoiceSettings";
+import OfflinePage from "./Components/Section/OfflinePage";
 
 // Initialize Google Analytics
 const GA_TRACKING_ID = config.GA_tracking_id;
@@ -60,6 +61,33 @@ function PageTracker() {
 
 function App() {
   const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    // Handle online/offline events
+    const handleOnline = () => {
+      setIsOnline(true);
+      console.log("App is now ONLINE");
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      console.log("App is now OFFLINE");
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  // Show offline page when not connected
+  if (!isOnline) {
+    return <OfflinePage />;
+  }
 
   return (
     <>
