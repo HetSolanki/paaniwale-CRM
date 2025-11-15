@@ -55,4 +55,14 @@ const paymentDetailSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Indexes for query optimization
+paymentDetailSchema.index({ cid: 1, payment_date: -1 }); // For customer's payment history
+paymentDetailSchema.index({ uid: 1, payment_date: -1 }); // For user's payments by date
+paymentDetailSchema.index({ uid: 1, payment_status: 1 }); // For filtering by status
+paymentDetailSchema.index({ payment_status: 1, createdAt: -1 }); // For pending payments
+paymentDetailSchema.index({ transaction_id: 1 }); // For transaction lookups
+paymentDetailSchema.index({ approved_by: 1 }); // For approval tracking
+paymentDetailSchema.index({ createdAt: -1 }); // For recent payments
+paymentDetailSchema.index({ cid: 1, createdAt: -1 }); // For customer's recent payments
+
 export default mongoose.model("PaymentDetail", paymentDetailSchema);

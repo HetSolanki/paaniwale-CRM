@@ -73,25 +73,90 @@ export const createCustomer = async (req, res) => {
     });
     res.json({ data: newCustomer, status: "success" });
   } catch (error) {
-    res.json({ error });
+    console.error("Error creating customer:", error);
+
+    // Handle duplicate key error
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      return res.status(400).json({
+        status: "error",
+        message: `A customer with this ${
+          field === "cphone_number" ? "phone number" : field
+        } already exists for this user.`,
+        field: field,
+      });
+    }
+
+    // Handle validation errors
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        status: "error",
+        message: "Validation failed",
+        errors: Object.values(error.errors).map((e) => e.message),
+      });
+    }
+
+    // Generic error
+    res.status(500).json({
+      status: "error",
+      message: "Failed to create customer. Please try again.",
+    });
   }
 };
 
 export const updateCustomer = async (req, res) => {
-  const updatedCustomer = await Customer.findByIdAndUpdate(
-    req.params.id,
-    {
-      cname: req.body.cname,
-      cphone_number: req.body.cphone_number,
-      caddress: req.body.caddress,
-      bottle_price: req.body.bottle_price,
-      delivery_sequence_number: req.body.delivery_sequence_number,
-      phone_verification_status: req.body.phone_verification_status
-    },
-    { new: true }
-  );
+  try {
+    const updatedCustomer = await Customer.findByIdAndUpdate(
+      req.params.id,
+      {
+        cname: req.body.cname,
+        cphone_number: req.body.cphone_number,
+        caddress: req.body.caddress,
+        bottle_price: req.body.bottle_price,
+        delivery_sequence_number: req.body.delivery_sequence_number,
+        phone_verification_status: req.body.phone_verification_status,
+      },
+      { new: true, runValidators: true }
+    );
 
-  res.json({ data: updatedCustomer, status: "success" });
+    if (!updatedCustomer) {
+      return res.status(404).json({
+        status: "error",
+        message: "Customer not found",
+      });
+    }
+
+    res.json({ data: updatedCustomer, status: "success" });
+  } catch (error) {
+    console.error("Error updating customer:", error);
+
+    // Handle duplicate key error
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      return res.status(400).json({
+        status: "error",
+        message: `A customer with this ${
+          field === "cphone_number" ? "phone number" : field
+        } already exists for this user.`,
+        field: field,
+      });
+    }
+
+    // Handle validation errors
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        status: "error",
+        message: "Validation failed",
+        errors: Object.values(error.errors).map((e) => e.message),
+      });
+    }
+
+    // Generic error
+    res.status(500).json({
+      status: "error",
+      message: "Failed to update customer. Please try again.",
+    });
+  }
 };
 
 export const deleteCustomer = async (req, res) => {

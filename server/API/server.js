@@ -15,9 +15,11 @@ import settings_api from "./routes/settings_route.js";
 import reports_api from "./routes/reports_route.js";
 import customerportal_api from "./routes/customerPortal_route.js";
 import autoInvoice_api from "./routes/autoInvoice_route.js";
+import cache_api from "./routes/cache_route.js";
 import cors from "cors";
 import process from "process";
 import { initAutoInvoiceScheduler } from "./Handlers/AutoInvoice.js";
+import { isRedisConnected } from "./Module/redisClient.js";
 
 const app = express();
 
@@ -72,6 +74,8 @@ app.get("/", (req, res) => {
 
 // Health check endpoint
 app.get("/health", (req, res) => {
+  const redisStatus = isRedisConnected() ? "connected" : "disconnected";
+
   res.status(200).json({
     status: "healthy",
     timestamp: new Date().toISOString(),
@@ -79,6 +83,9 @@ app.get("/health", (req, res) => {
     memory: process.memoryUsage(),
     environment: process.env.NODE_ENV || "development",
     version: "1.0.0",
+    services: {
+      redis: redisStatus,
+    },
   });
 });
 
@@ -100,6 +107,7 @@ app.use("/api/admin/stats", adminStats_api);
 app.use("/api/settings", settings_api);
 app.use("/api/reports", reports_api);
 app.use("/api/auto-invoice", autoInvoice_api);
+app.use("/api/cache", cache_api);
 
 // Initialize auto invoice scheduler
 initAutoInvoiceScheduler();

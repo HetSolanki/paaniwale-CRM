@@ -47,5 +47,13 @@ const customerSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-customerSchema.index({ uid: 1, cphone_number: 1 }, { unique: 1 });
+// Indexes for query optimization
+customerSchema.index({ uid: 1, cphone_number: 1 }, { unique: true });
+customerSchema.index({ uid: 1, status: 1 }); // For filtering active customers by user
+customerSchema.index({ uid: 1, delivery_sequence_number: 1 }); // For delivery ordering
+customerSchema.index({ cphone_number: 1 }); // For phone number lookups
+customerSchema.index({ email: 1 }); // For email lookups
+customerSchema.index({ createdAt: -1 }); // For recent customers sorting
+customerSchema.index({ uid: 1, createdAt: -1 }); // Compound index for user's recent customers
+
 export default mongoose.model("Customer", customerSchema);

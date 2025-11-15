@@ -21,6 +21,7 @@ if (result.error) {
 // Import modules after loading environment variables
 import app from "./server.js";
 import { connect } from "./connect.js";
+import { connectRedis } from "./Module/redisClient.js";
 
 const port = process.env.PORT || 4000;
 
@@ -33,10 +34,29 @@ console.log(
   "RAZORPAY_API_KEY:",
   process.env.RAZORPAY_API_KEY ? "✓ Loaded" : "✗ Missing"
 );
+console.log(
+  "REDIS_URL:",
+  process.env.REDIS_URL ? "✓ Loaded" : "✗ Missing (using default)"
+);
 
-connect(process.env.MONGO_CONNECTION).then(() => {
-  app.listen(4000, "0.0.0.0", () => {
-    console.log(`Server is running on PORT:${port}`);
-    console.log(`http://localhost:${port}`);
+// Connect to MongoDB and Redis
+Promise.all([
+  connect(process.env.MONGO_CONNECTION),
+  connectRedis().catch((err) => {
+    console.log(
+      "⚠️ Redis connection failed, continuing without cache:",
+      err.message
+    );
+  }),
+])
+  .then(() => {
+    app.listen(4000, "0.0.0.0", () => {
+      console.log(`🚀 Server is running on PORT:${port}`);
+      console.log(`📡 http://localhost:${port}`);
+      console.log(`💾 MongoDB: Connected`);
+    });
+  })
+  .catch((error) => {
+    console.error("❌ Failed to start server:", error);
+    process.exit(1);
   });
-});

@@ -432,10 +432,6 @@ export const initAutoInvoiceScheduler = () => {
     console.log("⏰ Running auto invoice scheduler check...");
     checkScheduledInvoices();
   });
-
-  console.log(
-    "✅ Auto invoice scheduler initialized (Running every minute for testing)"
-  );
 };
 
 /**

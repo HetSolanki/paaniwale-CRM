@@ -58,4 +58,12 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Indexes for query optimization
+userSchema.index({ phone_number: 1 }, { unique: true }); // Already unique but explicit index
+userSchema.index({ email: 1 }, { unique: true, sparse: true }); // Sparse for optional emails
+userSchema.index({ status: 1 }); // For filtering by status
+userSchema.index({ is_admin: 1 }); // For admin queries
+userSchema.index({ last_login: -1 }); // For recent activity
+userSchema.index({ createdAt: -1 }); // For user registration date sorting
+
 export default mongoose.model("User", userSchema);

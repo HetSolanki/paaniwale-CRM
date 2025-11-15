@@ -134,4 +134,8 @@ const settingsSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Indexes for query optimization
+settingsSchema.index({ uid: 1 }, { unique: true }); // One settings per user
+settingsSchema.index({ auto_invoice_enabled: 1, auto_invoice_day: 1 }); // For auto invoice scheduler
+
 export default mongoose.model("Settings", settingsSchema);
