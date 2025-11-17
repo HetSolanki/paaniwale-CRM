@@ -49,12 +49,18 @@ Promise.all([
     );
   }),
 ])
-  .then(() => {
+  .then(async () => {
     app.listen(4000, "0.0.0.0", () => {
       console.log(`🚀 Server is running on PORT:${port}`);
       console.log(`📡 http://localhost:${port}`);
       console.log(`💾 MongoDB: Connected`);
     });
+
+    // Initialize auto invoice scheduler after DB connection
+    const { initAutoInvoiceScheduler } = await import(
+      "./Handlers/AutoInvoice.js"
+    );
+    initAutoInvoiceScheduler();
   })
   .catch((error) => {
     console.error("❌ Failed to start server:", error);

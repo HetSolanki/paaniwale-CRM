@@ -18,7 +18,6 @@ import autoInvoice_api from "./routes/autoInvoice_route.js";
 import cache_api from "./routes/cache_route.js";
 import cors from "cors";
 import process from "process";
-import { initAutoInvoiceScheduler } from "./Handlers/AutoInvoice.js";
 import { isRedisConnected } from "./Module/redisClient.js";
 
 const app = express();
@@ -108,9 +107,6 @@ app.use("/api/settings", settings_api);
 app.use("/api/reports", reports_api);
 app.use("/api/auto-invoice", autoInvoice_api);
 app.use("/api/cache", cache_api);
-
-// Initialize auto invoice scheduler
-initAutoInvoiceScheduler();
 
 app.use((err, req, res, next) => {
   if (res.headersSent) {
