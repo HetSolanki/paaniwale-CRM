@@ -515,7 +515,7 @@ export default function PaymentDetails() {
                   </CardHeader>
 
                   <CardContent className="p-0">
-                    <div className="p-6">
+                    <div className="p-4 sm:p-6">
                       <DataTable data={pendingPaymentsData} columns={columns} />
                     </div>
                   </CardContent>

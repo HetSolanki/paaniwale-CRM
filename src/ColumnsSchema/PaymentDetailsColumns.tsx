@@ -91,10 +91,10 @@ export const columns: ColumnDef<Customer>[] = [
     accessorKey: "id",
     header: ({ column }) => {
       return (
-        <div className="text-left">
+        <div className="text-left hidden sm:table-cell">
           <Button
             variant="ghost"
-            className="px-0"
+            className="px-0 h-8"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Sr
@@ -104,37 +104,43 @@ export const columns: ColumnDef<Customer>[] = [
       );
     },
     cell: ({ row }) => (
-      <div className="lowercase text-left">{row.getValue("id")}</div>
+      <div className="text-left hidden sm:table-cell">{row.getValue("id")}</div>
     ),
   },
   {
     accessorKey: "cname",
-    header: () => <div className="text-left">Customer Name</div>,
+    header: () => <div className="text-left font-semibold">Customer</div>,
     cell: ({ row }) => (
-      <div className="capitalize text-left">{row.getValue("cname")}</div>
+      <div className="text-left">
+        <div className="capitalize font-medium">{row.getValue("cname")}</div>
+        {/* Show address on mobile as subtitle */}
+        <div className="text-xs text-muted-foreground mt-0.5 sm:hidden line-clamp-1">
+          {row.original.caddress}
+        </div>
+      </div>
     ),
   },
   {
     accessorKey: "caddress",
-    header: () => <div className="text-left">Address</div>,
+    header: () => <div className="text-left hidden sm:table-cell font-semibold">Address</div>,
     cell: ({ row }) => {
       return (
-        <div className="lowercase text-left">{row.getValue("caddress")}</div>
+        <div className="text-left hidden sm:table-cell">{row.getValue("caddress")}</div>
       );
     },
   },
   {
     accessorKey: "cphone_number",
-    header: () => <div className="text-left">Phone Number</div>,
+    header: () => <div className="text-left hidden sm:table-cell font-semibold">Phone</div>,
     cell: ({ row }) => (
-      <div className="lowercase text-left">{row.getValue("cphone_number")}</div>
+      <div className="text-left hidden sm:table-cell">{row.getValue("cphone_number")}</div>
     ),
   },
   {
     accessorKey: "totalamount",
-    header: () => <div className="text-left">Total Amount</div>,
+    header: () => <div className="text-left font-semibold">Amount</div>,
     cell: ({ row }) => (
-      <div className="lowercase text-left">{row.getValue("totalamount")}</div>
+      <div className="text-left font-semibold whitespace-nowrap">₹{row.getValue("totalamount")}</div>
     ),
   },
 
@@ -148,67 +154,55 @@ export const columns: ColumnDef<Customer>[] = [
       const queryClient = useQueryClient();
       const customer = row.original;
 
-      const ResponsiveStack = styled.div`
-        display: flex;
-        flex-direction: row;
-        gap: 8px;
-        align-items: center;
-
-        @media (max-width: 600px) {
-          flex-direction: column;
-          margin-left: -10px;
-        }
-      `;
-
       return (
-        <>
-          <ResponsiveStack>
-            <Select value={paymentMode} onValueChange={setPaymentMode}>
-              <SelectTrigger className="w-[120px] h-8 text-xs">
-                <SelectValue placeholder="Mode" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="cash">
-                  <div className="flex items-center gap-1.5">
-                    <Banknote className="h-3.5 w-3.5" />
-                    <span>Cash</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="upi">
-                  <div className="flex items-center gap-1.5">
-                    <Wallet className="h-3.5 w-3.5" />
-                    <span>UPI</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="card">
-                  <div className="flex items-center gap-1.5">
-                    <CreditCard className="h-3.5 w-3.5" />
-                    <span>Card</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="netbanking">
-                  <div className="flex items-center gap-1.5">
-                    <Building2 className="h-3.5 w-3.5" />
-                    <span>Net Banking</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="bank_transfer">
-                  <div className="flex items-center gap-1.5">
-                    <Building2 className="h-3.5 w-3.5" />
-                    <span>Bank Transfer</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="other">
-                  <div className="flex items-center gap-1.5">
-                    <MoreHorizontal className="h-3.5 w-3.5" />
-                    <span>Other</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+        <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center min-w-[140px] sm:min-w-0">
+          <Select value={paymentMode} onValueChange={setPaymentMode}>
+            <SelectTrigger className="w-full sm:w-[110px] h-8 text-xs">
+              <SelectValue placeholder="Mode" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="cash">
+                <div className="flex items-center gap-1.5">
+                  <Banknote className="h-3.5 w-3.5" />
+                  <span>Cash</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="upi">
+                <div className="flex items-center gap-1.5">
+                  <Wallet className="h-3.5 w-3.5" />
+                  <span>UPI</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="card">
+                <div className="flex items-center gap-1.5">
+                  <CreditCard className="h-3.5 w-3.5" />
+                  <span>Card</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="netbanking">
+                <div className="flex items-center gap-1.5">
+                  <Building2 className="h-3.5 w-3.5" />
+                  <span>Net Banking</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="bank_transfer">
+                <div className="flex items-center gap-1.5">
+                  <Building2 className="h-3.5 w-3.5" />
+                  <span>Bank Transfer</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="other">
+                <div className="flex items-center gap-1.5">
+                  <MoreHorizontal className="h-3.5 w-3.5" />
+                  <span>Other</span>
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="flex gap-2">
             <Button
               size="sm"
-              className="h-8 gap-1 bg-emerald-600 hover:bg-emerald-700"
+              className="h-8 gap-1 bg-emerald-600 hover:bg-emerald-700 flex-1 sm:flex-initial"
               title="Mark as Received"
               onClick={() =>
                 handleEntry(
@@ -221,14 +215,15 @@ export const columns: ColumnDef<Customer>[] = [
                 )
               }
             >
-              <ClipboardCheckIcon className="h-4 w-4" />
+              <ClipboardCheckIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Received</span>
+              <span className="sm:hidden text-xs">Rcvd</span>
             </Button>
             <Button
               size="sm"
               title="Mark as Pending"
               variant="outline"
-              className="h-8 gap-1 border-orange-300 text-orange-600 hover:bg-orange-50"
+              className="h-8 gap-1 border-orange-300 text-orange-600 hover:bg-orange-50 flex-1 sm:flex-initial"
               onClick={() => {
                 handleEntry(
                   customer,
@@ -240,11 +235,12 @@ export const columns: ColumnDef<Customer>[] = [
                 );
               }}
             >
-              <PendingActions className="h-4 w-4" />
+              <PendingActions className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Pending</span>
+              <span className="sm:hidden text-xs">Pend</span>
             </Button>
-          </ResponsiveStack>
-        </>
+          </div>
+        </div>
       );
     },
   },

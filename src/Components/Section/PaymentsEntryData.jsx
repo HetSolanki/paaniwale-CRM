@@ -191,101 +191,101 @@ const PaymentsEntryData = () => {
   return (
     <>
       <Navbar />
-      <div className="flex min-h-screen mx-auto w-screen flex-col bg-muted/40">
+      <div className="flex min-h-screen w-full flex-col bg-muted/40">
         <TooltipProvider>
           <div className="flex flex-col sm:gap-4 sm:py-4">
             <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
               <Tabs defaultValue="all">
                 <TabsContent value="all">
                   <Card x-chunk="dashboard-06-chunk-0">
-                    <CardHeader>
-                      <CardTitle className="flex-col sm:flex-row sm:flex sm:items-center sm:justify-between">
-                        <span className="text-xl font-semibold text-primary sm:text-2xl">
+                    <CardHeader className="space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <CardTitle className="text-xl sm:text-2xl">
                           Payment Entry Data
-                        </span>
-                        <div className="flex mt-5 sm:flex-row items-start sm:items-center gap-2 sm:gap-2">
-                          {/* Status Filter Badges */}
-                          <div className="flex gap-2">
-                            <Badge
-                              variant={receivedcheck ? "default" : "outline"}
-                              className={`cursor-pointer ${
-                                receivedcheck
-                                  ? "bg-emerald-600 hover:bg-emerald-700"
-                                  : "hover:bg-emerald-50"
-                              }`}
-                              onClick={() => {
-                                if (receivedcheck) {
-                                  getallfilteredcustomers("All");
-                                } else {
-                                  getallfilteredcustomers("Received");
-                                }
-                              }}
-                            >
-                              <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                              Received
-                            </Badge>
-                            <Badge
-                              variant={pendingcheck ? "default" : "outline"}
-                              className={`cursor-pointer ${
-                                pendingcheck
-                                  ? "bg-orange-600 hover:bg-orange-700"
-                                  : "hover:bg-orange-50"
-                              }`}
-                              onClick={() => {
-                                if (pendingcheck) {
-                                  getallfilteredcustomers("All");
-                                } else {
-                                  getallfilteredcustomers("Pending");
-                                }
-                              }}
-                            >
-                              <Clock className="h-3.5 w-3.5 mr-1" />
-                              Pending
-                            </Badge>
-                          </div>
-                          <PDFDownloadLink
-                            document={
-                              <ReportPDFGenarator
-                                data={pdfdata}
-                                columns={pdfColumns}
-                                table_name={"Customer Data"}
-                                shop_name={user?.shop_name}
-                                logo={logo}
-                              />
-                            }
-                            fileName="Payment_data.pdf"
-                          >
-                            {({ loading }) => (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-8 gap-1"
-                                disabled={loading}
-                              >
-                                <File className="h-3.5 w-3.5" />
-                                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                  Export
-                                </span>
-                              </Button>
-                            )}
-                          </PDFDownloadLink>
-                          <span
-                            onClick={() => {
-                              navigate("/paymentdetails");
-                            }}
-                          >
-                            <Button size="sm" className="h-8 gap-1">
-                              Back to Entry
-                            </Button>
-                          </span>
-                        </div>
-                      </CardTitle>
-                      <CardDescription className="hidden sm:block">
-                        <div className="mt-4 flex items-center gap-1 float-end">
-                          {/* <DatePickerForm /> */}
-                        </div>
+                        </CardTitle>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 shrink-0"
+                          onClick={() => {
+                            navigate("/paymentdetails");
+                          }}
+                        >
+                          Back
+                        </Button>
+                      </div>
+
+                      <CardDescription>
                         List of all the customers and their entries
                       </CardDescription>
+
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                        {/* Status Filter Badges */}
+                        <div className="flex gap-2">
+                          <Badge
+                            variant={receivedcheck ? "default" : "outline"}
+                            className={`cursor-pointer flex-1 sm:flex-initial justify-center ${
+                              receivedcheck
+                                ? "bg-emerald-600 hover:bg-emerald-700"
+                                : "hover:bg-emerald-50"
+                            }`}
+                            onClick={() => {
+                              if (receivedcheck) {
+                                getallfilteredcustomers("All");
+                              } else {
+                                getallfilteredcustomers("Received");
+                              }
+                            }}
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                            Received
+                          </Badge>
+                          <Badge
+                            variant={pendingcheck ? "default" : "outline"}
+                            className={`cursor-pointer flex-1 sm:flex-initial justify-center ${
+                              pendingcheck
+                                ? "bg-orange-600 hover:bg-orange-700"
+                                : "hover:bg-orange-50"
+                            }`}
+                            onClick={() => {
+                              if (pendingcheck) {
+                                getallfilteredcustomers("All");
+                              } else {
+                                getallfilteredcustomers("Pending");
+                              }
+                            }}
+                          >
+                            <Clock className="h-3.5 w-3.5 mr-1" />
+                            Pending
+                          </Badge>
+                        </div>
+
+                        <PDFDownloadLink
+                          document={
+                            <ReportPDFGenarator
+                              data={pdfdata}
+                              columns={pdfColumns}
+                              table_name={"Customer Data"}
+                              shop_name={user?.shop_name}
+                              logo={logo}
+                            />
+                          }
+                          fileName="Payment_data.pdf"
+                          className="w-full sm:w-auto sm:ml-auto"
+                        >
+                          {({ loading }) => (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 gap-1 w-full sm:w-auto"
+                              disabled={loading}
+                            >
+                              <File className="h-3.5 w-3.5" />
+                              <span>Export</span>
+                            </Button>
+                          )}
+                        </PDFDownloadLink>
+                      </div>
                     </CardHeader>
 
                     <CardContent>

@@ -59,7 +59,7 @@ export function DataTable({ data, columns }) {
           id: false,
           cname: true,
           caddress: false,
-          cphone_number : false,
+          cphone_number: false,
           totalamount: true,
           Actions: true
         });
@@ -68,7 +68,7 @@ export function DataTable({ data, columns }) {
           id: true,
           cname: true,
           caddress: true,
-          cphone_number : true,
+          cphone_number: true,
           totalamount: true,
           Actions: true
         });
@@ -81,15 +81,15 @@ export function DataTable({ data, columns }) {
   }, []);
 
   return (
-    <div className="w-full">
-      <div className="flex items-center py-4">
+    <div className="w-full overflow-hidden">
+      <div className="flex items-center py-3 sm:py-4">
         <Input
           placeholder="Filter Customers..."
           value={(table.getColumn("cname")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("cname")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className="w-full sm:max-w-sm text-sm"
         />
         {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -118,20 +118,20 @@ export function DataTable({ data, columns }) {
           </DropdownMenuContent>
         </DropdownMenu> */}
       </div>
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="text-xs sm:text-sm whitespace-nowrap">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   );
                 })}
@@ -146,7 +146,7 @@ export function DataTable({ data, columns }) {
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="text-xs sm:text-sm">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -159,7 +159,7 @@ export function DataTable({ data, columns }) {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-20 text-center text-sm"
                 >
                   No results.
                 </TableCell>
@@ -168,16 +168,17 @@ export function DataTable({ data, columns }) {
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-         Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-2 py-3 sm:py-4">
+        <div className="text-xs sm:text-sm text-muted-foreground">
+          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
         </div>
-        <div className="space-x-2">
+        <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
+            className="text-xs sm:text-sm"
           >
             Previous
           </Button>
@@ -186,6 +187,7 @@ export function DataTable({ data, columns }) {
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
+            className="text-xs sm:text-sm"
           >
             Next
           </Button>
