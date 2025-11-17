@@ -27,7 +27,9 @@ const PaymentsEntryData = () => {
   const location = useLocation();
   const intialdata = location.state;
   const navigate = useNavigate();
-  const [paymentEntrys, setPaymentEntrys] = useState([...intialdata]);
+  const [paymentEntrys, setPaymentEntrys] = useState(
+    intialdata ? [...intialdata] : []
+  );
 
   // Date filter states
   const [dateFilter, setDateFilter] = useState("all");
