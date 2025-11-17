@@ -63,10 +63,12 @@ const inquirySchema = mongoose.Schema(
   }
 );
 
-// Index for better query performance
+// Indexes for query optimization
 inquirySchema.index({ email: 1 });
-inquirySchema.index({ status: 1 });
+inquirySchema.index({ phone: 1 });
+inquirySchema.index({ status: 1, createdAt: -1 }); // For status filtering with date
 inquirySchema.index({ inquiryType: 1 });
+inquirySchema.index({ priority: 1, status: 1 }); // For priority-based queries
 inquirySchema.index({ createdAt: -1 });
 
 const Inquiry = mongoose.model("Inquiry", inquirySchema);

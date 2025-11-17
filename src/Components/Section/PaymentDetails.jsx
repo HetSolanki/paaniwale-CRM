@@ -22,8 +22,10 @@ import {
   Banknote,
   Building2,
   MoreHorizontal,
+  Calendar,
+  Filter,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import { useTheme } from "@/Context/ThemeProviderContext ";
@@ -32,10 +34,27 @@ import { config } from "@/Data/config";
 import { fetchpaymentdata } from "@/Handlers/fetchPaymentData";
 import { Badge } from "@/Components/UI/shadcn-UI/badge";
 import { format } from "date-fns";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/Components/UI/shadcn-UI/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/Components/UI/shadcn-UI/popover";
 
 export default function PaymentDetails() {
   const navigate = useNavigate();
   const { theme } = useTheme();
+
+  // Month filter state - default to last month
+  const [monthFilter, setMonthFilter] = useState("last_month");
+  const [customMonth, setCustomMonth] = useState(null);
+  const [customYear, setCustomYear] = useState(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["paymentdetails"],
@@ -45,29 +64,53 @@ export default function PaymentDetails() {
     retry: 2,
   });
 
-  // Fetch all payment entries (both received and pending)
-  const { data: allPaymentsData, isLoading: isLoadingPayments } = useQuery({
-    queryKey: ["allPayments"],
+  // Fetch all payment entries (both received and pending) with month filter
+  const {
+    data: allPaymentsData,
+    isLoading: isLoadingPayments,
+    refetch,
+  } = useQuery({
+    queryKey: ["allPayments", monthFilter, customMonth, customYear],
     queryFn: async () => {
       const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${config.baseUrl}/api/paymentdetails/getAllPaymentEntrys`,
-        {
-          method: "GET",
-          headers: {
-            authorization: "Bearer " + token,
-          },
-        }
-      );
+      let url = `${config.baseUrl}/api/paymentdetails/getAllPaymentEntrys`;
+
+      // Add month filter parameters
+      if (monthFilter === "this_month") {
+        url += "?filter=this_month";
+      } else if (monthFilter === "last_month") {
+        url += "?filter=last_month";
+      } else if (
+        monthFilter === "custom" &&
+        customMonth !== null &&
+        customYear !== null
+      ) {
+        url += `?month=${customMonth}&year=${customYear}`;
+      } else if (monthFilter === "all") {
+        url += "?filter=all";
+      }
+
+      console.log("🔍 Fetching payments with URL:", url);
+      console.log("📊 Filter state:", { monthFilter, customMonth, customYear });
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          authorization: "Bearer " + token,
+        },
+      });
       const res = await response.json();
+      console.log(`✅ Received ${res.data?.length || 0} payments from API`);
       if (res.status === "success") {
         return res.data;
       }
       return [];
     },
     enabled: !!localStorage.getItem("token"),
-    staleTime: 3 * 60 * 1000,
+    staleTime: 0, // Set to 0 to always fetch fresh data when filter changes
+    cacheTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
     retry: 2,
+    refetchOnMount: true,
   });
 
   useEffect(() => {
@@ -90,22 +133,14 @@ export default function PaymentDetails() {
       paymentStatus: "Pending",
     })) || [];
 
-  // Transform received payment data for this month
-  const currentDate = new Date();
-  const currentMonth = currentDate.getMonth();
-  const currentYear = currentDate.getFullYear();
-
+  // Transform received payment data
   const receivedPaymentsData =
     allPaymentsData
       ?.filter((payment) => {
-        const paymentDate = new Date(payment.payment_date);
         const isReceived =
           payment.payment_status === "Received" ||
           payment.payment_status === "completed";
-        const isThisMonth =
-          paymentDate.getMonth() === currentMonth &&
-          paymentDate.getFullYear() === currentYear;
-        return isReceived && isThisMonth;
+        return isReceived;
       })
       .map((payment, index) => {
         return {
@@ -139,43 +174,48 @@ export default function PaymentDetails() {
     ),
   };
 
-  const getintialdata = async () => {
-    const token = localStorage.getItem("token");
-    const entrys = await fetch(
-      `${config.baseUrl}/api/paymentdetails/getAllPaymentEntrys`,
-      {
-        method: "GET",
-        headers: {
-          authorization: "Bearer " + token,
-        },
+  const handleNavigate = async () => {
+    try {
+      // Fetch all payments without any filter for the "View All" page
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${config.baseUrl}/api/paymentdetails/getAllPaymentEntrys?filter=all`,
+        {
+          method: "GET",
+          headers: {
+            authorization: "Bearer " + token,
+          },
+        }
+      );
+      const res = await response.json();
+
+      if (res.status === "success" && res.data && res.data.length > 0) {
+        navigate("/paymentsdata", { state: res.data });
+      } else {
+        alert("No Data Found");
       }
-    );
-    const res = await entrys.json();
-    if (res.status === "success") {
-      const currentDate = new Date();
-      const currentMonth = currentDate.getMonth();
-      const currentYear = currentDate.getFullYear();
-      const thisMonthCustomers = res.data.filter((customer) => {
-        const PaymentDate = new Date(customer.payment_date);
-        return (
-          PaymentDate.getMonth() === currentMonth &&
-          PaymentDate.getFullYear() === currentYear
-        );
-      });
-      return thisMonthCustomers;
-    } else {
-      return [];
+    } catch (error) {
+      console.error("Error fetching all payments:", error);
+      alert("Error loading data");
     }
   };
 
-  const handleNavigate = async () => {
-    const data = getintialdata();
-    const paymentdata = await data;
-    if (paymentdata.length === 0) {
-      alert("No Data Found");
-    } else {
-      navigate("/paymentsdata", { state: await data });
+  const getMonthYearText = () => {
+    if (monthFilter === "this_month") {
+      const now = new Date();
+      return format(now, "MMMM yyyy");
+    } else if (monthFilter === "last_month") {
+      const lastMonth = new Date();
+      lastMonth.setMonth(lastMonth.getMonth() - 1);
+      return format(lastMonth, "MMMM yyyy");
+    } else if (
+      monthFilter === "custom" &&
+      customMonth !== null &&
+      customYear !== null
+    ) {
+      return format(new Date(customYear, customMonth, 1), "MMMM yyyy");
     }
+    return "All Time";
   };
 
   return (
@@ -191,33 +231,156 @@ export default function PaymentDetails() {
           <div className="pb-6 sm:pb-8">
             {/* Header Section - Mobile Optimized */}
             <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b px-4 py-3 sm:px-6 sm:py-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-                    Payment Details
-                  </h1>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                    {new Date().toLocaleDateString("en-US", {
-                      weekday: "long",
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </p>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+                      Payment Details
+                    </h1>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                      {new Date().toLocaleDateString("en-US", {
+                        weekday: "long",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={handleNavigate}
+                    className="h-9 px-3 sm:px-4 gap-1.5"
+                  >
+                    <span className="hidden sm:inline">View All</span>
+                    <span className="sm:hidden">All</span>
+                    <ArrowUpRight className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
-                <Button
-                  size="sm"
-                  onClick={handleNavigate}
-                  className="h-9 px-3 sm:px-4 gap-1.5"
-                >
-                  <span className="hidden sm:inline">View All</span>
-                  <span className="sm:hidden">All</span>
-                  <ArrowUpRight className="h-3.5 w-3.5" />
-                </Button>
+
+                {/* Month Filter */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <Select
+                    value={monthFilter}
+                    onValueChange={(value) => {
+                      setMonthFilter(value);
+                      if (value !== "custom") {
+                        setCustomMonth(null);
+                        setCustomYear(null);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-[160px] h-8">
+                      <SelectValue placeholder="Select period" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="this_month">This Month</SelectItem>
+                      <SelectItem value="last_month">Last Month</SelectItem>
+                      <SelectItem value="custom">Custom Month</SelectItem>
+                      <SelectItem value="all">All Time</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {monthFilter === "custom" && (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 gap-2"
+                        >
+                          <Calendar className="h-3.5 w-3.5" />
+                          {customMonth !== null && customYear !== null
+                            ? format(
+                                new Date(customYear, customMonth, 1),
+                                "MMM yyyy"
+                              )
+                            : "Select month"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-4" align="start">
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-sm font-medium mb-1 block">
+                              Month
+                            </label>
+                            <Select
+                              value={
+                                customMonth !== null
+                                  ? customMonth.toString()
+                                  : ""
+                              }
+                              onValueChange={(value) =>
+                                setCustomMonth(parseInt(value))
+                              }
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select month" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({ length: 12 }, (_, i) => (
+                                  <SelectItem key={i} value={i.toString()}>
+                                    {format(new Date(2024, i, 1), "MMMM")}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium mb-1 block">
+                              Year
+                            </label>
+                            <Select
+                              value={
+                                customYear !== null ? customYear.toString() : ""
+                              }
+                              onValueChange={(value) =>
+                                setCustomYear(parseInt(value))
+                              }
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select year" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({ length: 5 }, (_, i) => {
+                                  const year = new Date().getFullYear() - i;
+                                  return (
+                                    <SelectItem
+                                      key={year}
+                                      value={year.toString()}
+                                    >
+                                      {year}
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+
+                  <Badge variant="outline" className="h-6 px-2 text-xs">
+                    {getMonthYearText()}
+                  </Badge>
+                </div>
               </div>
             </div>
 
             {/* Stats Cards - Mobile Grid */}
             <div className="px-4 pt-4 sm:px-6 sm:pt-6">
+              {/* Loading Indicator */}
+              {(isLoading || isLoadingPayments) && (
+                <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-sm text-blue-700 dark:text-blue-400">
+                      Loading payment data...
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 mb-4 sm:mb-6">
                 {/* Pending Card */}
                 <Card className="overflow-hidden">
@@ -319,7 +482,13 @@ export default function PaymentDetails() {
               </div>
 
               {/* Pending Payments Section - Mobile Optimized */}
-              {pendingPaymentsData.length > 0 && (
+              {isLoading ? (
+                <Card className="mb-4 sm:mb-6 overflow-hidden">
+                  <CardContent className="p-4">
+                    <Skeleton className="h-[300px]" enableAnimation={true} />
+                  </CardContent>
+                </Card>
+              ) : pendingPaymentsData.length > 0 ? (
                 <Card className="mb-4 sm:mb-6 overflow-hidden">
                   <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950/50 dark:to-orange-900/30 border-b px-4 py-3 sm:px-6 sm:py-4">
                     <div className="flex items-center justify-between">
@@ -346,27 +515,21 @@ export default function PaymentDetails() {
                   </CardHeader>
 
                   <CardContent className="p-0">
-                    {isLoading ? (
-                      <div className="p-4">
-                        <Skeleton
-                          className="h-[300px]"
-                          enableAnimation={true}
-                        />
-                      </div>
-                    ) : (
-                      <div className="p-6">
-                        <DataTable
-                          data={pendingPaymentsData}
-                          columns={columns}
-                        />
-                      </div>
-                    )}
+                    <div className="p-4 sm:p-6">
+                      <DataTable data={pendingPaymentsData} columns={columns} />
+                    </div>
                   </CardContent>
                 </Card>
-              )}
+              ) : null}
 
               {/* Received Payments Section - Mobile Optimized */}
-              {receivedPaymentsData.length > 0 && (
+              {isLoadingPayments ? (
+                <Card className="overflow-hidden">
+                  <CardContent className="p-4">
+                    <Skeleton className="h-[400px]" enableAnimation={true} />
+                  </CardContent>
+                </Card>
+              ) : receivedPaymentsData.length > 0 ? (
                 <Card className="overflow-hidden">
                   <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-100 dark:from-green-950/50 dark:to-emerald-900/30 border-b px-4 py-3 sm:px-6 sm:py-4">
                     <div className="flex items-center justify-between">
@@ -379,7 +542,7 @@ export default function PaymentDetails() {
                             Received Payments
                           </CardTitle>
                           <CardDescription className="text-xs sm:text-sm mt-0.5">
-                            Successfully collected this month
+                            Successfully collected - {getMonthYearText()}
                           </CardDescription>
                         </div>
                       </div>
@@ -470,7 +633,7 @@ export default function PaymentDetails() {
                     </div>
                   </CardContent>
                 </Card>
-              )}
+              ) : null}
 
               {/* Empty State - Mobile Optimized */}
               {!isLoading &&

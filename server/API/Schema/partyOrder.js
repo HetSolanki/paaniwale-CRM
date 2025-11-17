@@ -91,4 +91,13 @@ partyOrderSchema.pre("save", function (next) {
   next();
 });
 
+// Indexes for query optimization
+partyOrderSchema.index({ uid: 1, order_date: -1 }); // For user's orders by date
+partyOrderSchema.index({ uid: 1, status: 1 }); // For filtering by status
+partyOrderSchema.index({ uid: 1, delivery_date: 1 }); // For upcoming deliveries
+partyOrderSchema.index({ status: 1, delivery_date: 1 }); // For pending/confirmed deliveries
+partyOrderSchema.index({ party_phone: 1 }); // For phone lookups
+partyOrderSchema.index({ event_type: 1 }); // For event type filtering
+partyOrderSchema.index({ created_at: -1 }); // For recent orders
+
 export default mongoose.model("PartyOrder", partyOrderSchema);

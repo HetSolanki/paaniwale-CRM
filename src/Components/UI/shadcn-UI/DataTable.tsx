@@ -90,38 +90,40 @@ export function DataTable({
 
   return (
     <div className="w-full">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 py-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 py-3 sm:py-4">
         <Input
           placeholder={filterPlaceholder}
           value={(table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn(filterColumn)?.setFilterValue(event.target.value)
           }
-          className="max-w-sm text-sm sm:text-base"
+          className="w-full sm:max-w-sm text-sm"
         />
 
         {/* Date Filter Section */}
         {dateFilter !== undefined && (
           <div className="flex flex-col sm:flex-row gap-2 sm:items-center w-full sm:w-auto">
-            <div className="flex items-center gap-2 flex-1 sm:flex-initial">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               {/* <Filter className="h-4 w-4 text-muted-foreground hidden sm:block" /> */}
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="w-full sm:w-[180px] justify-start text-sm">
                     <Filter className="mr-2 h-4 w-4" />
-                    {dateFilter === "all"
-                      ? "All"
-                      : dateFilter === "today"
-                        ? "Today"
-                        : dateFilter === "yesterday"
-                          ? "Yesterday"
-                          : dateFilter === "last7days"
-                            ? "Last 7 Days"
-                            : dateFilter === "thisMonth"
-                              ? "This Month"
-                              : dateFilter === "thisYear"
-                                ? "This Year"
-                                : "Custom Date"}
+                    <span className="truncate">
+                      {dateFilter === "all"
+                        ? "All"
+                        : dateFilter === "today"
+                          ? "Today"
+                          : dateFilter === "yesterday"
+                            ? "Yesterday"
+                            : dateFilter === "last7days"
+                              ? "Last 7 Days"
+                              : dateFilter === "thisMonth"
+                                ? "This Month"
+                                : dateFilter === "thisYear"
+                                  ? "This Year"
+                                  : "Custom Date"}
+                    </span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-[180px]">
@@ -161,7 +163,7 @@ export function DataTable({
                     >
                       <CalendarDays className="mr-2 h-4 w-4" />
                       {customDate ? (
-                        <span className="hidden sm:inline">{format(customDate, "PPP")}</span>
+                        <span>{format(customDate, "PP")}</span>
                       ) : (
                         <span>Pick date</span>
                       )}
@@ -212,8 +214,8 @@ export function DataTable({
           </div>
         )}
       </div>
-      <div className="rounded-md border overflow-x-auto">
-        <Table className="min-w-full lg:min-w-[800px]">
+      <div className="rounded-md border">
+        <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -263,7 +265,7 @@ export function DataTable({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center text-sm"
+                  className="h-20 text-center text-xs sm:text-sm"
                 >
                   No results.
                 </TableCell>
@@ -273,7 +275,7 @@ export function DataTable({
         </Table>
       </div>
       <div className="flex flex-col sm:flex-row items-center justify-between gap-2 py-4">
-        <div className="text-xs sm:text-sm text-muted-foreground">
+        <div className="text-sm text-muted-foreground">
           Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
         </div>
         <div className="flex gap-2">
@@ -282,7 +284,6 @@ export function DataTable({
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="text-xs sm:text-sm"
           >
             Previous
           </Button>
@@ -291,7 +292,6 @@ export function DataTable({
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="text-xs sm:text-sm"
           >
             Next
           </Button>

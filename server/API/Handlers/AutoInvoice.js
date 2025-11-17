@@ -366,6 +366,15 @@ const checkScheduledInvoices = async () => {
     const currentHour = currentDate.getHours();
     const currentMinute = currentDate.getMinutes();
 
+    console.log("📊 Auto Invoice Check Status:");
+    console.log(
+      "  Current Date:",
+      currentDate.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
+    );
+    console.log("  Current Day:", currentDay);
+    console.log("  Current Hour:", currentHour);
+    console.log("  Current Minute:", currentMinute);
+
     // Get the last day of current month
     const lastDayOfMonth = new Date(
       currentDate.getFullYear(),
@@ -373,30 +382,60 @@ const checkScheduledInvoices = async () => {
       0
     ).getDate();
 
+    console.log("  Last Day of Month:", lastDayOfMonth);
+
     // Find all settings with auto_invoice_enabled
     const allSettings = await Settings.find({ auto_invoice_enabled: true });
 
+    console.log(
+      `📋 Found ${allSettings.length} user(s) with auto invoice enabled`
+    );
+
+    if (allSettings.length === 0) {
+      console.log("ℹ️ No users have auto invoice enabled");
+      return;
+    }
+
     for (const setting of allSettings) {
+      console.log(`\n👤 Checking User ID: ${setting.uid}`);
+      console.log(`  Scheduled Day: ${setting.auto_invoice_day}`);
+      console.log(`  Scheduled Time: ${setting.auto_invoice_time}`);
+      console.log(`  Last Run: ${setting.last_auto_invoice_run || "Never"}`);
+
       let scheduledDay = setting.auto_invoice_day;
 
       // Smart date adjustment: If scheduled day exceeds month's days, use last day
       if (scheduledDay > lastDayOfMonth) {
         scheduledDay = lastDayOfMonth;
         console.log(
-          `📅 Smart adjustment: Day ${setting.auto_invoice_day} → ${scheduledDay} (last day of month)`
+          `  📅 Smart adjustment: Day ${setting.auto_invoice_day} → ${scheduledDay} (last day of month)`
         );
       }
 
       // Check if today matches the scheduled day (or adjusted day)
       if (scheduledDay !== currentDay) {
+        console.log(
+          `  ⏭️ Skipping: Today (${currentDay}) doesn't match scheduled day (${scheduledDay})`
+        );
         continue;
       }
 
+      console.log(`  ✅ Day matches! Checking time...`);
+
       // Parse scheduled time
-      const [scheduledHour] = setting.auto_invoice_time.split(":").map(Number);
+      const [scheduledHour, scheduledMinute] = setting.auto_invoice_time
+        .split(":")
+        .map(Number);
+      console.log(
+        `  Scheduled Hour: ${scheduledHour}, Scheduled Minute: ${
+          scheduledMinute || 0
+        }`
+      );
 
       // Check if current time matches scheduled time (within 1 hour window)
       if (currentHour === scheduledHour && currentMinute < 60) {
+        console.log(`  ✅ Time matches! Checking if already ran today...`);
+
         // Check if already ran today
         const lastRun = setting.last_auto_invoice_run;
         if (lastRun) {
@@ -407,16 +446,25 @@ const checkScheduledInvoices = async () => {
             lastRunDate.getFullYear() === currentDate.getFullYear()
           ) {
             console.log(
-              `⏭️ Skipping auto invoice for user ${setting.uid} - already ran today`
+              `  ⏭️ Skipping: Already ran today at ${lastRunDate.toLocaleString(
+                "en-IN",
+                { timeZone: "Asia/Kolkata" }
+              )}`
             );
             continue;
           }
         }
 
-        console.log(`🚀 Running auto invoice for user ${setting.uid}`);
+        console.log(`  🚀 EXECUTING auto invoice for user ${setting.uid}`);
         await processAutoInvoices(setting.uid);
+      } else {
+        console.log(
+          `  ⏭️ Skipping: Current hour (${currentHour}) doesn't match scheduled hour (${scheduledHour})`
+        );
       }
     }
+
+    console.log("\n✅ Auto invoice check completed\n");
   } catch (error) {
     console.error("❌ Error in checkScheduledInvoices:", error);
   }
@@ -427,15 +475,33 @@ const checkScheduledInvoices = async () => {
  * Runs every hour to check if invoices should be sent
  */
 export const initAutoInvoiceScheduler = () => {
-  // TESTING: Run every minute (change back to "0 * * * *" for production)
-  cron.schedule("0 * * * *", () => {
-    console.log("⏰ Running auto invoice scheduler check...");
+  console.log("🚀 Auto Invoice Scheduler Initialized");
+  console.log("⏰ Schedule: Every hour at minute 0 (0 * * * *)");
+  console.log(
+    "📅 Current time:",
+    new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
+  );
+
+  // Run every hour
+  const task = cron.schedule("0 * * * *", () => {
+    const now = new Date();
+    console.log(
+      `⏰ [${now.toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+      })}] Running auto invoice scheduler check...`
+    );
     checkScheduledInvoices();
   });
 
-  console.log(
-    "✅ Auto invoice scheduler initialized (Running every minute for testing)"
-  );
+  if (task) {
+    console.log("✅ Cron job scheduled successfully");
+  } else {
+    console.error("❌ Failed to schedule cron job");
+  }
+
+  // Run once immediately to test
+  console.log("🔄 Running initial check...");
+  checkScheduledInvoices();
 };
 
 /**
