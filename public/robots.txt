@@ -1,0 +1,12 @@
+# robots.txt for Paaniwale.tech
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+
+# Sitemaps
+Sitemap: https://paaniwale.tech/sitemap.xml
+
+# Crawl-delay for nice behavior
+Crawl-delay: 1

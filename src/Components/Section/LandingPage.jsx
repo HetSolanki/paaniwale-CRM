@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../UI/shadcn-UI/card";
 import { Badge } from "../UI/shadcn-UI/badge";
 import CustomerPortalDialog from "./CustomerPortalDialog";
+import SEO from "../SEO";
 
 // Inquiry Form Component
 const InquiryForm = () => {
@@ -330,8 +331,6 @@ const LandingPage = () => {
   });
 
   useEffect(() => {
-    document.title = "Paani Wale - Smart Water Bottle Supply Management";
-
     if (localStorage.getItem("token")) {
       navigate("/dashboard");
     }
@@ -398,6 +397,12 @@ const LandingPage = () => {
 
   return (
     <>
+      <SEO
+        title="Paaniwale - Water Delivery Management System | Track Bottle Sales Online"
+        description="Transform your water delivery business with Paaniwale. Track sales, manage customers, automate invoices, and increase revenue with India's leading water delivery management software."
+        keywords="water delivery app, water bottle tracking, water supply management, paaniwale, water business software India, drinking water delivery, water distributor app"
+      />
+
       {/* Enhanced Header with Navigation */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
         <nav className="px-4 lg:px-6 py-3">
