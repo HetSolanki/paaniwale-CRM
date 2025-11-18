@@ -46,15 +46,28 @@ const SEO = ({ title, description, keywords, ogImage, canonical }) => {
     updateCanonical(canonical || currentUrl);
   }, [title, description, keywords, ogImage, canonical, currentUrl]);
 
+  // Helper to escape special HTML characters to prevent XSS
+  const escapeHtml = (unsafe) => {
+    if (typeof unsafe !== "string") return "";
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  };
+
   const updateMetaTag = (attribute, key, content) => {
+    if (typeof content === "undefined" || content === null) return;
+    const safeContent = escapeHtml(content);
     let element = document.querySelector(`meta[${attribute}="${key}"]`);
 
     if (element) {
-      element.setAttribute("content", content);
+      element.setAttribute("content", safeContent);
     } else {
       element = document.createElement("meta");
       element.setAttribute(attribute, key);
-      element.setAttribute("content", content);
+      element.setAttribute("content", safeContent);
       document.head.appendChild(element);
     }
   };
