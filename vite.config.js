@@ -145,6 +145,37 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       sourcemap: false,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ["react", "react-dom", "react-router-dom"],
+            ui: [
+              "@radix-ui/react-dialog",
+              "@radix-ui/react-dropdown-menu",
+              "@radix-ui/react-select",
+            ],
+            charts: ["recharts"],
+          },
+        },
+      },
+      chunkSizeWarningLimit: 1000,
+      minify: "terser",
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+        },
+      },
+    },
+    server: {
+      headers: {
+        "Cache-Control": "public, max-age=31536000",
+      },
+    },
+    preview: {
+      headers: {
+        "Cache-Control": "public, max-age=31536000, immutable",
+      },
     },
     // Define environment variables for production
     define: {

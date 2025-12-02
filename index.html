@@ -120,24 +120,126 @@
         }
       }
     </script>
+    
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Paaniwale",
+        "url": "https://paaniwale.tech",
+        "description": "Water delivery management software for India. Track sales, manage customers, automate invoices.",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://paaniwale.tech/search?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
+    
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [{
+          "@type": "Question",
+          "name": "What is Paaniwale?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Paaniwale is a water delivery management software designed for water suppliers and distributors in India. It helps track bottle sales, manage customers, automate invoicing, and grow your water delivery business."
+          }
+        }, {
+          "@type": "Question",
+          "name": "Who can use Paaniwale?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Paaniwale is perfect for water suppliers, distributors, packaged drinking water businesses, mineral water delivery services, and water refilling stations across India."
+          }
+        }, {
+          "@type": "Question",
+          "name": "Is Paaniwale free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Paaniwale offers a free trial. Contact us for pricing details and subscription plans tailored to your business size."
+          }
+        }]
+      }
+    </script>
 
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#2196F3" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Paaniwale" />
+    <meta name="msvalidate.01" content="3E01F57B5F61BB7A19E16B330DD9A575" />
     <link rel="apple-touch-icon" href="/apple-icon-180.png" />
 
     <!-- Preconnect to external domains for performance -->
     <link rel="preconnect" href="https://res.cloudinary.com" />
     <link rel="preconnect" href="https://unpkg.com" crossorigin />
+    <link rel="preconnect" href="https://www.googletagmanager.com" />
     <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+    <link rel="dns-prefetch" href="https://unpkg.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+    <!-- Preload critical assets -->
+    <link rel="modulepreload" href="/src/main.jsx" />
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Fallback content for SEO and no-JS users -->
+      <noscript>
+        <div style="padding: 40px; text-align: center; font-family: system-ui;">
+          <h1>Paaniwale - Water Delivery Management System</h1>
+          <p>Track water bottle sales, manage customers, and grow your water delivery business.</p>
+          <p>Please enable JavaScript to use this application.</p>
+        </div>
+      </noscript>
+      
+      <!-- Hidden content for SEO crawlers -->
+      <div style="display: none;" id="seo-content">
+        <h1>Paaniwale - Best Water Delivery Management Software in India</h1>
+        <h2>Transform Your Water Delivery Business</h2>
+        <p>Paaniwale is India's leading water delivery management software. Our platform helps water suppliers, distributors, and delivery businesses streamline operations, track sales, manage customers, and grow revenue.</p>
+        
+        <h3>Key Features</h3>
+        <ul>
+          <li>Real-time water bottle sales tracking</li>
+          <li>Customer management and CRM</li>
+          <li>Automated invoice generation</li>
+          <li>Inventory management for water bottles</li>
+          <li>Payment tracking and reminders</li>
+          <li>Business analytics and reports</li>
+          <li>Mobile-friendly interface</li>
+          <li>Multi-user support</li>
+        </ul>
+        
+        <h3>Why Choose Paaniwale?</h3>
+        <p>Designed specifically for the water delivery industry in India, Paaniwale understands the unique challenges of managing water bottle supply chains. From tracking 20-liter jars to managing daily deliveries, our software provides everything you need to run an efficient water delivery business.</p>
+        
+        <h3>Perfect For</h3>
+        <ul>
+          <li>Water suppliers and distributors</li>
+          <li>Packaged drinking water businesses</li>
+          <li>Mineral water delivery services</li>
+          <li>Water ATM operators</li>
+          <li>Water refilling stations</li>
+        </ul>
+        
+        <h3>Get Started Today</h3>
+        <p>Join hundreds of water delivery businesses across India using Paaniwale to streamline operations and increase profits. Free trial available.</p>
+        
+        <p><strong>Contact:</strong> Available across India</p>
+        <p><strong>Industry:</strong> Water Supply & Delivery Management</p>
+        <p><strong>Service Type:</strong> SaaS - Business Management Software</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
-    <script src="https://unpkg.com/flowbite@1.4.7/dist/flowbite.js"></script>
+    <!-- Defer non-critical scripts -->
+    <script
+      src="https://unpkg.com/flowbite@1.4.7/dist/flowbite.js"
+      defer
+    ></script>
     <!-- Service Worker is automatically registered by vite-plugin-pwa -->
   </body>
 </html>

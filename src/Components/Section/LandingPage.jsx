@@ -412,6 +412,9 @@ const LandingPage = () => {
                 src={paaniwale}
                 className="h-8 w-8 rounded-full ring-2 ring-blue-100"
                 alt="Paani Wale Logo"
+                width="32"
+                height="32"
+                loading="eager"
               />
               <div>
                 <span className="text-xl font-bold text-gray-900">
@@ -629,6 +632,9 @@ const LandingPage = () => {
                   src={mainimg}
                   alt="Paani Wale Dashboard"
                   className="relative w-full h-auto rounded-2xl shadow-2xl"
+                  width="1200"
+                  height="800"
+                  loading="eager"
                 />
                 {/* Floating Stats Cards */}
                 <div className="absolute -top-4 -left-4 bg-white rounded-lg shadow-lg p-4 animate-bounce">
@@ -1516,11 +1522,17 @@ const LandingPage = () => {
               className="w-full rounded-lg"
               src={subimg1}
               alt="office content 1"
+              width="588"
+              height="425"
+              loading="lazy"
             />
             <img
               className="mt-4 w-full rounded-lg lg:mt-10"
               src={subimg2}
               alt="office content 2"
+              width="1300"
+              height="963"
+              loading="lazy"
             />
           </div>
         </div>

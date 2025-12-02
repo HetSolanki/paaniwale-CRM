@@ -1,12 +1,17 @@
 # robots.txt for Paaniwale.tech
 User-agent: *
 Allow: /
+
+# Block admin and API routes from indexing
 Disallow: /api/
 Disallow: /admin/
-Disallow: /dashboard/
+
+# Allow search engines to discover the site
+Allow: /*.js
+Allow: /*.css
 
 # Sitemaps
 Sitemap: https://paaniwale.tech/sitemap.xml
 
 # Crawl-delay for nice behavior
-Crawl-delay: 1
+Crawl-delay: 0
