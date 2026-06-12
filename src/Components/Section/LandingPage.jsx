@@ -1791,7 +1791,7 @@ const LandingPage = () => {
               {/* Social/Contact */}
               <div className="flex space-x-4">
                 <a
-                  href="mailto:paaniwale7@gmail.com"
+                  href="mailto:contact@paaniwale.tech"
                   className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full transition-colors"
                   aria-label="Email us"
                 >
@@ -1883,7 +1883,7 @@ const LandingPage = () => {
                 </li>
                 <li>
                   <a
-                    href="mailto:paaniwale7@gmail.com"
+                    href="mailto:contact@paaniwale.tech"
                     className="text-gray-300 hover:text-blue-400 transition-colors"
                   >
                     📧 Email Support
