@@ -1636,10 +1636,10 @@ const LandingPage = () => {
                     <div>
                       <h4 className="font-semibold text-gray-900">Email Us</h4>
                       <a
-                        href="mailto:paaniwale7@gmail.com"
+                        href="mailto:contact@paaniwale.tech"
                         className="text-blue-600 hover:text-blue-800"
                       >
-                        paaniwale7@gmail.com
+                        contact@paaniwale.tech
                       </a>
                     </div>
                   </div>
