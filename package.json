@@ -4,6 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "main": "server/API/index.js",
+  "engines": {
+    "node": "26.x"
+  },
   "scripts": {
     "dev": "vite --host",
     "server": "nodemon server/API/index.js",
