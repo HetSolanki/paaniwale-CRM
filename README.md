@@ -1,4 +1,4 @@
-# 🚰 Dhandha - Water Bottle Delivery Business Management Platform
+# 🚰 PaaniWale - Water Bottle Delivery Business Management Platform
 
 > A comprehensive full-stack solution for managing water bottle delivery businesses, party orders, invoicing, and payment collection with automated WhatsApp communication.
 
