@@ -13,12 +13,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/Components/UI/shadcn-UI/dialog";
-import { Loader2, Download, X } from "lucide-react";
+import { Loader2, Download, X, Send } from "lucide-react";
 import { toast } from "react-toastify";
+import { sanitizePhoneNumber } from "@/lib/utils";
+import { sendInvoice } from "@/Handlers/sendInvoice";
 
 export function CustomerInvoicePreview({ customerId, open, onClose }) {
   const user = useUser();
   const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [pdfData, setPdfData] = useState(null);
 
@@ -166,13 +169,71 @@ export function CustomerInvoicePreview({ customerId, open, onClose }) {
     }
   };
 
+  const handleSendWhatsApp = async () => {
+    if (!pdfData?.pdf || !pdfData?.customerInvoice) return;
+    setSending(true);
+    try {
+      const rawPhone = pdfData.customerInvoice[0]?.customerDetails?.cphone_number;
+      const cleanPhone = sanitizePhoneNumber(rawPhone);
+
+      if (!cleanPhone || cleanPhone.length !== 10) {
+        toast.error(`Invalid customer phone number: "${rawPhone || "Missing"}".`);
+        return;
+      }
+
+      const pdfBlob = pdfData.pdf.output("blob");
+      const date = new Date();
+      const filename = `Invoice-${
+        pdfData.customerInvoice[0]?.customerDetails?.cname || "Customer"
+      }-${months[date.getMonth()]}-${date.getFullYear()}.pdf`;
+
+      const formData = new FormData();
+      formData.append("file", pdfBlob, filename);
+      formData.append("type", "application/pdf");
+      formData.append("messaging_product", "whatsapp");
+
+      const uploadRes = await fetch(
+        `https://graph.facebook.com/${config.whatsapp.version}/${config.whatsapp.phoneNumberId}/media`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: config.whatsapp.authorization,
+          },
+          body: formData,
+          signal: AbortSignal.timeout(10000),
+        }
+      );
+
+      if (!uploadRes.ok) {
+        const uploadError = await uploadRes.json().catch(() => ({}));
+        throw new Error(uploadError?.error?.message || "Failed to upload invoice PDF to WhatsApp");
+      }
+
+      const { id: mediaId } = await uploadRes.json();
+
+      await sendInvoice(
+        pdfData.customerInvoice,
+        mediaId,
+        filename,
+        pdfData.totalAmount
+      );
+
+      toast.success(`Invoice sent successfully to +91 ${cleanPhone}!`);
+    } catch (error) {
+      console.error("Error sending invoice:", error);
+      toast.error(error.message || "Failed to send invoice via WhatsApp");
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[95vh] p-0 gap-0">
         <DialogHeader className="p-4 pb-0">
-          <DialogTitle>Invoice Preview</DialogTitle>
+          <DialogTitle>Customer Invoice Preview</DialogTitle>
           <DialogDescription>
-            Preview customer invoice before sending
+            Preview and verify customer invoice before or after sending
           </DialogDescription>
         </DialogHeader>
 
@@ -195,14 +256,38 @@ export function CustomerInvoicePreview({ customerId, open, onClose }) {
           )}
         </div>
 
-        <DialogFooter className="p-4 pt-0">
-          <Button variant="outline" onClick={onClose} disabled={loading}>
-            <X className="mr-2 h-4 w-4" />
-            Close
-          </Button>
-          <Button onClick={handleDownload} disabled={loading || !pdfData}>
-            <Download className="mr-2 h-4 w-4" />
-            Download PDF
+        <DialogFooter className="p-4 pt-0 gap-2 flex-col sm:flex-row justify-between items-center">
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button variant="outline" onClick={onClose} disabled={loading || sending}>
+              <X className="mr-2 h-4 w-4" />
+              Close
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleDownload}
+              disabled={loading || sending || !pdfData}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download PDF
+            </Button>
+          </div>
+
+          <Button
+            onClick={handleSendWhatsApp}
+            disabled={loading || sending || !pdfData}
+            className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white"
+          >
+            {sending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              <>
+                <Send className="mr-2 h-4 w-4" />
+                Send via WhatsApp
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -20,6 +20,7 @@ import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { PartyOrderInvoice } from "./PartyOrderInvoice";
 import { EditPartyOrder } from "../UI/UI-Components/EditPartyOrder";
+import { SendPartyOrderDialog } from "../UI/UI-Components/SendPartyOrderDialog";
 import { Package, Calendar, TrendingUp } from "lucide-react";
 import { Badge } from "@/Components/UI/shadcn-UI/badge";
 
@@ -29,6 +30,7 @@ const PartyOrders = () => {
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showInvoice, setShowInvoice] = useState(false);
+  const [showSendDialog, setShowSendDialog] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
 
   // Date filter states
@@ -86,7 +88,7 @@ const PartyOrders = () => {
       return;
     }
     setSelectedOrder(order);
-    setShowInvoice(true);
+    setShowSendDialog(true);
   };
 
   const handleDelete = async (order) => {
@@ -387,7 +389,7 @@ const PartyOrders = () => {
           </div>
         </div>
 
-        {/* Invoice Preview/Send Dialog */}
+        {/* Invoice Preview Dialog */}
         {showInvoice && selectedOrder && (
           <PartyOrderInvoice
             order={selectedOrder}
@@ -399,6 +401,23 @@ const PartyOrders = () => {
             onSuccess={() => {
               refetch();
               setShowInvoice(false);
+              setSelectedOrder(null);
+            }}
+          />
+        )}
+
+        {/* Dedicated Send Invoice Dialog */}
+        {showSendDialog && selectedOrder && (
+          <SendPartyOrderDialog
+            order={selectedOrder}
+            open={showSendDialog}
+            onClose={() => {
+              setShowSendDialog(false);
+              setSelectedOrder(null);
+            }}
+            onSuccess={() => {
+              refetch();
+              setShowSendDialog(false);
               setSelectedOrder(null);
             }}
           />

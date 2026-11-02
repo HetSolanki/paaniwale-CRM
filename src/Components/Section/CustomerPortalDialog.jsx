@@ -13,8 +13,9 @@ import { Input } from "@/Components/UI/shadcn-UI/input";
 import { Label } from "@/Components/UI/shadcn-UI/label";
 import { useToast } from "@/Components/UI/shadcn-UI/use-toast";
 import { Toaster } from "@/Components/UI/shadcn-UI/toaster";
-import { Loader2, Phone, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { Loader2, Phone, ShieldCheck, CheckCircle2, MessageSquare, ArrowLeft } from "lucide-react";
 import { config } from "@/Data/config";
+import { sanitizePhoneNumber } from "@/lib/utils";
 
 export default function CustomerPortalDialog({ open, onClose }) {
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -25,14 +26,15 @@ export default function CustomerPortalDialog({ open, onClose }) {
   const navigate = useNavigate();
 
   const handleSendOTP = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
 
-    // Validate phone number
-    if (!phoneNumber || phoneNumber.length !== 10) {
+    const cleanPhone = sanitizePhoneNumber(phoneNumber);
+
+    if (!cleanPhone || cleanPhone.length !== 10) {
       toast({
         variant: "destructive",
-        title: "Invalid Phone Number",
-        description: "Please enter a valid 10-digit phone number",
+        title: "Invalid Mobile Number",
+        description: "Please enter a valid 10-digit mobile number",
       });
       return;
     }
@@ -46,7 +48,7 @@ export default function CustomerPortalDialog({ open, onClose }) {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ phone_number: phoneNumber }),
+          body: JSON.stringify({ phone_number: cleanPhone }),
         }
       );
 
@@ -54,23 +56,23 @@ export default function CustomerPortalDialog({ open, onClose }) {
 
       if (data.status === "success") {
         toast({
-          title: "OTP Sent! �",
-          description: "Check your WhatsApp for the verification code",
+          title: "Verification Code Sent",
+          description: `A 6-digit OTP has been dispatched to +91 ${cleanPhone} via WhatsApp`,
         });
         setStep("otp");
       } else {
         toast({
           variant: "destructive",
-          title: "Error",
-          description: data.message || "Failed to send OTP",
+          title: "Failed to Send OTP",
+          description: data.message || "Could not deliver verification code. Please check your number.",
         });
       }
     } catch (error) {
       console.error("Error sending OTP:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to send OTP. Please try again.",
+        title: "Connection Error",
+        description: "Unable to reach verification service. Please try again.",
       });
     } finally {
       setLoading(false);
@@ -83,12 +85,13 @@ export default function CustomerPortalDialog({ open, onClose }) {
     if (!otp || otp.length !== 6) {
       toast({
         variant: "destructive",
-        title: "Invalid OTP",
-        description: "Please enter a valid 6-digit OTP",
+        title: "Invalid Code",
+        description: "Please enter the complete 6-digit OTP",
       });
       return;
     }
 
+    const cleanPhone = sanitizePhoneNumber(phoneNumber);
     setLoading(true);
     try {
       const response = await fetch(
@@ -99,7 +102,7 @@ export default function CustomerPortalDialog({ open, onClose }) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            phone_number: phoneNumber,
+            phone_number: cleanPhone,
             otp: otp,
           }),
         }
@@ -108,25 +111,23 @@ export default function CustomerPortalDialog({ open, onClose }) {
       const data = await response.json();
 
       if (data.status === "success") {
-        // Store customer token
         localStorage.setItem("customerToken", data.token);
-        localStorage.setItem("customerPhone", phoneNumber);
+        localStorage.setItem("customerPhone", cleanPhone);
 
         toast({
-          title: "✓ Verification Successful!",
-          description: "Redirecting to your dashboard...",
+          title: "Verified Successfully",
+          description: "Loading your delivery dashboard...",
         });
 
-        // Close dialog and redirect
         setTimeout(() => {
           onClose();
           navigate("/customerportal/dashboard");
-        }, 1000);
+        }, 800);
       } else {
         toast({
           variant: "destructive",
           title: "Verification Failed",
-          description: data.message || "Invalid OTP. Please try again.",
+          description: data.message || "Invalid OTP code. Please retry.",
         });
       }
     } catch (error) {
@@ -134,7 +135,7 @@ export default function CustomerPortalDialog({ open, onClose }) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to verify OTP. Please try again.",
+        description: "Failed to verify code. Please try again.",
       });
     } finally {
       setLoading(false);
@@ -151,182 +152,161 @@ export default function CustomerPortalDialog({ open, onClose }) {
   return (
     <>
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader className="text-center space-y-3">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800">
+        <DialogContent className="sm:max-w-md p-6">
+          <DialogHeader className="text-center space-y-2">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
               {step === "phone" ? (
-                <Phone className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                <Phone className="h-6 w-6" />
               ) : (
-                <ShieldCheck className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                <ShieldCheck className="h-6 w-6 text-emerald-600" />
               )}
             </div>
-            <DialogTitle className="text-2xl font-bold">
-              {step === "phone" ? "Customer Portal 🎯" : "Verify OTP 🔐"}
+            <DialogTitle className="text-xl font-bold tracking-tight">
+              {step === "phone" ? "Customer Portal Access" : "Verify WhatsApp OTP"}
             </DialogTitle>
-            <DialogDescription className="text-base">
+            <DialogDescription className="text-xs sm:text-sm text-muted-foreground">
               {step === "phone"
-                ? "Enter your registered phone number to receive OTP on WhatsApp"
-                : `Enter the 6-digit OTP sent to your WhatsApp: ${phoneNumber}`}
+                ? "Enter your registered mobile number to access your water delivery records"
+                : `Enter the 6-digit OTP code sent to your WhatsApp at +91 ${sanitizePhoneNumber(phoneNumber)}`}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 pt-4">
+          <div className="space-y-4 pt-2">
             {step === "phone" ? (
               <form onSubmit={handleSendOTP} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-base font-medium">
-                    Phone Number
+                <div className="space-y-1.5">
+                  <Label htmlFor="phone" className="text-xs font-semibold text-foreground">
+                    Registered Mobile Number
                   </Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="Enter 10-digit phone number"
-                    value={phoneNumber}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, "");
-                      if (value.length <= 10) {
-                        setPhoneNumber(value);
-                      }
-                    }}
-                    maxLength={10}
-                    disabled={loading}
-                    className="text-lg h-12"
-                    autoFocus
-                  />
-                  <p className="text-sm text-muted-foreground flex items-center gap-2">
-                    <svg
-                      className="w-4 h-4 text-green-600"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-                    </svg>
-                    OTP will be sent to your WhatsApp
+                  <div className="flex rounded-md border border-input bg-background shadow-sm focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-1 overflow-hidden h-10">
+                    <span className="inline-flex items-center px-3 border-r border-input bg-muted/40 text-xs font-semibold text-muted-foreground select-none">
+                      +91
+                    </span>
+                    <input
+                      id="phone"
+                      type="tel"
+                      placeholder="98765 43210"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      disabled={loading}
+                      className="flex-1 px-3 py-2 text-sm bg-transparent border-0 focus:outline-none placeholder:text-muted-foreground font-mono tracking-wide text-foreground"
+                      autoFocus
+                    />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 mt-1.5">
+                    <MessageSquare className="h-3 w-3 text-primary shrink-0" />
+                    Instant OTP code will be sent to your WhatsApp
                   </p>
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full h-12 text-base font-semibold bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
-                  disabled={loading || phoneNumber.length !== 10}
+                  className="w-full h-10 text-sm font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
+                  disabled={loading || !phoneNumber}
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Sending OTP...
                     </>
                   ) : (
                     <>
-                      <svg
-                        className="mr-2 h-5 w-5"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-                      </svg>
-                      Send OTP via WhatsApp
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      Send WhatsApp Code
                     </>
                   )}
                 </Button>
               </form>
             ) : (
               <form onSubmit={handleVerifyOTP} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="otp" className="text-base font-medium">
-                    Verification Code
+                <div className="space-y-1.5">
+                  <Label htmlFor="otp" className="text-xs font-semibold text-foreground">
+                    6-Digit Security Code
                   </Label>
                   <Input
                     id="otp"
                     type="text"
-                    placeholder="Enter 6-digit OTP"
+                    placeholder="• • • • • •"
                     value={otp}
                     onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, "");
-                      if (value.length <= 6) {
-                        setOtp(value);
-                      }
+                      const val = e.target.value.replace(/\D/g, "");
+                      if (val.length <= 6) setOtp(val);
                     }}
                     maxLength={6}
                     disabled={loading}
-                    className="text-2xl text-center tracking-widest h-14 font-semibold"
+                    className="text-xl text-center tracking-widest h-12 font-mono font-bold"
                     autoFocus
                   />
-                  <p className="text-sm text-muted-foreground text-center flex items-center justify-center gap-2">
-                    <svg
-                      className="w-4 h-4 text-green-600"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-                    </svg>
-                    Check your WhatsApp for the 6-digit code
+                  <p className="text-[11px] text-muted-foreground text-center">
+                    Check your WhatsApp chat from PaaniWale
                   </p>
                 </div>
 
                 <div className="space-y-2">
                   <Button
                     type="submit"
-                    className="w-full h-12 text-base font-semibold bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+                    className="w-full h-10 text-sm font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
                     disabled={loading || otp.length !== 6}
                   >
                     {loading ? (
                       <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Verifying...
                       </>
                     ) : (
                       <>
-                        <ShieldCheck className="mr-2 h-5 w-5" />
-                        Verify & Continue
+                        <ShieldCheck className="mr-2 h-4 w-4" />
+                        Verify & Access Dashboard
                       </>
                     )}
                   </Button>
 
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="w-full"
-                    onClick={() => {
-                      setStep("phone");
-                      setOtp("");
-                    }}
-                    disabled={loading}
-                  >
-                    ← Change Phone Number
-                  </Button>
+                  <div className="flex justify-between items-center pt-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs text-muted-foreground hover:text-foreground h-8 px-2"
+                      onClick={() => {
+                        setStep("phone");
+                        setOtp("");
+                      }}
+                      disabled={loading}
+                    >
+                      <ArrowLeft className="mr-1 h-3 w-3" />
+                      Change Number
+                    </Button>
 
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="w-full text-sm"
-                    onClick={handleSendOTP}
-                    disabled={loading}
-                  >
-                    Didn&apos;t receive? Resend OTP
-                  </Button>
+                    <Button
+                      type="button"
+                      variant="link"
+                      size="sm"
+                      className="text-xs text-primary h-8 px-2"
+                      onClick={() => handleSendOTP()}
+                      disabled={loading}
+                    >
+                      Resend Code
+                    </Button>
+                  </div>
                 </div>
               </form>
             )}
 
-            {/* Features Info */}
-            <div className="bg-blue-50 dark:bg-blue-950 rounded-lg p-4 space-y-2">
-              <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">
-                What you can do:
+            {/* Portal Features Banner */}
+            <div className="rounded-lg border bg-muted/30 p-3 space-y-1.5 text-xs text-muted-foreground">
+              <p className="font-semibold text-foreground text-[11px] uppercase tracking-wider">
+                In your Customer Portal:
               </p>
-              <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  View your account details
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  Check delivery history
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  Track monthly bottles & amount
-                </li>
-              </ul>
+              <div className="space-y-1">
+                <p className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  View real-time calendar of daily delivered water bottles
+                </p>
+                <p className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  Check current monthly bill and download PDF statement
+                </p>
+              </div>
             </div>
           </div>
         </DialogContent>

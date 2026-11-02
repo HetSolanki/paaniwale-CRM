@@ -1,5 +1,5 @@
 /* eslint-disable react/no-children-prop */
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import SignIn from "./Components/UI/UI-Components/SignIn";
 import SignUp from "./Components/UI/UI-Components/SignUp";
 import { Dashboard } from "./Components/Section/Dashboard";
@@ -38,6 +38,7 @@ import AdminCustomerManagement from "./Components/Admin/AdminCustomerManagement"
 import ReactGA from "react-ga4";
 import { config } from "./Data/config";
 import CustomerDashboard from "./Components/Section/CustomerDashboard";
+import CustomerPortalLogin from "./Components/Section/CustomerPortalLogin";
 import AutoInvoiceSettings from "./Components/Section/AutoInvoiceSettings";
 import OfflinePage from "./Components/Section/OfflinePage";
 
@@ -121,6 +122,18 @@ function App() {
                 <Route path="/partyorders" element={<PartyOrders />} />
 
                 {/* Customer Portal Routes */}
+                <Route
+                  path="/customerportal"
+                  element={<CustomerPortalLogin />}
+                />
+                <Route
+                  path="/customerportal/login"
+                  element={<CustomerPortalLogin />}
+                />
+                <Route
+                  path="/customer"
+                  element={<Navigate to="/customerportal/login" replace />}
+                />
                 <Route
                   path="/customerportal/dashboard"
                   element={<CustomerDashboard />}

@@ -33,6 +33,7 @@ import { config } from "@/Data/config";
 import { toast } from "react-toastify";
 import { useState } from "react";
 import { useUser } from "@/Context/UserContext";
+import { sanitizePhoneNumber } from "@/lib/utils";
 
 // Define the Customer type interface for better type safety
 export interface Customer {
@@ -119,9 +120,12 @@ const CustomerActions = ({ customer }: { customer: Customer }) => {
         return;
       }
 
-      // Check phone verification
-      if (!customerInvoice[0]?.customerDetails?.phone_verification_status) {
-        toast.error("Please verify customer's phone number first");
+      // Check customer phone number
+      const rawPhone = customerInvoice[0]?.customerDetails?.cphone_number;
+      const cleanPhone = sanitizePhoneNumber(rawPhone);
+
+      if (!cleanPhone || cleanPhone.length !== 10) {
+        toast.error(`Invalid customer phone number: "${rawPhone || "Missing"}". A valid 10-digit mobile number is required.`);
         setLoading(false);
         return;
       }
@@ -207,25 +211,21 @@ const CustomerActions = ({ customer }: { customer: Customer }) => {
       );
 
       if (!uploadRes.ok) {
-        const uploadError = await uploadRes.json();
-        throw new Error(uploadError?.error?.message || "Failed to upload media");
+        const uploadError = await uploadRes.json().catch(() => ({}));
+        throw new Error(uploadError?.error?.message || "Failed to upload invoice PDF to WhatsApp");
       }
 
       const { id: mediaId } = await uploadRes.json();
 
       // Send invoice via WhatsApp
-      const messageData = await sendInvoice(
+      await sendInvoice(
         customerInvoice,
         mediaId,
         filename,
         totalAmount
       );
 
-      if (messageData) {
-        toast.success("Invoice is being sent. It will arrive in 10-15 seconds.");
-      } else {
-        throw new Error("Failed to send message");
-      }
+      toast.success(`Invoice sent successfully to +91 ${cleanPhone}!`);
     } catch (error: any) {
       console.error("Failed to send invoice:", error);
       toast.error(error.message || "Failed to send invoice!");

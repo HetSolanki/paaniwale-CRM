@@ -1,4 +1,5 @@
 import { config } from "@/Data/config";
+import { sanitizePhoneNumber } from "@/lib/utils";
 
 export const sendInvoice = async (
   customerInvoice,
@@ -6,6 +7,15 @@ export const sendInvoice = async (
   filename,
   totalAmount
 ) => {
+  const rawPhone = customerInvoice[0]?.customerDetails?.cphone_number;
+  const cleanPhone = sanitizePhoneNumber(rawPhone);
+
+  if (!cleanPhone || cleanPhone.length !== 10) {
+    throw new Error(
+      `Invalid recipient phone number: "${rawPhone}". Please provide a valid 10-digit mobile number.`
+    );
+  }
+
   const response = await fetch(
     `https://graph.facebook.com/${config.whatsapp.version}/${config.whatsapp.phoneNumberId}/messages`,
     {
@@ -17,7 +27,7 @@ export const sendInvoice = async (
       body: JSON.stringify({
         messaging_product: "whatsapp",
         recipient_type: "individual",
-        to: `+91${customerInvoice[0].customerDetails.cphone_number}`,
+        to: `91${cleanPhone}`,
         type: "template",
         template: {
           name: "purchase_receipt_1",
@@ -50,5 +60,16 @@ export const sendInvoice = async (
   );
 
   const messageData = await response.json();
+
+  if (!response.ok || messageData.error) {
+    const errorMsg =
+      messageData?.error?.message ||
+      messageData?.error?.error_user_msg ||
+      "Failed to send invoice via WhatsApp API";
+    console.error("WhatsApp API Error:", messageData);
+    throw new Error(errorMsg);
+  }
+
   return messageData;
 };
+
